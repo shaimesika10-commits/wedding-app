@@ -45,7 +45,7 @@ const T = {
     bitTitle:"Bit Gift Integration", bitDesc:"Guests send monetary gifts from the invite", comingSoon:"COMING SOON",
     guestResponses:"Guest Responses", total:"total",
     filterAll:"All", filterYes:"Attending", filterNo:"Declined",
-    guests:(n)=>n===1?"1 guest":`${n} guests`, home:"Home",
+    guests:(n)=>n===1?"1 guest":n+" guests", home:"Home",
   },
   he: {
     tagline:"הזמנות חתונה דיגיטליות", heroTitle:["סיפור האהבה שלכם","צרו את ההזמנה המושלמת עכשיו"],
