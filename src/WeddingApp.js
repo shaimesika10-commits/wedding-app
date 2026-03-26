@@ -150,7 +150,7 @@ const T = {
     bitTitle:"تكامل Bit", bitDesc:"يرسل الضيوف هدايا مالية من الدعوة", comingSoon:"قريباً",
     guestResponses:"ردود الضيوف", total:"المجموع",
     filterAll:"الكل", filterYes:"الحاضرون", filterNo:"الغائبون",
-    guests:(n)=>`${n} ضيوف`, home:"الرئيسية",
+    guests:(n)=>n+" ضيوف", home:"الرئيسية",
   },
   ru: {
     tagline:"Цифровые Свадебные Приглашения", heroTitle:["Ваша история любви","создайте идеальное приглашение сейчас"],
