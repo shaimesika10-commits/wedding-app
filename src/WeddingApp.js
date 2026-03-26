@@ -70,7 +70,7 @@ const T = {
     messageLabel:"ברכה לזוג", msgPlaceholder:"כתבו ברכה חמה לזוג…",
     dietaryOptions:["ללא הגבלה","צמחוני","טבעוני","ללא גלוטן","ללא לקטוז","חלאל","כשר","ללא פירות ים"],
     sendReply:"שליחת אישור", confirmedYes:"נתראה בשמחה!", confirmedNo:"תודה על התשובה",
-    confirmedYesDesc:(d)=>`אישרתם את הגעתכם. אנחנו מצפים לראותכם ב${d}.`,
+    confirmedYesDesc:(d)=>"אישרתם את הגעתכם. אנחנו מצפים לראותכם ב"+d+".",
     confirmedNoDesc:"מצטערים לשמוע. נחשוב עליכם ביום המיוחד.",
     anotherReply:"שליחת תשובה נוספת",
     dashTitle:"דשבורד לזוג", editInv:"עריכת הזמנה",
@@ -80,7 +80,7 @@ const T = {
     bitTitle:"שילוב ביט", bitDesc:"אורחים ישלחו מתנות כסף ישירות מההזמנה", comingSoon:"בקרוב",
     guestResponses:"אישורי הגעה", total:"סה״כ",
     filterAll:"הכל", filterYes:"מגיעים", filterNo:"לא מגיעים",
-    guests:(n)=>`${n} אורחים`, home:"דף הבית",
+    guests:(n)=>n+" אורחים", home:"דף הבית",
   },
   fr: {
     tagline:"Invitations de Mariage Digitales", heroTitle:["Votre histoire d'amour","créez l'invitation parfaite maintenant"],
@@ -105,7 +105,7 @@ const T = {
     messageLabel:"Un mot pour les mariés", msgPlaceholder:"Vos vœux les plus chaleureux…",
     dietaryOptions:["Aucune restriction","Végétarien","Végétalien","Sans gluten","Sans lactose","Halal","Casher","Sans fruits de mer"],
     sendReply:"Envoyer ma réponse", confirmedYes:"À très bientôt !", confirmedNo:"Merci pour votre réponse",
-    confirmedYesDesc:(d)=>`Votre présence est notée. Nous avons hâte de vous retrouver le ${d}.`,
+    confirmedYesDesc:(d)=>"Votre présence est notée. Nous avons hâte de vous retrouver le "+d+".",
     confirmedNoDesc:"Nous sommes désolés de ne pas vous avoir parmi nous.",
     anotherReply:"Soumettre une autre réponse",
     dashTitle:"Tableau de Bord", editInv:"Modifier l'invitation",
@@ -115,7 +115,7 @@ const T = {
     bitTitle:"Intégration Bit", bitDesc:"Les invités envoient des cadeaux depuis l'invitation", comingSoon:"BIENTÔT",
     guestResponses:"Réponses des invités", total:"total",
     filterAll:"Tous", filterYes:"Présents", filterNo:"Absents",
-    guests:(n)=>n===1?"1 invité":`${n} invités`, home:"Accueil",
+    guests:(n)=>n===1?"1 invité":n+" invités", home:"Accueil",
   },
   ar: {
     tagline:"دعوات زفاف رقمية", heroTitle:["قصة حبكما","أنشئا الدعوة المثالية الآن"],
@@ -175,7 +175,7 @@ const T = {
     messageLabel:"Слово молодожёнам", msgPlaceholder:"Ваши тёплые пожелания…",
     dietaryOptions:["Без ограничений","Вегетарианское","Веганское","Без глютена","Без лактозы","Халяль","Кошерное","Без морепродуктов"],
     sendReply:"Отправить Ответ", confirmedYes:"До встречи на торжестве!", confirmedNo:"Спасибо за ваш ответ",
-    confirmedYesDesc:(d)=>`Ваше присутствие отмечено. Ждём вас ${d}.`,
+    confirmedYesDesc:(d)=>"Ваше присутствие отмечено. Ждём вас "+d+".",
     confirmedNoDesc:"Жаль, что вы не сможете присутствовать. Вы будете в наших сердцах.",
     anotherReply:"Отправить другой ответ",
     dashTitle:"Панель Управления", editInv:"Редактировать приглашение",
@@ -185,7 +185,7 @@ const T = {
     bitTitle:"Интеграция Bit", bitDesc:"Гости отправляют денежные подарки из приглашения", comingSoon:"СКОРО",
     guestResponses:"Ответы Гостей", total:"всего",
     filterAll:"Все", filterYes:"Придут", filterNo:"Не придут",
-    guests:(n)=>n===1?"1 гость":`${n} гостей`, home:"Главная",
+    guests:(n)=>n===1?"1 гость":n+" гостей", home:"Главная",
   },
 };
 
