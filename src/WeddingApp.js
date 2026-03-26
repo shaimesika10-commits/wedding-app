@@ -35,7 +35,7 @@ const T = {
     messageLabel:"A Message for the Couple", msgPlaceholder:"Your warmest wishes…",
     dietaryOptions:["No restrictions","Vegetarian","Vegan","Gluten-free","Dairy-free","Halal","Kosher","No shellfish"],
     sendReply:"Send Reply", confirmedYes:"We shall see you there", confirmedNo:"Thank you for your reply",
-    confirmedYesDesc:(d)=>`Your attendance has been noted. We look forward to celebrating with you on ${d}.`,
+    confirmedYesDesc:(d)=>"Your attendance has been noted. We look forward to celebrating with you on "+d+".",
     confirmedNoDesc:"We are sorry you cannot join us. You will be in our hearts on the day.",
     anotherReply:"Submit another response",
     dashTitle:"Couple's Dashboard", editInv:"Edit Invitation",
