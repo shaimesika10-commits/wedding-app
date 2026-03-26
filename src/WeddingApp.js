@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from './supabase';
-```
+
 /* ══════════════════════════════════════════════════════════════
    TRANSLATIONS (same as before)
 ══════════════════════════════════════════════════════════════ */
@@ -269,7 +268,7 @@ const mockRsvps = [
 
 // Full peony/rose bloom
 const FlowerBloom = ({ x, y, r, color, opacity=1 }) => (
-  <g transform={{"translate("+x+","+y+")"}} opacity={opacity}>
+  <g transform={`translate(${x},${y})`} opacity={opacity}>
     {[0,45,90,135,180,225,270,315].map((deg,i)=>{
       const rad=deg*Math.PI/180;
       const px=Math.cos(rad)*r*0.55, py=Math.sin(rad)*r*0.55;
@@ -289,7 +288,7 @@ const FlowerBloom = ({ x, y, r, color, opacity=1 }) => (
 
 // Small 5-petal flower
 const SmallFlower = ({ x, y, r, color, opacity=1 }) => (
-  <g transform={{"translate("+x+","+y+")"}} opacity={opacity}>
+  <g transform={`translate(${x},${y})`} opacity={opacity}>
     {[0,72,144,216,288].map((deg,i)=>{
       const rad=deg*Math.PI/180;
       const px=Math.cos(rad)*r*0.6, py=Math.sin(rad)*r*0.6;
@@ -307,7 +306,7 @@ const Leaf = ({ x, y, angle, len, color, opacity=0.6 }) => {
   const cx1=Math.cos((angle-30)*Math.PI/180)*len*0.5, cy1=Math.sin((angle-30)*Math.PI/180)*len*0.5;
   const cx2=Math.cos((angle+30)*Math.PI/180)*len*0.5, cy2=Math.sin((angle+30)*Math.PI/180)*len*0.5;
   return <path d={`M0,0 C${cx1},${cy1} ${cx2},${cy2} ${ex},${ey} C${cx2},${cy2} ${cx1},${cy1} 0,0Z`}
-    transform={{"translate("+x+","+y+")"}} fill={color} opacity={opacity}/>;
+    transform={`translate(${x},${y})`} fill={color} opacity={opacity}/>;
 };
 
 // Decorative stem with leaves and flowers — corner bouquet
