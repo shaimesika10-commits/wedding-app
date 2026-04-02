@@ -83,6 +83,7 @@ export interface Database {
           plan?: string
           updated_at?: string
         }
+        Relationships: []
       }
       event_schedule: {
         Row: {
@@ -127,6 +128,15 @@ export interface Database {
           description?: string | null
           sort_order?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: "event_schedule_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       guests: {
         Row: {
@@ -180,6 +190,15 @@ export interface Database {
           table_number?: number | null
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "guests_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       gallery_photos: {
         Row: {
@@ -204,6 +223,15 @@ export interface Database {
           caption?: string | null
           approved?: boolean
         }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_photos_wedding_id_fkey"
+            columns: ["wedding_id"]
+            isOneToOne: false
+            referencedRelation: "weddings"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
