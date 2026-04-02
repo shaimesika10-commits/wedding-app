@@ -8,6 +8,15 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from './database.types'
 
+export type WeddingRow = Database['public']['Tables']['weddings']['Row']
+export type EventScheduleRow = Database['public']['Tables']['event_schedule']['Row']
+export type GuestRow = Database['public']['Tables']['guests']['Row']
+export type GalleryPhotoRow = Database['public']['Tables']['gallery_photos']['Row']
+
+export type WeddingWithSchedule = WeddingRow & {
+  event_schedule: EventScheduleRow[]
+}
+
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies()
   return createServerClient<Database>(
@@ -30,23 +39,20 @@ export async function createServerSupabaseClient() {
   )
 }
 
-export async function getWeddingBySlug(slug: string) {
+export async function getWeddingBySlug(slug: string): Promise<WeddingWithSchedule | null> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('weddings')
-    .select(`
-      *,
-      event_schedule (*)
-    `)
+    .select(`*, event_schedule (*)`)
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
 
   if (error) return null
-  return data
+  return data as unknown as WeddingWithSchedule
 }
 
-export async function getGuestsByWeddingId(weddingId: string) {
+export async function getGuestsByWeddingId(weddingId: string): Promise<GuestRow[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('guests')
@@ -55,10 +61,10 @@ export async function getGuestsByWeddingId(weddingId: string) {
     .order('created_at', { ascending: false })
 
   if (error) return []
-  return data
+  return data ?? []
 }
 
-export async function getGalleryPhotosByWeddingId(weddingId: string) {
+export async function getGalleryPhotosByWeddingId(weddingId: string): Promise<GalleryPhotoRow[]> {
   const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase
     .from('gallery_photos')
@@ -68,5 +74,5 @@ export async function getGalleryPhotosByWeddingId(weddingId: string) {
     .order('created_at', { ascending: false })
 
   if (error) return []
-  return data
+  return data ?? []
 }
