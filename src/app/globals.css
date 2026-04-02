@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8d5a3;
+    --gold-dark: #9a7d35;
+    --cream: #faf8f5;
+    --charcoal: #1c1917;
+  }
+  html { scroll-behavior: smooth; }
+  body { background-color: var(--cream); }
+  [dir="rtl"] { letter-spacing: 0; }
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 { font-family: 'Heebo', sans-serif; }
+}
+
+@layer components {
+  .btn-gold {
+    @apply inline-flex items-center justify-center px-8 py-3
+           bg-[#c9a84c] hover:bg-[#9a7d35] text-white
+           font-medium tracking-widest uppercase text-sm
+           transition-all duration-300 rounded-none
+           border border-[#c9a84c] hover:border-[#9a7d35];
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-8 py-3
+           bg-transparent hover:bg-stone-100 text-stone-700
+           font-medium tracking-widest uppercase text-sm
+           transition-all duration-300 rounded-none
+           border border-stone-300 hover:border-stone-500;
+  }
+  .card-grand { @apply bg-white shadow-sm border border-stone-100 p-6; }
+  .input-grand {
+    @apply w-full px-4 py-3 bg-transparent border-b border-stone-300
+           focus:border-[#c9a84c] focus:outline-none
+           text-stone-800 placeholder-stone-400
+           transition-colors duration-200;
+  }
+  .badge-confirmed { @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200; }
+  .badge-declined { @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-red-50 text-red-700 border border-red-200; }
+  .badge-pending { @apply inline-flex items-center px-2.5 py-0.5 text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200; }
+  .section-title { @apply font-cormorant text-3xl md:text-4xl font-light tracking-wide text-stone-800; }
+}
+
+@layer utilities {
+  .font-cormorant { font-family: var(--font-cormorant), 'Georgia', serif; }
+  .text-gold { color: var(--gold); }
+  .bg-gold { background-color: var(--gold); }
+  .border-gold { border-color: var(--gold); }
+  .fade-in { animation: fadeIn 0.6s ease-in-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
