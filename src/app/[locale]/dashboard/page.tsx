@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
 import DashboardClient from '@/components/DashboardClient'
@@ -74,7 +74,7 @@ export default function DashboardPage({ params }: { params: { locale: Locale } }
   const l = t[locale] || t.fr
   const isRtl = locale === 'he'
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(true)
