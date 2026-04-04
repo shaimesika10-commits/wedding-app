@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import Image from 'next/image'
+import { useState } from 'react'
 import type { GalleryPhoto } from '@/types'
 import type { Locale } from '@/lib/i18n'
 
@@ -10,19 +9,16 @@ const labels = {
     title: 'Galerie photos',
     subtitle: 'Nos plus beaux souvenirs',
     noPhotos: 'Aucune photo pour le moment.',
-    close: 'Fermer',
   },
   he: {
     title: 'גלריית תמונות',
     subtitle: 'הרגעים המיוחדים שלנו',
     noPhotos: 'אין תמונות עדיין.',
-    close: 'סגור',
   },
   en: {
     title: 'Photo Gallery',
     subtitle: 'Our most beautiful moments',
     noPhotos: 'No photos yet.',
-    close: 'Close',
   },
 }
 
@@ -56,14 +52,12 @@ export default function GallerySection({ photos, locale, couplePhotoUrl }: Galle
                 className="break-inside-avoid cursor-pointer overflow-hidden rounded group"
                 onClick={() => setLightbox(photo)}
               >
-                <div className="relative w-full">
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || ''}
-                    className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
+                <img
+                  src={photo.url}
+                  alt={photo.caption || ''}
+                  className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  loading="lazy"
+                />
                 {photo.caption && (
                   <p className="text-xs text-stone-400 mt-1 px-1 truncate">{photo.caption}</p>
                 )}
@@ -72,7 +66,6 @@ export default function GallerySection({ photos, locale, couplePhotoUrl }: Galle
           </div>
         )}
 
-        {/* Lightbox */}
         {lightbox && (
           <div
             className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
