@@ -152,7 +152,7 @@ export default function AIInvitationChat({
     }
   }
 
-  // ââ Minimized button âââââââââââââââââââââââââââââââââââââ
+  // ââ Minimized button ââââââââââââââââââââââââââââââââââââââ
   if (!open) {
     return (
       <button
@@ -173,7 +173,7 @@ export default function AIInvitationChat({
     )
   }
 
-  // ââ Chat window ââââââââââââââââââââââââââââââââââââââ
+  // ââ Chat window âââââââââââââââââââââââââââââââââââââââââââ
   return (
     <div
       dir={isRTL ? 'rtl' : 'ltr'}
@@ -231,7 +231,7 @@ export default function AIInvitationChat({
                   />
                   <span
                     className="inline-block w-1.5 h-1.5 rounded-full animate-bounce"
-  #                   style={{ background: '#c9a84c', animationDelay: '300ms' }}
+                    style={{ background: '#c9a84c', animationDelay: '300ms' }}
                   />
                   <span className="text-stone-400 text-xs ms-1">{l.thinking}</span>
                 </span>
@@ -246,7 +246,7 @@ export default function AIInvitationChat({
 
       {/* Generated invitation card */}
       {generatedInvitation && (
-        <>div className="px-4 py-3 bg-yellow-50 border-t border-yellow-200">
+        <div className="px-4 py-3 bg-yellow-50 border-t border-yellow-200">
           <p className="text-xs text-yellow-700 font-medium mb-2">
             {locale === 'he' ? 'â¨ ××××× × ×××× ×!' : locale === 'fr' ? 'â¨ Invitation gÃ©nÃ©rÃ©e !' : 'â¨ Invitation ready!'}
           </p>
@@ -264,11 +264,11 @@ export default function AIInvitationChat({
       <div className="px-4 py-3 bg-white border-t border-stone-100 flex gap-2">
         <textarea
           value={input}
-         ÏnChange={e => setInput(e.target.value)}
+          onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={loading}
           placeholder={l.placeholder}
-    0     rows={1}
+          rows={1}
           className="flex-1 px-3 py-2.5 rounded-xl border border-stone-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-500 transition"
           style={{ maxHeight: '80px', overflowY: 'auto' }}
         />
