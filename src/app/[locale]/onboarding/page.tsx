@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import type { Locale } from '@/lib/i18n'
 
 const labels = {
@@ -75,7 +75,7 @@ export default function OnboardingPage({ params }: { params: { locale: Locale } 
   const locale = params.locale as Locale
   const l = labels[locale] || labels.fr
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [step, setStep] = useState(1)
