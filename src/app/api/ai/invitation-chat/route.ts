@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite â AI Invitation Builder Chat
+//  GrandInvite – AI Invitation Builder Chat
 //  POST /api/ai/invitation-chat
 //  Body: { messages: ChatMessage[], weddingContext?: object, locale: string }
 // ============================================================
@@ -12,16 +12,16 @@ interface ChatMessage {
 }
 
 const SYSTEM_PROMPTS: Record<string, string> = {
-  fr: `Tu es un assistant expert en crÃ©ation d'invitations de mariage de luxe pour GrandInvite.
-Ton rÃ´le est d'aider les mariÃ©s Ã  crÃ©er l'invitation de leurs rÃªves en posant des questions pertinentes et en les guidant.
+  fr: `Tu es un assistant expert en création d'invitations de mariage de luxe pour GrandInvite.
+Ton rôle est d'aider les mariés à créer l'invitation de leurs rêves en posant des questions pertinentes et en les guidant.
 
 Tu dois :
-1. Poser des questions sur leur vision, style, ambiance souhaitÃ©e
+1. Poser des questions sur leur vision, style, ambiance souhaitée
 2. Recueillir les informations manquantes (lieu, horaire, programme, dress code, etc.)
-3. Proposer des formulations Ã©lÃ©gantes et romantiques
-4. Ã la fin de la conversation, gÃ©nÃ©rer le contenu complet de l'invitation
+3. Proposer des formulations élégantes et romantiques
+4. À la fin de la conversation, générer le contenu complet de l'invitation
 
-Quand tu as assez d'informations, gÃ©nÃ¨re l'invitation au format JSON structurÃ© comme:
+Quand tu as assez d'informations, génère l'invitation au format JSON structuré comme:
 {
   "ready": true,
   "invitation": {
@@ -34,18 +34,18 @@ Quand tu as assez d'informations, gÃ©nÃ¨re l'invitation au format JSON struc
   }
 }
 
-Sois chaleureux, Ã©lÃ©gant et enthousiaste. Tu parles franÃ§ais.`,
+Sois chaleureux, élégant et enthousiaste. Tu parles français.`,
 
-  he: `××ª× ×¢×××¨ ××××× ×××¦××¨×ª ×××× ××ª ××ª×× × ×××§×¨×ª×××ª ×¢×××¨ GrandInvite.
-×ª×¤×§××× ××¢×××¨ ×××× ×××¦××¨ ××ª ××××× × ××××©×××ª ×©××× ×¢× ××× ×©×××ª ×©××××ª ×¨×××× ××××ª ××××¨××ª×.
+  he: `אתה עוזר מומחה ליצירת הזמנות חתונה יוקרתיות עבור GrandInvite.
+תפקידך לעזור לזוג ליצור את ההזמנה המושלמת שלהם על ידי שאלת שאלות רלוונטיות והדרכתם.
 
-×¢×××:
-1. ××©××× ×¢× ××××× ×©×××, ××¡×× ××, ××××××¨× ××¨×¦×××
-2. ×××¡××£ ××××¢ ××¡×¨ (×××§××, ×©×¢××ª, ×ª××× ××ª, ×§×× ××××© ×××')
-3. ×××¦××¢ × ××¡×××× ×××× ×××× ××¨××× ××××
-4. ××¡××£ ××©×××, ××××¦×¨ ××ª ×ª××× ××××× × ××××
+עליך:
+1. לשאול על החזון שלהם, הסגנון, האווירה הרצויה
+2. לאסוף מידע חסר (מיקום, שעות, תוכנית, קוד לבוש וכו')
+3. להציע ניסוחים אלגנטיים ורומנטיים
+4. בסוף השיחה, לייצר את תוכן ההזמנה המלא
 
-××©××© ×× ××¡×¤××§ ××××¢, ×¦××¨ ××ª ××××× × ××¤××¨×× JSON:
+כשיש לך מספיק מידע, צור את ההזמנה בפורמט JSON:
 {
   "ready": true,
   "invitation": {
@@ -58,7 +58,7 @@ Sois chaleureux, Ã©lÃ©gant et enthousiaste. Tu parles franÃ§ais.`,
   }
 }
 
-××× ××, ×××× ×× ×× ×××. ××ª× ××××¨ ×¢××¨××ª.`,
+היה חם, אלגנטי ונלהב. אתה מדבר עברית.`,
 
   en: `You are an expert luxury wedding invitation assistant for GrandInvite.
 Your role is to help couples create their dream invitation by asking relevant questions and guiding them.
@@ -86,9 +86,9 @@ Be warm, elegant and enthusiastic. You speak English.`,
 }
 
 const FIRST_MESSAGES: Record<string, string> = {
-  fr: "Bonjour ! Je suis votre assistant GrandInvite ð« Je vais vous aider Ã  crÃ©er une invitation de mariage parfaite. CommenÃ§ons par votre vision : quelle ambiance souhaitez-vous pour votre invitation ? (romantique, moderne, bohÃ¨me, classique...)",
-  he: "×©×××! ×× × ××¢×××¨ ×©××× ×-GrandInvite ð« ×× × ××¢×××¨ ××× ×××¦××¨ ×××× ×ª ××ª×× × ×××©×××ª. × ×ª××× ×××××× ×©×××: ×××× ×××××¨× ××ª× ×¨××¦×× ×××¢×××¨ ××××× ×? (×¨××× ×××ª, ××××¨× ××ª, ××××××× ××ª, ×§×××¡××ª...)",
-  en: "Hello! I'm your GrandInvite assistant ð« I'll help you create the perfect wedding invitation. Let's start with your vision: what atmosphere do you want for your invitation? (romantic, modern, bohemian, classic...)",
+  fr: "Bonjour ! Je suis votre assistant GrandInvite 💫 Je vais vous aider à créer une invitation de mariage parfaite. Commençons par votre vision : quelle ambiance souhaitez-vous pour votre invitation ? (romantique, moderne, bohème, classique...)",
+  he: "שלום! אני העוזר שלכם ב-GrandInvite 💫 אני אעזור לכם ליצור הזמנת חתונה מושלמת. נתחיל מהחזון שלכם: איזה אווירה אתם רוצים להעביר בהזמנה? (רומנטית, מודרנית, בוהמיינית, קלאסית...)",
+  en: "Hello! I'm your GrandInvite assistant 💫 I'll help you create the perfect wedding invitation. Let's start with your vision: what atmosphere do you want for your invitation? (romantic, modern, bohemian, classic...)",
 }
 
 export async function GET(request: NextRequest) {
@@ -106,11 +106,11 @@ export async function POST(request: NextRequest) {
     if (!apiKey) {
       return NextResponse.json({
         reply: locale === 'he'
-          ? '×©××¨××ª ×-AI ××× × ×××××¨ ××¨××¢. ×× × ×××¡×£ ANTHROPIC_API_KEY ×××××¨××ª Vercel.'
+          ? 'שירות ה-AI אינו מוגדר כרגע. אנא הוסף ANTHROPIC_API_KEY בהגדרות Vercel.'
           : locale === 'fr'
-          ? "Le service AI n'est pas configurÃ©. Ajoutez ANTHROPIC_API_KEY dans les paramÃ¨tres Vercel."
+          ? "Le service AI n'est pas configuré. Ajoutez ANTHROPIC_API_KEY dans les paramètres Vercel."
           : 'AI service not configured. Please add ANTHROPIC_API_KEY in Vercel settings.',
-  #     ready: false,
+        ready: false,
       })
     }
 
