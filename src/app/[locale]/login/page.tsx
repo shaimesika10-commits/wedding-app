@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import type { Locale } from '@/lib/i18n'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 // ── Labels ──────────────────────────────────────────────────
 const L = {
@@ -23,7 +24,7 @@ const L = {
     groomName: 'Prénom du marié',
     weddingDate: 'Date du mariage',
     venue: 'Lieu de réception (facultatif)',
-    language: 'Langue de l\'invitation',
+    language: "Langue de l'invitation",
     loginBtn: 'Se connecter',
     registerBtn: 'Créer mon compte',
     loggingIn: 'Connexion...',
@@ -40,6 +41,15 @@ const L = {
     langEn: 'Anglais',
     subtitle: 'Votre espace mariage de luxe',
     passwordHint: 'Minimum 8 caractères',
+    // forgot password
+    forgotTitle: 'Mot de passe oublié',
+    forgotSubtitle: 'Entrez votre e-mail pour recevoir un lien de réinitialisation.',
+    forgotBtn: 'Envoyer le lien',
+    forgotSending: 'Envoi...',
+    forgotSentTitle: 'Vérifiez votre e-mail',
+    forgotSentMsg: (email: string) => `Un lien de réinitialisation a été envoyé à ${email}.`,
+    backToLogin: 'Retour à la connexion',
+    forgotEmailError: 'Veuillez entrer une adresse e-mail valide.',
   },
   he: {
     confirmSubject: 'בדקו את האימייל שלכם',
@@ -70,6 +80,15 @@ const L = {
     langEn: 'אנגלית',
     subtitle: 'מרחב החתונה היוקרתי שלכם',
     passwordHint: 'לפחות 8 תווים',
+    // forgot password
+    forgotTitle: 'שכחת סיסמה',
+    forgotSubtitle: 'הזינו את כתובת האימייל שלכם לקבלת קישור לאיפוס סיסמה.',
+    forgotBtn: 'שלח קישור',
+    forgotSending: 'שולח...',
+    forgotSentTitle: 'בדקו את האימייל שלכם',
+    forgotSentMsg: (email: string) => `קישור לאיפוס סיסמה נשלח לכתובת ${email}.`,
+    backToLogin: 'חזרה לכניסה',
+    forgotEmailError: 'אנא הזינו כתובת אימייל תקינה.',
   },
   en: {
     confirmSubject: 'Check your email',
@@ -79,8 +98,8 @@ const L = {
     email: 'Email address',
     password: 'Password',
     confirmPassword: 'Confirm password',
-    brideName: 'Bride\'s first name',
-    groomName: 'Groom\'s first name',
+    brideName: "Bride's first name",
+    groomName: "Groom's first name",
     weddingDate: 'Wedding date',
     venue: 'Venue (optional)',
     language: 'Invitation language',
@@ -100,6 +119,15 @@ const L = {
     langEn: 'English',
     subtitle: 'Your luxury wedding space',
     passwordHint: 'Minimum 8 characters',
+    // forgot password
+    forgotTitle: 'Forgot password',
+    forgotSubtitle: 'Enter your email to receive a password reset link.',
+    forgotBtn: 'Send reset link',
+    forgotSending: 'Sending...',
+    forgotSentTitle: 'Check your email',
+    forgotSentMsg: (email: string) => `A password reset link was sent to ${email}.`,
+    backToLogin: 'Back to sign in',
+    forgotEmailError: 'Please enter a valid email address.',
   },
 }
 
@@ -150,6 +178,15 @@ function GoogleIcon() {
   )
 }
 
+// ── Facebook Icon ────────────────────────────────────────────
+function FacebookIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+    </svg>
+  )
+}
+
 // ── Divider ──────────────────────────────────────────────────
 function Divider({ label }: { label: string }) {
   return (
@@ -170,12 +207,13 @@ export default function LoginPage() {
   const supabase = createClient()
   const isRTL = locale === 'he'
 
-  const [tab, setTab] = useState<'login' | 'register'>('login')
+  // Main view: 'login' | 'register' | 'forgot' | 'forgot-sent' | 'confirm-email'
+  const [view, setView] = useState<'login' | 'register' | 'forgot' | 'forgot-sent' | 'confirm-email'>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [confirmEmail, setConfirmEmail] = useState('')  // set when email confirmation needed
+  const [sentEmail, setSentEmail] = useState('')   // for both forgot-sent and confirm-email
 
-  // Read error from URL (e.g. ?error=oauth_failed from auth/callback)
+  // Read error from URL
   const urlError = typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).get('error')
     : null
@@ -183,6 +221,9 @@ export default function LoginPage() {
   // Login state
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
+
+  // Forgot password state
+  const [forgotEmail, setForgotEmail] = useState('')
 
   // Register state
   const [reg, setReg] = useState({
@@ -217,7 +258,6 @@ export default function LoginPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setConfirmEmail('')
     if (reg.password !== reg.confirmPassword) {
       setError(l.passwordMismatch)
       return
@@ -229,7 +269,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: reg.email,
         password: reg.password,
@@ -243,7 +282,7 @@ export default function LoginPage() {
         return
       }
 
-      // 2. If session exists (email confirmation disabled) — create wedding & redirect
+      // אם הסשן קיים (אימות אימייל מבוטל) — יצירת חתונה מיידית
       if (authData.session) {
         const slug = slugify(reg.bride_name, reg.groom_name, reg.wedding_date)
         await supabase.from('weddings').insert({
@@ -262,9 +301,9 @@ export default function LoginPage() {
         return
       }
 
-      // 3. Email confirmation required — show confirmation message
-      // After confirming, user will be redirected to dashboard → onboarding to complete setup
-      setConfirmEmail(reg.email)
+      // אישור אימייל נדרש — הצג מסך אישור
+      setSentEmail(reg.email)
+      setView('confirm-email')
       setLoading(false)
     } catch {
       setError(l.errorRegister)
@@ -272,8 +311,35 @@ export default function LoginPage() {
     }
   }
 
+  // ── Handle forgot password ──────────────────────────────
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!forgotEmail || !/\S+@\S+\.\S+/.test(forgotEmail)) {
+      setError(l.forgotEmailError)
+      return
+    }
+    setLoading(true)
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/${locale}/reset-password`,
+      })
+      if (resetError) {
+        setError(resetError.message)
+        setLoading(false)
+        return
+      }
+      setSentEmail(forgotEmail)
+      setView('forgot-sent')
+    } catch {
+      setError(l.forgotEmailError)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // ── Handle OAuth ─────────────────────────────────────────
-  const handleOAuth = async (provider: 'google') => {
+  const handleOAuth = async (provider: 'google' | 'facebook') => {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -289,7 +355,10 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-lg">
 
-        {/* ── Logo ── */}
+        {/* ── Language Switcher + Logo ── */}
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher currentLocale={locale} variant="inline" />
+        </div>
         <div className="text-center mb-8">
           <a href={`/${locale}`}>
             <h1 className="font-cormorant text-4xl font-light text-stone-900 tracking-widest">
@@ -300,8 +369,10 @@ export default function LoginPage() {
           <p className="text-stone-400 text-sm">{l.subtitle}</p>
         </div>
 
-        {/* ── Email confirmation screen ── */}
-        {confirmEmail && (
+        {/* ══════════════════════════════════════
+            מסך: אישור אימייל לאחר הרשמה
+        ══════════════════════════════════════ */}
+        {view === 'confirm-email' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#fdf6e3' }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5">
@@ -309,9 +380,9 @@ export default function LoginPage() {
               </svg>
             </div>
             <h2 className="font-cormorant text-2xl text-stone-800 mb-2">{l.confirmSubject}</h2>
-            <p className="text-stone-500 text-sm leading-relaxed">{l.confirmMsg(confirmEmail)}</p>
+            <p className="text-stone-500 text-sm leading-relaxed">{l.confirmMsg(sentEmail)}</p>
             <button
-              onClick={() => { setConfirmEmail(''); setTab('login') }}
+              onClick={() => { setView('login'); setSentEmail('') }}
               className="mt-6 text-xs text-stone-400 hover:text-stone-600 underline transition"
             >
               {l.tabLogin}
@@ -319,22 +390,93 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* ── Tabs + Card (hidden when waiting for email confirmation) ── */}
-        {!confirmEmail && (<>
+        {/* ══════════════════════════════════════
+            מסך: שכחת סיסמה — הזנת אימייל
+        ══════════════════════════════════════ */}
+        {view === 'forgot' && (
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
+            <div className="mb-6">
+              <h2 className="font-cormorant text-2xl text-stone-800 mb-1">{l.forgotTitle}</h2>
+              <p className="text-stone-400 text-sm">{l.forgotSubtitle}</p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 text-red-600 text-sm mb-4">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div>
+                <label className={labelCls}>{l.email}</label>
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
+                  required
+                  dir="ltr"
+                  className={fieldCls}
+                  placeholder="vous@exemple.com"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl text-white text-sm font-medium tracking-wider uppercase transition-all disabled:opacity-60"
+                style={{ background: loading ? '#a8a29e' : '#c9a84c' }}
+              >
+                {loading ? l.forgotSending : l.forgotBtn}
+              </button>
+            </form>
+
+            <button
+              onClick={() => { setView('login'); setError('') }}
+              className="mt-4 w-full text-center text-xs text-stone-400 hover:text-stone-600 transition"
+            >
+              ← {l.backToLogin}
+            </button>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════
+            מסך: שכחת סיסמה — לינק נשלח
+        ══════════════════════════════════════ */}
+        {view === 'forgot-sent' && (
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#fdf6e3' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5">
+                <path d="M3 8l9 6 9-6M3 8v10a1 1 0 001 1h16a1 1 0 001-1V8M3 8l9-6 9 6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className="font-cormorant text-2xl text-stone-800 mb-2">{l.forgotSentTitle}</h2>
+            <p className="text-stone-500 text-sm leading-relaxed">{l.forgotSentMsg(sentEmail)}</p>
+            <button
+              onClick={() => { setView('login'); setSentEmail('') }}
+              className="mt-6 text-xs text-stone-400 hover:text-stone-600 underline transition"
+            >
+              {l.backToLogin}
+            </button>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════
+            Tabs + Card (login / register)
+        ══════════════════════════════════════ */}
+        {(view === 'login' || view === 'register') && (<>
 
         <div className="flex bg-stone-100 rounded-2xl p-1 mb-6">
-          {(['login', 'register'] as const).map(t => (
+          {(['login', 'register'] as const).map(tabKey => (
             <button
-              key={t}
-              onClick={() => { setTab(t); setError('') }}
+              key={tabKey}
+              onClick={() => { setView(tabKey); setError('') }}
               className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={{
-                background: tab === t ? '#fff' : 'transparent',
-                color: tab === t ? '#1c1917' : '#a8a29e',
-                boxShadow: tab === t ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                background: view === tabKey ? '#fff' : 'transparent',
+                color: view === tabKey ? '#1c1917' : '#a8a29e',
+                boxShadow: view === tabKey ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
               }}
             >
-              {t === 'login' ? l.tabLogin : l.tabRegister}
+              {tabKey === 'login' ? l.tabLogin : l.tabRegister}
             </button>
           ))}
         </div>
@@ -349,7 +491,7 @@ export default function LoginPage() {
           )}
 
           {/* ════ LOGIN TAB ════ */}
-          {tab === 'login' && (
+          {view === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className={labelCls}>{l.email}</label>
@@ -368,8 +510,8 @@ export default function LoginPage() {
                   <label className={labelCls}>{l.password}</label>
                   <button
                     type="button"
-                    className="text-xs text-stone-400 hover:text-stone-600 transition"
-                    onClick={() => {/* TODO: implement forgot password */}}
+                    className="text-xs text-[#c9a84c] hover:text-stone-700 transition"
+                    onClick={() => { setView('forgot'); setError(''); setForgotEmail(loginEmail) }}
                   >
                     {l.forgotPassword}
                   </button>
@@ -397,11 +539,12 @@ export default function LoginPage() {
               <Divider label={l.orWith} />
 
               <OAuthButton provider="google" label={l.google} icon={<GoogleIcon />} onClick={() => handleOAuth('google')} />
+              <OAuthButton provider="facebook" label={l.facebook} icon={<FacebookIcon />} onClick={() => handleOAuth('facebook')} />
             </form>
           )}
 
           {/* ════ REGISTER TAB ════ */}
-          {tab === 'register' && (
+          {view === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4">
 
               {/* Account */}
@@ -530,6 +673,7 @@ export default function LoginPage() {
               <Divider label={l.orWith} />
 
               <OAuthButton provider="google" label={l.google} icon={<GoogleIcon />} onClick={() => handleOAuth('google')} />
+              <OAuthButton provider="facebook" label={l.facebook} icon={<FacebookIcon />} onClick={() => handleOAuth('facebook')} />
             </form>
           )}
         </div>
