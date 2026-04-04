@@ -12,6 +12,8 @@ import type { Locale } from '@/lib/i18n'
 // ── Labels ──────────────────────────────────────────────────
 const L = {
   fr: {
+    confirmSubject: 'Vérifiez votre e-mail',
+    confirmMsg: (email: string) => `Un lien de confirmation a été envoyé à ${email}. Cliquez sur le lien pour activer votre compte.`,
     tabLogin: 'Se connecter',
     tabRegister: 'Créer un compte',
     email: 'Adresse e-mail',
@@ -40,6 +42,8 @@ const L = {
     passwordHint: 'Minimum 8 caractères',
   },
   he: {
+    confirmSubject: 'בדקו את האימייל שלכם',
+    confirmMsg: (email: string) => `נשלח קישור אישור לכתובת ${email}. לחצו על הקישור כדי להפעיל את החשבון.`,
     tabLogin: 'כניסה',
     tabRegister: 'יצירת חשבון',
     email: 'כתובת אימייל',
@@ -62,12 +66,14 @@ const L = {
     errorLogin: 'אימייל או סיסמה שגויים.',
     errorRegister: 'אירעה שגיאה. אנא נסה/י שוב.',
     langFr: 'צרפתית',
-    langHe: 'עסרית',
+    langHe: 'עברית',
     langEn: 'אנגלית',
     subtitle: 'מרחב החתונה היוקרתי שלכם',
     passwordHint: 'לפחות 8 תווים',
   },
   en: {
+    confirmSubject: 'Check your email',
+    confirmMsg: (email: string) => `A confirmation link was sent to ${email}. Click the link to activate your account.`,
     tabLogin: 'Sign In',
     tabRegister: 'Create Account',
     email: 'Email address',
@@ -176,6 +182,12 @@ export default function LoginPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [confirmEmail, setConfirmEmail] = useState('')  // set when email confirmation needed
+
+  // Read error from URL (e.g. ?error=oauth_failed from auth/callback)
+  const urlError = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('error')
+    : null
 
   // Login state
   const [loginEmail, setLoginEmail] = useState('')
@@ -214,6 +226,7 @@ export default function LoginPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setConfirmEmail('')
     if (reg.password !== reg.confirmPassword) {
       setError(l.passwordMismatch)
       return
@@ -224,33 +237,48 @@ export default function LoginPage() {
     }
     setLoading(true)
 
-    // 1. Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: reg.email,
-      password: reg.password,
-    })
-    if (authError || !authData.user) {
+    try {
+      // 1. Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: reg.email,
+        password: reg.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard`,
+        },
+      })
+      if (authError || !authData.user) {
+        setError(l.errorRegister)
+        setLoading(false)
+        return
+      }
+
+      // 2. If session exists (email confirmation disabled) — create wedding & redirect
+      if (authData.session) {
+        const slug = slugify(reg.bride_name, reg.groom_name, reg.wedding_date)
+        await supabase.from('weddings').insert({
+          user_id: authData.user.id,
+          slug,
+          bride_name: reg.bride_name.trim(),
+          groom_name: reg.groom_name.trim(),
+          wedding_date: reg.wedding_date,
+          venue_name: reg.venue.trim() || null,
+          locale: reg.invitation_locale,
+          max_guests: 200,
+          plan: 'free',
+          is_active: true,
+        })
+        router.push(`/${locale}/dashboard`)
+        return
+      }
+
+      // 3. Email confirmation required — show confirmation message
+      // After confirming, user will be redirected to dashboard → onboarding to complete setup
+      setConfirmEmail(reg.email)
+      setLoading(false)
+    } catch {
       setError(l.errorRegister)
       setLoading(false)
-      return
     }
-
-    // 2. Create wedding immediately
-    const slug = slugify(reg.bride_name, reg.groom_name, reg.wedding_date)
-    await supabase.from('weddings').insert({
-      user_id: authData.user.id,
-      slug,
-      bride_name: reg.bride_name.trim(),
-      groom_name: reg.groom_name.trim(),
-      wedding_date: reg.wedding_date,
-      venue_name: reg.venue.trim() || null,
-      locale: reg.invitation_locale,
-      max_guests: 200,
-      plan: 'free',
-      is_active: true,
-    })
-
-    router.push(`/${locale}/dashboard`)
   }
 
   // ── Handle OAuth ─────────────────────────────────────────
@@ -281,7 +309,28 @@ export default function LoginPage() {
           <p className="text-stone-400 text-sm">{l.subtitle}</p>
         </div>
 
-        {/* ── Tabs ── */}
+        {/* ── Email confirmation screen ── */}
+        {confirmEmail && (
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#fdf6e3' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" strokeWidth="1.5">
+                <path d="M3 8l9 6 9-6M3 8v10a1 1 0 001 1h16a1 1 0 001-1V8M3 8l9-6 9 6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <h2 className="font-cormorant text-2xl text-stone-800 mb-2">{l.confirmSubject}</h2>
+            <p className="text-stone-500 text-sm leading-relaxed">{l.confirmMsg(confirmEmail)}</p>
+            <button
+              onClick={() => { setConfirmEmail(''); setTab('login') }}
+              className="mt-6 text-xs text-stone-400 hover:text-stone-600 underline transition"
+            >
+              {l.tabLogin}
+            </button>
+          </div>
+        )}
+
+        {/* ── Tabs + Card (hidden when waiting for email confirmation) ── */}
+        {!confirmEmail && (<>
+
         <div className="flex bg-stone-100 rounded-2xl p-1 mb-6">
           {(['login', 'register'] as const).map(t => (
             <button
@@ -302,9 +351,9 @@ export default function LoginPage() {
         {/* ── Card ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
 
-          {error && (
+          {(error || urlError) && (
             <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 text-red-600 text-sm mb-5">
-              {error}
+              {error || l.errorLogin}
             </div>
           )}
 
@@ -495,6 +544,7 @@ export default function LoginPage() {
             </form>
           )}
         </div>
+        </>)}
 
         <p className="text-center text-xs text-stone-300 mt-6">
           © {new Date().getFullYear()} GrandInvite
