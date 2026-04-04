@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite â Dashboard Page (Server Component)
+//  GrandInvite – Dashboard Page (Server Component)
 //  src/app/[locale]/dashboard/page.tsx
 // ============================================================
 
@@ -20,11 +20,11 @@ export default async function DashboardPage({
   const tr = t(locale)
   const supabase = await createServerSupabaseClient()
 
-  // ââ ××××§×ª ×××ª× ×××§×¦×× ââ
+  // ── בדיקת אותנטיקציה ──
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/login`)
 
-  // ââ ××¢×× ×ª ××ª×× × ×©× ×××©×ª××© ââ
+  // ── טעינת חתונה של המשתמש ──
   const { data: wedding } = await supabase
     .from('weddings')
     .select('*')
@@ -33,10 +33,10 @@ export default async function DashboardPage({
 
   if (!wedding) redirect(`/${locale}/onboarding`)
 
-  // ââ ××¢×× ×ª ×××¨××× ââ
+  // ── טעינת אורחים ──
   const guests = await getGuestsByWeddingId(wedding.id) as Guest[]
 
-  // ââ ×××©×× ×¡××××¡×××§××ª ââ
+  // ── חישוב סטטיסטיקות ──
   const stats = {
     confirmed:  guests.filter(g => g.rsvp_status === 'confirmed'),
     declined:   guests.filter(g => g.rsvp_status === 'declined'),
@@ -49,31 +49,31 @@ export default async function DashboardPage({
 
   return (
     <main className="min-h-screen bg-stone-50">
-      {/* ââ Header ââ */}
+      {/* ── Header ── */}
       <header className="bg-white border-b border-stone-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <span className="font-cormorant text-2xl text-stone-800">
               GrandInvite
             </span>
-            <span className="text-stone-300 mx-3">Â·</span>
+            <span className="text-stone-300 mx-3">·</span>
             <span className="text-stone-500 text-sm">
               {wedding.bride_name} &amp; {wedding.groom_name}
             </span>
           </div>
 
           <div className="flex items-center gap-4">
-            {/* ×§××©××¨ ××¢××× ××××× × */}
+            {/* קישור לעמוד ההזמנה */}
             <a
               href={`/${locale}/${wedding.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-[#c9a84c] hover:underline tracking-wide"
             >
-              View Invitation â
+              View Invitation ↗
             </a>
 
-            {/* ×××××× */}
+            {/* לוגאוט */}
             <form action={`/api/auth/signout`} method="POST">
               <button
                 type="submit"
@@ -88,7 +88,7 @@ export default async function DashboardPage({
 
       <div className="max-w-7xl mx-auto px-6 py-10">
 
-        {/* ââ ×××ª×¨×ª ââ */}
+        {/* ── כותרת ── */}
         <div className="mb-10">
           <h1 className="section-title">{tr.dashboard.title}</h1>
           <p className="text-stone-400 text-sm mt-2">
@@ -96,11 +96,11 @@ export default async function DashboardPage({
               locale === 'he' ? 'he-IL' : locale === 'fr' ? 'fr-FR' : 'en-GB',
               { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
             )}
-            {wedding.venue_city && ` Â· ${wedding.venue_city}`}
+            {wedding.venue_city && ` · ${wedding.venue_city}`}
           </p>
         </div>
 
-        {/* ââ ××¨×××¡× ×¡××××¡×××§××ª ââ */}
+        {/* ── כרטיסי סטטיסטיקות ── */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
           <StatCard
             label={tr.dashboard.confirmed}
@@ -133,8 +133,7 @@ export default async function DashboardPage({
             bg="bg-stone-50"
           />
         </div>
-
-        {/* ×××××ª Freemium */}
+       {/* מגW�לת Freemium */}
         {wedding.plan === 'free' && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 flex items-center justify-between">
             <p className="text-amber-700 text-sm">
@@ -149,13 +148,13 @@ export default async function DashboardPage({
             </div>
             {stats.confirmed.length >= wedding.max_guests * 0.9 && (
               <span className="text-xs text-amber-700 font-medium">
-                Upgrade to Premium â
+                Upgrade to Premium →
               </span>
             )}
           </div>
         )}
 
-        {/* ââ ××××ª ×××¨××× (Client Component) ââ */}
+        {/* ── טבלת אורחים (Client Component) ── */}
         <DashboardClient
           guests={guests}
           weddingId={wedding.id}
@@ -164,7 +163,7 @@ export default async function DashboardPage({
         />
       </div>
 
-      {/* ââ AI Invitation Builder (floating widget) ââ */}
+      {/* ── AI Invitation Builder (floating widget) ── */}
       <AIInvitationChat
         locale={locale}
         weddingContext={{
@@ -179,7 +178,7 @@ export default async function DashboardPage({
   )
 }
 
-// ââ StatCard Component ââ
+// ── StatCard Component ──
 function StatCard({
   label,
   value,
@@ -192,7 +191,7 @@ function StatCard({
   bg: string
 }) {
   return (
-    <div className={`${bg} p-5 text-center`}>
+    <div className={`${'bq�} p-5 text-center`}>
       <p className={`font-cormorant text-4xl font-light ${color}`}>{value}</p>
       <p className="text-xs text-stone-400 tracking-widest uppercase mt-1">{label}</p>
     </div>
