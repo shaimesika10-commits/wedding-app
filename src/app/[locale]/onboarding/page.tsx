@@ -12,7 +12,7 @@ import type { Locale } from '@/lib/i18n'
 const labels = {
   fr: {
     title: 'Créez votre invitation',
-    subtitle: 'Quelques détails pour commencer',
+    subtitle: 'Quelques détails pour commencer',Page_Down
     step1: 'Les mariés',
     step2: 'La date & le lieu',
     step3: 'Préférences',
@@ -31,6 +31,7 @@ const labels = {
     back: 'Retour',
     create: 'Créer mon invitation',
     creating: 'Création en cours...',
+    multiLangNotice: 'Les invités verront cette invitation dans leur propre langue (français, hébreu ou anglais) automatiquement.',
     france: 'France',
     israel: 'Israël',
     other: 'Autre',
@@ -59,6 +60,7 @@ const labels = {
     back: 'חזרה',
     create: 'יצירת ההזמנה',
     creating: 'יוצר...',
+    multiLangNotice: 'האורחים יראו את ההזמנה בשפה שלהם (צרפתית, עברית או אנגלית) באופן אוטומטי.',
     france: 'צרפת',
     israel: 'ישראל',
     other: 'אחר',
@@ -87,6 +89,7 @@ const labels = {
     back: 'Back',
     create: 'Create my invitation',
     creating: 'Creating...',
+    multiLangNotice: 'Guests will see this invitation in their own language (French, Hebrew, or English) automatically.',
     france: 'France',
     israel: 'Israel',
     other: 'Other',
@@ -283,6 +286,7 @@ export default function OnboardingPage() {
                   <option value="he">{l.localeHe}</option>
                   <option value="en">{l.localeEn}</option>
                 </select>
+                <p className="mt-2 text-xs text-stone-400 leading-relaxed">🌍 {l.multiLangNotice}</p>
               </div>
               <div>
                 <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.welcomeMessage}</label>
