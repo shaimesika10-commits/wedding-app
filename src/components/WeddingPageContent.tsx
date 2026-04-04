@@ -82,7 +82,7 @@ export default function WeddingPageContent({
 
       try {
         const res = await fetch('/api/ai/translate', {
-    0     method: 'POST',
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             text: wedding.welcome_message,
@@ -188,7 +188,7 @@ export default function WeddingPageContent({
         </section>
       )}
 
-     0{/* ââ Schedule ââ */}
+      {/* ââ Schedule ââ */}
       {schedule.length > 0 && (
         <section className="bg-white py-20">
           <div className="max-w-4xl mx-auto px-6">
@@ -213,7 +213,7 @@ export default function WeddingPageContent({
                   </svg>
                   {tr.wedding.googleMaps}
                 </a>
- 0            )}
+              )}
               {wedding.waze_url && (
                 <a href={wedding.waze_url} target="_blank" rel="noopener noreferrer" className="btn-outline flex items-center gap-2">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -245,7 +245,7 @@ export default function WeddingPageContent({
                 {new Date(wedding.rsvp_deadline).toLocaleDateString(
                   locale === 'he' ? 'he-IL' : locale === 'fr' ? 'fr-FR' : 'en-GB',
                   { day: 'numeric', month: 'long', year: 'numeric' }
-             0  )}
+                )}
               </p>
             )}
             <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
@@ -254,9 +254,9 @@ export default function WeddingPageContent({
         </div>
       </section>
 
-    0{/* ââ Footer ââ */}
+      {/* ââ Footer ââ */}
       <footer className="py-10 text-center bg-stone-900 text-stone-400">
-        <p className="font-cormorant text-2xl t>ext-white mb-2">
+        <p className="font-cormorant text-2xl text-white mb-2">
           {wedding.bride_name} &amp; {wedding.groom_name}
         </p>
         <p className="text-xs tracking-widest uppercase text-[#c9a84c]">{weddingDateFormatted}</p>
