@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite â AI Invitation Builder Chat Widget
+//  GrandInvite – AI Invitation Builder Chat Widget
 //  src/components/AIInvitationChat.tsx
 // ============================================================
 
@@ -31,24 +31,24 @@ interface AIInvitationChatProps {
 const UI = {
   fr: {
     title: 'Assistant Invitation IA',
-    subtitle: 'DÃ©crivez votre rÃªve, je crÃ©e votre invitation',
-    placeholder: 'DÃ©crivez votre vision...',
+    subtitle: 'Décrivez votre rêve, je crée votre invitation',
+    placeholder: 'Décrivez votre vision...',
     send: 'Envoyer',
-    minimize: 'RÃ©duire',
+    minimize: 'Réduire',
     expand: 'Ouvrir l\'assistant IA',
-    applyBtn: 'Appliquer Ã  mon invitation â¨',
-    thinking: 'En train de rÃ©flÃ©chir...',
+    applyBtn: 'Appliquer à mon invitation ✨',
+    thinking: 'En train de réfléchir...',
     badge: 'IA',
   },
   he: {
-    title: '×¢×××¨ ×××× ××ª AI',
-    subtitle: '×ª××¨/× ××ª ××××× ×©××, ×× × ××× × ××ª ××××× ×',
-    placeholder: '×ª××¨/× ××ª ××××× ×©××...',
-    send: '×©××',
-    minimize: '×××¢××¨',
-    expand: '×¤×ª× ×¢×××¨ AI',
-    applyBtn: '××× ×¢× ××××× × ×©×× â¨',
-    thinking: '×××©×...',
+    title: 'עוזר הזמנות AI',
+    subtitle: 'תאר/י את החלום שלך, אני אבנה את ההזמנה',
+    placeholder: 'תאר/י את החזון שלך...',
+    send: 'שלח',
+    minimize: 'מזעור',
+    expand: 'פתח עוזר AI',
+    applyBtn: 'החל על ההזמנה שלי ✨',
+    thinking: 'חושב...',
     badge: 'AI',
   },
   en: {
@@ -58,7 +58,7 @@ const UI = {
     send: 'Send',
     minimize: 'Minimize',
     expand: 'Open AI Assistant',
-    applyBtn: 'Apply to my invitation â¨',
+    applyBtn: 'Apply to my invitation ✨',
     thinking: 'Thinking...',
     badge: 'AI',
   },
@@ -134,9 +134,9 @@ export default function AIInvitationChat({
         {
           role: 'assistant',
           content: locale === 'he'
-            ? '××¦××¢×¨/×ª, ×××¨×¢× ×©××××. × ×¡×/× ×©××.'
+            ? 'מצטער/ת, אירעה שגיאה. נסה/י שוב.'
             : locale === 'fr'
-            ? "DÃ©solÃ©, une erreur s'est produite. RÃ©essayez."
+            ? "Désolé, une erreur s'est produite. Réessayez."
             : 'Sorry, an error occurred. Please try again.',
         },
       ])
@@ -152,7 +152,7 @@ export default function AIInvitationChat({
     }
   }
 
-  // ââ Minimized button ââââââââââââââââââââââââââââââââââââââ
+  // ── Minimized button ──────────────────────────────────────
   if (!open) {
     return (
       <button
@@ -161,7 +161,7 @@ export default function AIInvitationChat({
         style={{ background: 'linear-gradient(135deg, #c9a84c, #a07830)' }}
         dir="ltr"
       >
-        <span style={{ fontSize: '1.1rem' }}>â¨</span>
+        <span style={{ fontSize: '1.1rem' }}>✨</span>
         <span>{l.expand}</span>
         <span
           className="px-1.5 py-0.5 rounded-md text-xs font-bold"
@@ -173,7 +173,7 @@ export default function AIInvitationChat({
     )
   }
 
-  // ââ Chat window âââââââââââââââââââââââââââââââââââââââââââ
+  // ── Chat window ───────────────────────────────────────────
   return (
     <div
       dir={isRTL ? 'rtl' : 'ltr'}
@@ -187,7 +187,7 @@ export default function AIInvitationChat({
       >
         <div>
           <div className="flex items-center gap-2">
-            <span style={{ fontSize: '1rem' }}>â¨</span>
+            <span style={{ fontSize: '1rem' }}>✨</span>
             <span className="text-white font-medium text-sm">{l.title}</span>
           </div>
           <p className="text-yellow-100 text-xs mt-0.5 opacity-80">{l.subtitle}</p>
@@ -196,7 +196,7 @@ export default function AIInvitationChat({
           onClick={() => setOpen(false)}
           className="text-white/70 hover:text-white transition text-xl leading-none"
         >
-          Ã
+          ×
         </button>
       </div>
 
@@ -246,9 +246,9 @@ export default function AIInvitationChat({
 
       {/* Generated invitation card */}
       {generatedInvitation && (
-        <div className="px-4 py-3 bg-yellow-50 border-t border-yellow-200">
+        <div className="px-4 py-3 bg-yellow-50 border-t border-zellow-200">
           <p className="text-xs text-yellow-700 font-medium mb-2">
-            {locale === 'he' ? 'â¨ ××××× × ×××× ×!' : locale === 'fr' ? 'â¨ Invitation gÃ©nÃ©rÃ©e !' : 'â¨ Invitation ready!'}
+            {locale === 'he' ? '✨ ההזמנה מוכנה!' : locale === 'fr' ? '✨ Invitation générée !' : '✨ Invitation ready!'}
           </p>
           <button
             onClick={() => onInvitationGenerated?.(generatedInvitation)}
