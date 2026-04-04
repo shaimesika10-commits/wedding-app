@@ -1,4 +1,4 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
@@ -22,7 +22,7 @@ export default async function WeddingPage({
 }: {
   params: { locale: Locale; wedding_slug: string }
 }) {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = await createServerSupabaseClient()
   const locale = params.locale as Locale
 
   const { data: wedding } = await supabase
