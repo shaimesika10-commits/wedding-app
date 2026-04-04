@@ -191,7 +191,7 @@ function StatCard({
   bg: string
 }) {
   return (
-    <div className={`${'bq�} p-5 text-center`}>
+    <div className={`${bg} p-5 text-center`}>
       <p className={`font-cormorant text-4xl font-light ${color}`}>{value}</p>
       <p className="text-xs text-stone-400 tracking-widest uppercase mt-1">{label}</p>
     </div>
