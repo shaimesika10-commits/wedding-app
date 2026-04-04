@@ -1,130 +1,253 @@
 'use client'
+
 import { useState } from 'react'
 import type { Locale } from '@/lib/i18n'
 
-type RSVPStatus = 'confirmed' | 'declined' | null
-
-interface Props {
-  weddingId: string
-  locale: Locale
-  t: Record<string, string>
-  maxGuests: number
+interface CustomField {
+  id: string
+  label: string
+  type: 'text' | 'select' | 'boolean'
+  required: boolean
+  options?: string
 }
 
-export default function RSVPForm({ weddingId, locale, t, maxGuests }: Props) {
-  const [status, setStatus] = useState<RSVPStatus>(null)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [adults, setAdults] = useState(1)
-  const [children, setChildren] = useState(0)
-  const [dietary, setDietary] = useState('')
-  const [allergies, setAllergies] = useState('')
-  const [notes, setNotes] = useState('')
+interface RSVPFormProps {
+  weddingId: string
+  locale: Locale
+  hasBrunch?: boolean
+  rsvpDeadline?: string | null
+  customFields?: CustomField[]
+}
+
+const l = {
+  fr: {
+    title: 'Confirmer ma présence',
+    name: 'Votre prénom et nom',
+    email: 'Email (facultatif)',
+    phone: 'Téléphone (facultatif)',
+    adults: 'Nombre d'adultes',
+    children: 'Nombre d'enfants',
+    diet: 'Régime alimentaire',
+    dietOpts: ['Aucun', 'Végétarien', 'Vegan', 'Halal', 'Casher', 'Sans gluten'],
+    allergies: 'Allergies',
+    notes: 'Autre / Remarques',
+    brunchQ: 'Serez-vous présent(e) au brunch le lendemain ?',
+    yes: 'Oui', no: 'Non',
+    confirm: 'Confirmer', decline: 'Décliner',
+    submit: 'Envoyer',
+    submitting: 'Envoi...',
+    success: 'Merci ! Votre réponse a été enregistrée.',
+    error: 'Une erreur est survenue. Veuillez réessayer.',
+    deadline: 'Date limite :',
+    attending: 'Je serai présent(e)',
+    notAttending: 'Je ne pourrai pas venir',
+  },
+  he: {
+    title: 'אישור הגעה',
+    name: 'שם מלא',
+    email: 'אימייל (אופציונלי)',
+    phone: 'טלפון (אופציונלי)',
+    adults: 'מספר מבוגרים',
+    children: 'מספר ילדים',
+    diet: 'העדפות תזונתיות',
+    dietOpts: ['ללא', 'צמחוני', 'טבעוני', 'חלאל', 'כשר', 'ללא גלוטן'],
+    allergies: 'אלרגיות',
+    notes: 'אחר / הערות נוספות',
+    brunchQ: 'האם תגיעו לבראנץ׳ למחרת?',
+    yes: 'כן', no: 'לא',
+    confirm: 'מאשר הגעה', decline: 'לא מגיע',
+    submit: 'שלח',
+    submitting: 'שולח...',
+    success: 'תודה! תגובתך נרשמה.',
+    error: 'אירעה שגיאה. נסה שוב.',
+    deadline: 'תאריך אחרון:',
+    attending: 'מגיע/ה',
+    notAttending: 'לא מגיע/ה',
+  },
+  en: {
+    title: 'RSVP',
+    name: 'Full name',
+    email: 'Email (optional)',
+    phone: 'Phone (optional)',
+    adults: 'Number of adults',
+    children: 'Number of children',
+    diet: 'Dietary preference',
+    dietOpts: ['None', 'Vegetarian', 'Vegan', 'Halal', 'Kosher', 'Gluten-free'],
+    allergies: 'Allergies',
+    notes: 'Other / Additional notes',
+    brunchQ: 'Will you join us for brunch the next day?',
+    yes: 'Yes', no: 'No',
+    confirm: 'Confirm attendance', decline: 'Decline',
+    submit: 'Submit',
+    submitting: 'Submitting...',
+    success: 'Thank you! Your response has been recorded.',
+    error: 'An error occurred. Please try again.',
+    deadline: 'RSVP by:',
+    attending: 'Attending',
+    notAttending: 'Not attending',
+  },
+}
+
+export default function RSVPForm({ weddingId, locale, hasBrunch, rsvpDeadline, customFields = [] }: RSVPFormProps) {
+  const labels = l[locale] || l.fr
+  const isRtl = locale === 'he'
+
+  const [attending, setAttending] = useState<boolean | null>(null)
+  const [form, setForm] = useState({
+    name: '', email: '', phone: '',
+    adults_count: 1, children_count: 0,
+    dietary_preferences: '', allergies: '', notes: '',
+    brunch_attending: null as boolean | null,
+  })
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({})
+  const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [success, setSuccess] = useState<'confirmed' | 'declined' | null>(null)
   const [error, setError] = useState('')
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!status) return
-    setSubmitting(true)
-    setError('')
+  const set = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }))
+
+  const handleSubmit = async () => {
+    if (!form.name || attending === null) return
+    setSubmitting(true); setError('')
     try {
       const res = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wedding_id: weddingId, name, email, phone, adults_count: adults, children_count: children, dietary_preferences: dietary, allergies, notes, rsvp_status: status }),
+        body: JSON.stringify({
+          wedding_id: weddingId,
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          adults_count: form.adults_count,
+          children_count: form.children_count,
+          dietary_preferences: form.dietary_preferences,
+          allergies: form.allergies,
+          notes: Object.entries(customAnswers).map(([k,v]) => `${k}: ${v}`).join('\n') + (form.notes ? '\n' + form.notes : ''),
+          rsvp_status: attending ? 'confirmed' : 'declined',
+          brunch_attending: form.brunch_attending,
+        })
       })
-      const data = await res.json()
-      if (!res.ok) { setError(data.error ?? t.error); return }
-      setSuccess(status)
-    } catch { setError(t.error) }
-    finally { setSubmitting(false) }
+      if (!res.ok) throw new Error('error')
+      setSubmitted(true)
+    } catch { setError(labels.error) }
+    setSubmitting(false)
   }
 
-  if (success) {
+  const inputClass = "w-full border border-stone-200 rounded px-4 py-3 text-stone-700 focus:outline-none focus:border-stone-400 text-sm font-montserrat bg-white"
+  const labelClass = "block text-xs text-stone-400 mb-1 tracking-widest uppercase font-montserrat"
+
+  if (submitted) {
     return (
-      <div className="text-center py-12 fade-in">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: success === 'confirmed' ? '#ecfdf5' : '#fef2f2' }}>
-          <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke={success === 'confirmed' ? '#059669' : '#ef4444'}>
-            {success === 'confirmed'
-              ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
-              : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-            }
-          </svg>
+      <section className="py-20 px-4 text-center" dir={isRtl ? 'rtl' : 'ltr'}>
+        <div className="max-w-md mx-auto">
+          <div className="text-4xl mb-4">✓</div>
+          <p className="font-cormorant text-2xl text-stone-800 mb-2">{labels.success}</p>
         </div>
-        <h3 className="font-cormorant text-2xl text-stone-800 mb-3">{success === 'confirmed' ? t.successConfirm : t.successDecline}</h3>
-      </div>
+      </section>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div>
-        <p className="text-center text-sm text-stone-500 tracking-wide mb-4">{t.attending}</p>
-        <div className="grid grid-cols-2 gap-3">
-          <button type="button" onClick={() => setStatus('confirmed')}
-            className={`py-4 border text-sm font-medium tracking-wide transition-all ${
-              status === 'confirmed' ? 'bg-[#c9a84c] border-[#c9a84c] text-white' : 'border-stone-200 text-stone-600 hover:border-[#c9a84c]'
-            }`}>{t.yes}</button>
-          <button type="button" onClick={() => setStatus('declined')}
-            className={`py-4 border text-sm font-medium tracking-wide transition-all ${
-              status === 'declined' ? 'bg-stone-800 border-stone-800 text-white' : 'border-stone-200 text-stone-600 hover:border-stone-400'
-            }`}>{t.no}</button>
-        </div>
-      </div>
+    <section id="rsvp" className="py-16 px-4 bg-white" dir={isRtl ? 'rtl' : 'ltr'}>
+      <div className="max-w-lg mx-auto">
+        <h2 className="text-3xl font-cormorant text-stone-800 text-center mb-2">{labels.title}</h2>
+        {rsvpDeadline && (
+          <p className="text-xs text-stone-400 font-montserrat text-center mb-8">
+            {labels.deadline} {new Date(rsvpDeadline).toLocaleDateString()}
+          </p>
+        )}
 
-      {status && (
-        <div className="space-y-5 fade-in">
-          <div>
-            <label className="block text-xs text-stone-400 tracking-widest uppercase mb-2">{t.name} *</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder={t.namePlaceholder} className="input-grand" />
-          </div>
-
-          {status === 'confirmed' && (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-stone-400 tracking-widest uppercase mb-2">{t.adults}</label>
-                  <input type="number" min={1} max={20} value={adults} onChange={e => setAdults(+e.target.value)} className="input-grand" />
-                </div>
-                <div>
-                  <label className="block text-xs text-stone-400 tracking-widest uppercase mb-2">{t.children}</label>
-                  <input type="number" min={0} max={20} value={children} onChange={e => setChildren(+e.target.value)} className="input-grand" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs text-stone-400 tracking-widest uppercase mb-2">{t.dietary}</label>
-                <input type="text" value={dietary} onChange={e => setDietary(e.target.value)} placeholder={t.dietaryPlaceholder} className="input-grand" />
-              </div>
-              <div>
-                <label className="block text-xs text-stone-400 tracking-widest uppercase mb-2">{t.allergies}</label>
-                <input type="text" value={allergies} onChange={e => setAllergies(e.target.value)} placeholder={t.allergiesPlaceholder} className="input-grand" />
-              </div>
-            </>
-          )}
-
-          <div>
-            <label className="block text-xs text-stone-400 tracking-widest uppercase mb-2">{t.email}</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="marie@example.com" className="input-grand" />
-          </div>
-          <div>
-            <label className="block text-xs text-stone-400 tracking-widest uppercase mb-2">{t.notes}</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder={t.notesPlaceholder} rows={3}
-              className="w-full px-4 py-3 bg-transparent border-b border-stone-300 focus:border-[#c9a84c] focus:outline-none text-stone-800 placeholder-stone-400 transition-colors resize-none" />
-          </div>
-
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-          <button type="submit" disabled={submitting || !name}
-            className={`w-full py-4 text-sm font-medium tracking-widest uppercase transition-all ${
-              status === 'confirmed' ? 'btn-gold' : 'btn-outline'
-            } ${submitting || !name ? 'opacity-50 cursor-not-allowed' : ''}`}>
-            {submitting ? t.submitting : status === 'confirmed' ? t.confirm : t.decline}
+        {/* Attending toggle */}
+        <div className="flex gap-3 mb-8">
+          <button onClick={() => setAttending(true)}
+            className={`flex-1 py-3 text-sm font-montserrat tracking-widest uppercase border-2 transition ${attending === true ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 text-stone-500 hover:border-stone-400'}`}>
+            {labels.attending}
+          </button>
+          <button onClick={() => setAttending(false)}
+            className={`flex-1 py-3 text-sm font-montserrat tracking-widest uppercase border-2 transition ${attending === false ? 'border-stone-400 bg-stone-100 text-stone-600' : 'border-stone-200 text-stone-500 hover:border-stone-400'}`}>
+            {labels.notAttending}
           </button>
         </div>
-      )}
-    </form>
+
+        {attending !== null && (
+          <div className="space-y-5">
+            <div><label className={labelClass}>{labels.name} *</label><input className={inputClass} value={form.name} onChange={e => set('name', e.target.value)} /></div>
+            <div><label className={labelClass}>{labels.email}</label><input type="email" className={inputClass} value={form.email} onChange={e => set('email', e.target.value)} /></div>
+            <div><label className={labelClass}>{labels.phone}</label><input type="tel" className={inputClass} value={form.phone} onChange={e => set('phone', e.target.value)} /></div>
+
+            {attending && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className={labelClass}>{labels.adults}</label>
+                    <input type="number" min={1} max={20} className={inputClass} value={form.adults_count} onChange={e => set('adults_count', parseInt(e.target.value) || 1)} />
+                  </div>
+                  <div><label className={labelClass}>{labels.children}</label>
+                    <input type="number" min={0} max={20} className={inputClass} value={form.children_count} onChange={e => set('children_count', parseInt(e.target.value) || 0)} />
+                  </div>
+                </div>
+                <div><label className={labelClass}>{labels.diet}</label>
+                  <select className={inputClass} value={form.dietary_preferences} onChange={e => set('dietary_preferences', e.target.value)}>
+                    {labels.dietOpts.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div><label className={labelClass}>{labels.allergies}</label><input className={inputClass} value={form.allergies} onChange={e => set('allergies', e.target.value)} /></div>
+
+                {/* Custom fields */}
+                {customFields.map(field => (
+                  <div key={field.id}>
+                    <label className={labelClass}>{field.label}{field.required ? ' *' : ''}</label>
+                    {field.type === 'text' && (
+                      <input className={inputClass} value={customAnswers[field.label] || ''} onChange={e => setCustomAnswers(prev => ({ ...prev, [field.label]: e.target.value }))} />
+                    )}
+                    {field.type === 'select' && (
+                      <select className={inputClass} value={customAnswers[field.label] || ''} onChange={e => setCustomAnswers(prev => ({ ...prev, [field.label]: e.target.value }))}>
+                        <option value="">—</option>
+                        {(field.options || '').split(',').map(o => o.trim()).filter(Boolean).map(opt => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    )}
+                    {field.type === 'boolean' && (
+                      <div className="flex gap-3">
+                        {[labels.yes, labels.no].map(val => (
+                          <button key={val} type="button" onClick={() => setCustomAnswers(prev => ({ ...prev, [field.label]: val }))}
+                            className={`flex-1 py-2 text-sm font-montserrat border-2 transition ${customAnswers[field.label] === val ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 text-stone-500 hover:border-stone-300'}`}>
+                            {val}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Brunch */}
+                {hasBrunch && (
+                  <div>
+                    <label className={labelClass}>{labels.brunchQ}</label>
+                    <div className="flex gap-3">
+                      {[{ val: true, lbl: labels.yes }, { val: false, lbl: labels.no }].map(({ val, lbl }) => (
+                        <button key={String(val)} type="button" onClick={() => set('brunch_attending', val)}
+                          className={`flex-1 py-2 text-sm font-montserrat border-2 transition ${form.brunch_attending === val ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-200 text-stone-500 hover:border-stone-300'}`}>
+                          {lbl}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div><label className={labelClass}>{labels.notes}</label><textarea className={inputClass + ' h-24 resize-none'} value={form.notes} onChange={e => set('notes', e.target.value)} /></div>
+
+            {error && <p className="text-red-500 text-sm font-montserrat">{error}</p>}
+
+            <button onClick={handleSubmit} disabled={submitting || !form.name}
+              className="w-full bg-stone-800 text-white py-4 font-montserrat text-sm tracking-widest uppercase hover:bg-stone-700 transition disabled:opacity-40">
+              {submitting ? labels.submitting : labels.submit}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
