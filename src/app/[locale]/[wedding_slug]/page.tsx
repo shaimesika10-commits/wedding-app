@@ -31,7 +31,7 @@ export default async function WeddingPage({
 
   const { data: wedding } = await supabase
     .from('weddings')
-    .select('*')
+    .select('*, event_schedule(*)')
     .eq('slug', wedding_slug)
     .single()
 
