@@ -14,7 +14,25 @@ export type GuestRow = Database['public']['Tables']['guests']['Row']
 export type GalleryPhotoRow = Database['public']['Tables']['gallery_photos']['Row']
 
 export type WeddingWithSchedule = WeddingRow & {
+  import { createClient } from '@supabase/supabase-js'
   event_schedule: EventScheduleRow[]
+}
+
+/**
+ * Admin client — uses the service role key to bypass RLS.
+ * Only use in trusted server-side API routes that perform their own
+ * ownership/permission checks before calling this.
+ */
+export function createAdminSupabaseClient() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceRoleKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set. Add it to your environment variables.')
+  }
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    serviceRoleKey,
+    { auth: { persistSession: false } }
+  )
 }
 
 export async function createServerSupabaseClient() {
