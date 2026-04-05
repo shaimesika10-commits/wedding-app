@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite – Wedding Page Content (Client Component)
+//  GrandInvite â Wedding Page Content (Client Component)
 //  Handles language switching + AI translation for guests
 //  src/components/WeddingPageContent.tsx
 // ============================================================
@@ -103,18 +103,18 @@ export default function WeddingPageContent({
   return (
     <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#faf8f5]">
 
-      {/* ── Floating Language Switcher ── */}
+      {/* ââ Floating Language Switcher ââ */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
         {isPending && (
           <span className="text-xs text-stone-400 animate-pulse mx-1">
-            {locale === 'he' ? 'מתרגם...' : locale === 'fr' ? '...' : '...'}
+            {locale === 'he' ? '××ª×¨××...' : locale === 'fr' ? '...' : '...'}
           </span>
         )}
         {(['fr', 'he', 'en'] as const).map(lang => (
           <button
             key={lang}
             onClick={() => switchLanguage(lang)}
-            title={lang === 'fr' ? 'Français' : lang === 'he' ? 'עברית' : 'English'}
+            title={lang === 'fr' ? 'FranÃ§ais' : lang === 'he' ? '×¢××¨××ª' : 'English'}
             className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
             style={{
               background: locale === lang ? '#c9a84c' : 'transparent',
@@ -127,7 +127,7 @@ export default function WeddingPageContent({
         ))}
       </div>
 
-      {/* ── Hero ── */}
+      {/* ââ Hero ââ */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {wedding.cover_image_url ? (
           <div
@@ -162,7 +162,7 @@ export default function WeddingPageContent({
           {wedding.venue_name && (
             <p className="text-stone-300 text-base mt-2 font-light">
               {wedding.venue_name}
-              {wedding.venue_city ? ` · ${wedding.venue_city}` : ''}
+              {wedding.venue_city ? ` Â· ${wedding.venue_city}` : ''}
             </p>
           )}
 
@@ -174,21 +174,21 @@ export default function WeddingPageContent({
         </div>
       </section>
 
-      {/* ── Welcome Message ── */}
+      {/* ââ Welcome Message ââ */}
       {welcomeMsg && (
         <section className="max-w-2xl mx-auto px-6 py-20 text-center">
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
           <p
             className="font-cormorant text-xl md:text-2xl text-stone-600 font-light leading-relaxed italic transition-opacity duration-500"
             style={{ opacity: isPending ? 0.4 : 1 }}
           >
             {welcomeMsg}
           </p>
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
         </section>
       )}
 
-      {/* ── Schedule ── */}
+      {/* ââ Schedule ââ */}
       {schedule.length > 0 && (
         <section className="bg-white py-20">
           <div className="max-w-4xl mx-auto px-6">
@@ -198,7 +198,7 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* ── Venue ── */}
+      {/* ââ Venue ââ */}
       {(wedding.venue_name || wedding.google_maps_url || wedding.waze_url) && (
         <section className="py-20 px-6 bg-stone-50">
           <div className="max-w-4xl mx-auto text-center">
@@ -227,16 +227,16 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* ── Gallery ── */}
+      {/* ââ Gallery ââ */}
       <section className="bg-[#faf8f5]">
         <GallerySection weddingId={wedding.id} locale={locale} initialPhotos={galleryPhotos} />
       </section>
 
-      {/* ── RSVP ── */}
+      {/* ââ RSVP ââ */}
       <section id="rsvp" className="py-24 px-6 bg-white">
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-12">
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
             <h2 className="section-title mb-3">{tr.rsvp.title}</h2>
             <p className="text-stone-500 font-light">{tr.rsvp.subtitle}</p>
             {wedding.rsvp_deadline && (
@@ -248,13 +248,13 @@ export default function WeddingPageContent({
                 )}
               </p>
             )}
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
           </div>
           <RSVPForm weddingId={wedding.id} locale={locale} t={tr.rsvp} maxGuests={wedding.max_guests} />
         </div>
       </section>
 
-      {/* ── Footer ── */}
+      {/* ââ Footer ââ */}
       <footer className="py-10 text-center bg-stone-900 text-stone-400">
         <p className="font-cormorant text-2xl text-white mb-2">
           {wedding.bride_name} &amp; {wedding.groom_name}
@@ -263,6 +263,14 @@ export default function WeddingPageContent({
         <p className="text-xs mt-6 text-stone-600">
           Powered by <span className="text-[#c9a84c]">GrandInvite</span>
         </p>
+        {/* Host-only management link */}
+        <a
+          href={`/${locale}/login`}
+          className="inline-block mt-4 text-[10px] tracking-widest text-stone-700 hover:text-[#c9a84c] transition-colors uppercase"
+          title={locale === 'he' ? 'כניסת מארחים' : locale === 'fr' ? 'Accès organisateurs' : 'Host login'}
+        >
+          ⚙ {locale === 'he' ? 'ניהול' : locale === 'fr' ? 'Gestion' : 'Manage'}
+        </a>
       </footer>
     </main>
   )
