@@ -1,6 +1,14 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "name": "GrandInvite",
+  "short_name": "GrandInvite",
+  "description": "Luxury digital wedding invitations — RSVP management for couples",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#c9a84c",
+  "background_color": "#faf8f5",
+  "categories": ["lifestyle", "utilities"],
+  "lang": "fr",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +18,25 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "maskable any"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "maskable any"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "shortcuts": [
+    {
+      "name": "Mon tableau de bord",
+      "short_name": "Dashboard",
+      "description": "Gérer mes invités",
+      "url": "/fr/dashboard",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }
