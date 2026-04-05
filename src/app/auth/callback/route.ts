@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     }
   )
 
-  // Handle Magic Link (token_hash flow)
+  // Handle Magic Link / Email Confirmation / Password Recovery (token_hash flow)
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({
       type: type as 'magiclink' | 'recovery' | 'invite' | 'email',
@@ -53,6 +53,11 @@ export async function GET(request: NextRequest) {
     })
 
     if (!error) {
+      // איפוס סיסמה → מעביר לדף הגדרת סיסמה חדשה
+      if (type === 'recovery') {
+        const resetUrl = new URL(`/${locale}/reset-password`, requestUrl.origin)
+        return NextResponse.redirect(resetUrl)
+      }
       return NextResponse.redirect(dashboardUrl)
     }
 
