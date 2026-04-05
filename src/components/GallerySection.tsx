@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import type { GalleryPhoto } from '@/types'
 // ============================================================
 //  GrandInvite – Gallery Section Component
 //  גלריית תמונות שיתופית עם אפשרות להעלאה
