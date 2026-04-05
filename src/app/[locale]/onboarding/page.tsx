@@ -1,7 +1,7 @@
 'use client'
 // ============================================================
-//  GrandInvite â Onboarding Pageh
-//  (××¦××¨×ª ××ª×× × ×¨××©×× × ×××× ×××©)
+//  GrandInvite – Onboarding Page
+//  (יצירת חתונה ראשונה לזוג חדש)
 //  src/app/[locale]/onboarding/page.tsx
 // ============================================================
 
@@ -12,62 +12,64 @@ import type { Locale } from '@/lib/i18n'
 
 const labels = {
   fr: {
-    title: 'CrÃ©ez votre invitation',
-    subtitle: 'Quelques dÃ©tails pour commencer',
+    title: 'Créez votre invitation',
+    subtitle: 'Quelques détails pour commencer',
     chooseLanguage: 'Choisissez votre langue',
-    step1: 'Les mariÃ©s',
+    step1: 'Les mariés',
     step2: 'La date & le lieu',
-    step3: 'PrÃ©fÃ©rences',
-    brideName: 'PrÃ©nom de la mariÃ©e',
-    groomName: 'PrÃ©nom du mariÃ©',
+    step3: 'Préférences',
+    brideName: 'Prénom de la mariée',
+    groomName: 'Prénom du marié',
     weddingDate: 'Date du mariage',
-    venueName: 'Nom du lieu de rÃ©ception',
+    venueName: 'Nom du lieu de réception',
     venueAddress: 'Adresse',
     venueCity: 'Ville',
     venueCountry: 'Pays',
-    locale: 'Langue de l\'invitation',
-    rsvpDeadline: 'Date limite de rÃ©ponse',
+    locale: "Langue de l'invitation",
+    rsvpDeadline: 'Date limite de réponse',
     welcomeMessage: 'Message de bienvenue',
-    welcomePlaceholder: 'Nous sommes ravis de vous inviter Ã  notre mariage...',
+    welcomePlaceholder: 'Nous sommes ravis de vous inviter à notre mariage...',
     next: 'Continuer',
     back: 'Retour',
-    create: 'CrÃ©er mon invitation',
-    creating: 'CrÃ©ation en cours...',
+    create: 'Créer mon invitation',
+    creating: 'Création en cours...',
     france: 'France',
-    israel: 'IsraÃ«l',
+    israel: 'Israël',
     other: 'Autre',
-    localeFr: 'FranÃ§ais',
-    localeHe: 'HÃ©breu',
+    localeFr: 'Français',
+    localeHe: 'Hébreu',
     localeEn: 'Anglais',
+    errorCreate: 'Erreur lors de la création. Veuillez réessayer.',
   },
   he: {
-    title: '××¦××¨×ª ××××× × ×©×××',
-    subtitle: '××× ×¤×¨××× ××× ×××ª×××',
-    chooseLanguage: '×××¨× ××ª ××©×¤× ×©×××',
-    step1: '××××',
-    step2: '×ª××¨×× ××××§××',
-    step3: '××¢××¤××ª',
-    brideName: '×©× ××××',
-    groomName: '×©× ×××ª×',
-    weddingDate: '×ª××¨×× ×××ª×× ×',
-    venueName: '×©× ××××× / ×××§××',
-    venueAddress: '××ª×××ª',
-    venueCity: '×¢××¨',
-    venueCountry: '×××× ×',
-    locale: '×©×¤×ª ××××× ×',
-    rsvpDeadline: '×ª××¨×× ×××¨×× ××××©××¨',
-    welcomeMessage: '××××¢×ª ×¤×ª×××',
-    welcomePlaceholder: '×× × ×©×××× ×××××× ×× ××××× ×××ª× ×...',
-    next: '×××©×',
-    back: '×××¨×',
-    create: '××¦××¨×ª ××××× ×',
-    creating: '×××¦×¨...',
-    france: '×¦×¨×¤×ª',
-    israel: '××©×¨××',
-    other: '×××¨',
-    localeFr: '×¦×¨×¤×ª××ª',
-    localeHe: '×¢××¨××ª',
-    localeEn: '×× ××××ª',
+    title: 'יצירת ההזמנה שלכם',
+    subtitle: 'כמה פרטים כדי להתחיל',
+    chooseLanguage: 'בחרו את השפה שלכם',
+    step1: 'הזוג',
+    step2: 'תאריך ומיקום',
+    step3: 'העדפות',
+    brideName: 'שם הכלה',
+    groomName: 'שם החתן',
+    weddingDate: 'תאריך החתונה',
+    venueName: 'שם האולם / המקום',
+    venueAddress: 'כתובת',
+    venueCity: 'עיר',
+    venueCountry: 'מדינה',
+    locale: 'שפת ההזמנה',
+    rsvpDeadline: 'תאריך אחרון לאישור',
+    welcomeMessage: 'הודעת פתיחה',
+    welcomePlaceholder: 'אנו שמחים להזמינכם לחגוג איתנו...',
+    next: 'המשך',
+    back: 'חזרה',
+    create: 'יצירת ההזמנה',
+    creating: 'יוצר...',
+    france: 'צרפת',
+    israel: 'ישראל',
+    other: 'אחר',
+    localeFr: 'צרפתית',
+    localeHe: 'עברית',
+    localeEn: 'אנגלית',
+    errorCreate: 'שגיאה ביצירת ההזמנה. נסה שוב.',
   },
   en: {
     title: 'Create your invitation',
@@ -76,8 +78,8 @@ const labels = {
     step1: 'The couple',
     step2: 'Date & venue',
     step3: 'Preferences',
-    brideName: 'Bride\'s first name',
-    groomName: 'Groom\'s first name',
+    brideName: "Bride's first name",
+    groomName: "Groom's first name",
     weddingDate: 'Wedding date',
     venueName: 'Venue name',
     venueAddress: 'Address',
@@ -93,23 +95,18 @@ const labels = {
     creating: 'Creating...',
     france: 'France',
     israel: 'Israel',
-    usa: 'United States',
-    uk: 'United Kingdom',
-    belgium: 'Belgium',
-    switzerland: 'Switzerland',
-    canada: 'Canada',
-    morocco: 'Morocco',
     other: 'Other',
     localeFr: 'French',
     localeHe: 'Hebrew',
     localeEn: 'English',
+    errorCreate: 'Error creating invitation. Please try again.',
   },
 }
 
 const LANGUAGES: { code: Locale; flag: string; label: string; nativeLabel: string; dir: 'ltr' | 'rtl' }[] = [
-  { code: 'fr', flag: 'ð«ð·', label: 'FranÃ§ais',  nativeLabel: 'French',  dir: 'ltr' },
-  { code: 'he', flag: 'ð®ð±', label: '×¢××¨××ª',     nativeLabel: 'Hebrew',  dir: 'rtl' },
-  { code: 'en', flag: 'ð¬ð§', label: 'English',   nativeLabel: 'English', dir: 'ltr' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français',  nativeLabel: 'French',  dir: 'ltr' },
+  { code: 'he', flag: '🇮🇱', label: 'עברית',     nativeLabel: 'Hebrew',  dir: 'rtl' },
+  { code: 'en', flag: '🇬🇧', label: 'English',   nativeLabel: 'English', dir: 'ltr' },
 ]
 
 function slugify(bride: string, groom: string, date: string): string {
@@ -139,6 +136,8 @@ export default function OnboardingPage() {
   const [error, setError] = useState('')
 
   const l = labels[locale] ?? labels.fr
+  // Only apply RTL direction from step 1 onwards — applying dir change at step 0 causes
+  // a layout shift mid-click that requires a double-click to advance (browser click-cancel bug)
   const isRTL = locale === 'he' && step > 0
 
   const [form, setForm] = useState({
@@ -168,7 +167,6 @@ export default function OnboardingPage() {
       venue_country: lang === 'he' ? 'Israel' : 'France',
     }))
     // Update URL without full reload so back-button works correctly
-    router.replace(`/${lang}/onboarding`, { scroll: false })
     setStep(1)
   }
 
@@ -182,37 +180,50 @@ export default function OnboardingPage() {
       return
     }
 
-    const slug = slugify(form.bride_name, form.groom_name, form.wedding_date)
+    const baseSlug = slugify(form.bride_name, form.groom_name, form.wedding_date)
+    const weddingData = {
+      user_id: user.id,
+      bride_name: form.bride_name.trim(),
+      groom_name: form.groom_name.trim(),
+      wedding_date: form.wedding_date,
+      venue_name: form.venue_name.trim() || null,
+      venue_address: form.venue_address.trim() || null,
+      venue_city: form.venue_city.trim() || null,
+      venue_country: form.venue_country,
+      locale: form.invitation_locale,
+      rsvp_deadline: form.rsvp_deadline || null,
+      welcome_message: form.welcome_message.trim() || null,
+      max_guests: 200,
+      plan: 'free',
+      is_active: true,
+    }
 
-    const { error: insertError } = await supabase
-      .from('weddings')
-      .insert({
-        user_id: user.id,
-        slug,
-        bride_name: form.bride_name.trim(),
-        groom_name: form.groom_name.trim(),
-        wedding_date: form.wedding_date,
-        venue_name: form.venue_name.trim() || null,
-        venue_address: form.venue_address.trim() || null,
-        venue_city: form.venue_city.trim() || null,
-        venue_country: form.venue_country,
-        locale: form.invitation_locale,
-        rsvp_deadline: form.rsvp_deadline || null,
-        welcome_message: form.welcome_message.trim() || null,
-        max_guests: 200,
-        plan: 'free',
-        is_active: true,
-      })
-      .select()
-      .single()
+    // Retry with numeric suffix if slug already exists (unique constraint)
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const slug = attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`
+      const { error: insertError } = await supabase
+        .from('weddings')
+        .insert({ ...weddingData, slug })
+        .select()
+        .single()
 
-    if (insertError) {
+      if (!insertError) {
+        router.push(`/${locale}/dashboard`)
+        return
+      }
+
+      // Duplicate slug — retry with next suffix
+      if (insertError.code === '23505') continue
+
+      // Any other error — show and abort
       setError(insertError.message)
       setLoading(false)
       return
     }
 
-    router.push(`/${locale}/dashboard`)
+    // Exhausted all attempts
+    setError(l.errorCreate)
+    setLoading(false)
   }
 
   const inputCls =
@@ -226,27 +237,21 @@ export default function OnboardingPage() {
     >
       <div className="w-full max-w-lg">
 
-        {/* ââ Logo ââ */}
+        {/* ── Logo ── */}
         <div className="text-center mb-8">
-          <a
-            href={`/${locale}`}
-            className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-[#c9a84c] transition-colors tracking-wide uppercase mb-4 no-underline"
-          >
-            ← {locale === 'he' ? 'דף הבית' : locale === 'fr' ? 'Accueil' : 'Home'}
-          </a>
           <h1 className="font-cormorant text-4xl font-light text-stone-900 tracking-widest mb-2">
             Grand<span style={{ color: '#c9a84c' }}>Invite</span>
           </h1>
           <div className="h-px w-16 mx-auto my-4" style={{ background: '#c9a84c' }} />
         </div>
 
-        {/* ââââââââââââââââââââââââââââââââââââââââââââââ
-            STEP 0 â Language selector
-        ââââââââââââââââââââââââââââââââââââââââââââââ */}
+        {/* ══════════════════════════════════════════════
+            STEP 0 — Language selector
+        ══════════════════════════════════════════════ */}
         {step === 0 && (
           <div className="text-center">
             <p className="text-stone-400 text-xs uppercase tracking-widest mb-8">
-              Choose your language Â· Choisissez votre langue Â· ×××¨× ×©×¤×
+              Choose your language · Choisissez votre langue · בחרו שפה
             </p>
 
             <div className="space-y-3">
@@ -273,9 +278,9 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* ââââââââââââââââââââââââââââââââââââââââââââââ
-            STEPS 1-3 â Form
-        ââââââââââââââââââââââââââââââââââââââââââââââ */}
+        {/* ══════════════════════════════════════════════
+            STEPS 1-3 — Form
+        ══════════════════════════════════════════════ */}
         {step > 0 && (
           <>
             {/* Progress indicator */}
@@ -301,7 +306,7 @@ export default function OnboardingPage() {
               ))}
             </div>
 
-            {/* Language badge â lets them go back and change */}
+            {/* Language badge — lets them go back and change */}
             <div className="flex justify-center mb-4">
               <button
                 onClick={() => setStep(0)}
@@ -323,7 +328,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* ââ Step 1: The couple ââ */}
+              {/* ── Step 1: The couple ── */}
               {step === 1 && (
                 <div className="space-y-5">
                   <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">
@@ -369,7 +374,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* ââ Step 2: Date & Venue ââ */}
+              {/* ── Step 2: Date & Venue ── */}
               {step === 2 && (
                 <div className="space-y-5">
                   <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">
@@ -400,7 +405,7 @@ export default function OnboardingPage() {
                       value={form.venue_name}
                       onChange={handleChange}
                       className={inputCls}
-                      placeholder="ChÃ¢teau de Versailles"
+                      placeholder="Château de Versailles"
                     />
                   </div>
 
@@ -429,12 +434,6 @@ export default function OnboardingPage() {
                       >
                         <option value="France">{l.france}</option>
                         <option value="Israel">{l.israel}</option>
-                        <option value="United States">{l.usa}</option>
-                        <option value="United Kingdom">{l.uk}</option>
-                        <option value="Belgium">{l.belgium}</option>
-                        <option value="Switzerland">{l.switzerland}</option>
-                        <option value="Canada">{l.canada}</option>
-                        <option value="Morocco">{l.morocco}</option>
                         <option value="Other">{l.other}</option>
                       </select>
                     </div>
@@ -473,7 +472,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* ââ Step 3: Preferences ââ */}
+              {/* ── Step 3: Preferences ── */}
               {step === 3 && (
                 <div className="space-y-5">
                   <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">
