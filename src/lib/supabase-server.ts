@@ -5,6 +5,7 @@
 // ============================================================
 
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import type { Database } from './database.types'
 
@@ -14,7 +15,6 @@ export type GuestRow = Database['public']['Tables']['guests']['Row']
 export type GalleryPhotoRow = Database['public']['Tables']['gallery_photos']['Row']
 
 export type WeddingWithSchedule = WeddingRow & {
-  import { createClient } from '@supabase/supabase-js'
   event_schedule: EventScheduleRow[]
 }
 
