@@ -51,7 +51,7 @@ const labels = {
     weddingDate: 'תאריך החתונה',
     venueName: 'שם האולם / המקום',
     venueAddress: 'כתובת',
-    venueCity: 'עכר',
+    venueCity: 'עיר',
     venueCountry: 'מדינה',
     locale: 'שפת ההזמנה',
     rsvpDeadline: 'תאריך אחרון לאישור',
@@ -99,12 +99,16 @@ const labels = {
 }
 
 function slugify(bride: string, groom: string, date: string): string {
-  const clean = (s: string) =>
-    s
+  const clean = (s: string) => {
+    const latin = s
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[̀-ͯ]/g, '')
       .replace(/[^a-z0-9]/g, '')
+    // Fallback for non-latin scripts (Hebrew, etc.): use encoded char codes
+    if (!latin) return s.split('').map(c => c.charCodeAt(0).toString(36)).join('').substring(0, 8)
+    return latin
+  }
   const year = date ? new Date(date).getFullYear() : new Date().getFullYear()
   return `${clean(bride)}-${clean(groom)}-${year}`
 }
