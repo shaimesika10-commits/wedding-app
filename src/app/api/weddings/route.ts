@@ -5,7 +5,7 @@
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase-server'
 
 // ── PATCH – עדכון חתונה ──────────────────────────────────────
 export async function PATCH(req: NextRequest) {
@@ -79,7 +79,9 @@ export async function POST(req: NextRequest) {
       .single()
     if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const { data, error } = await supabase
+    // Use admin client to bypass RLS for the insert (ownership already verified above)
+    const admin = createAdminSupabaseClient()
+    const { data, error } = await admin
       .from('event_schedule')
       .insert({ wedding_id, ...eventData })
       .select()
@@ -116,7 +118,9 @@ export async function DELETE(req: NextRequest) {
       .single()
     if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const { error } = await supabase
+    // Use admin client to bypass RLS for the delete (ownership already verified above)
+    const admin = createAdminSupabaseClient()
+    const { error } = await admin
       .from('event_schedule')
       .delete()
       .eq('id', event_id)
