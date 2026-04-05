@@ -636,7 +636,7 @@ export default function LoginPage() {
               <div>
                 <label className={labelCls}>{l.venue}</label>
                 <input
-  2               value={reg.venue}
+                    value={reg.venue}
                   onChange={e => setReg(p => ({ ...p, venue: e.target.value }))}
                   className={fieldCls}
                   placeholder={locale === 'he' ? 'אולם אירועים' : 'Château de Versailles'}
