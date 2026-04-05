@@ -29,6 +29,7 @@ interface Wedding {
   max_guests: number
   slug: string
   font_style: string | null
+  layout_style: string | null
 }
 
 interface WeddingPageContentProps {
@@ -62,6 +63,14 @@ export default function WeddingPageContent({
   }
   const fontKey = wedding.font_style ?? 'cormorant'
   const chosenFont = FONT_MAP[fontKey]
+
+  // ── Layout / colour theme ──
+  const LAYOUT_VARS: Record<string, string> = {
+    romantic: '--gold:#d4687a;--gold-dark:#a84d5c;--gold-light:#f2c4cc;--cream:#fdf0f2;',
+    garden:   '--gold:#7a9e7e;--gold-dark:#4e7a53;--gold-light:#c3dbc5;--cream:#f5f9f5;',
+    modern:   '--gold:#1c1917;--gold-dark:#0c0a09;--gold-light:#78716c;--cream:#ffffff;',
+  }
+  const layoutVars = wedding.layout_style ? (LAYOUT_VARS[wedding.layout_style] ?? '') : ''
 
   const formatDate = (loc: Locale) =>
     new Date(wedding.wedding_date).toLocaleDateString(
