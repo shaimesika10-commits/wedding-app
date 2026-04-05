@@ -174,8 +174,11 @@ export default function OnboardingPage() {
     setError('')
     setLoading(true)
 
+    // Ensure latest session is loaded (critical for email-confirmed users)
+    await supabase.auth.refreshSession()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
+      setLoading(false)
       router.push(`/${locale}/login`)
       return
     }
@@ -208,7 +211,8 @@ export default function OnboardingPage() {
         .single()
 
       if (!insertError) {
-        router.push(`/${locale}/dashboard`)
+        // Full page reload bypasses Next.js router cache (avoids stale no-wedding redirect)
+        window.location.href = `/${locale}/dashboard`
         return
       }
 
