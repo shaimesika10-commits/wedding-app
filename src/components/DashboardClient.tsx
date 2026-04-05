@@ -584,7 +584,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             {locale==='he'?'לצפייה בהזמנה כפי שהאורחים רואים אותה':locale==='fr'?"Voir l'invitation telle que les invités la voient":'See the invitation as guests see it'}
           </p>
           <a
-            href={`/${locale}/${wedding.slug}`}
+            href={wedding.slug ? `/${locale}/${wedding.slug}` : '#'}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-8 py-3.5 text-white text-sm font-medium tracking-wider uppercase rounded-xl"
@@ -601,10 +601,10 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             </p>
             <div className="flex items-center gap-2 max-w-sm mx-auto">
               <code className="flex-1 text-xs bg-stone-100 px-3 py-2 rounded-lg text-stone-600 truncate dir-ltr" dir="ltr">
-                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug}
+                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug ?? '…'}
               </code>
               <button
-                onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/${locale}/${wedding.slug}`)}
+                onClick={() => wedding.slug && navigator.clipboard?.writeText(`${window.location.origin}/${locale}/${wedding.slug}`)}
                 className="p-2 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
                 title="Copy"
               >
