@@ -7,7 +7,6 @@
 
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase'
 import type { Locale } from '@/lib/i18n'
 
 const labels = {
@@ -127,7 +126,6 @@ export default function OnboardingPage() {
   const params = useParams()
   const urlLocale = (params.locale as Locale) ?? 'fr'
   const router = useRouter()
-  const supabase = createClient()
 
   // step 0 = language picker, steps 1-3 = form
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
@@ -174,61 +172,45 @@ export default function OnboardingPage() {
     setError('')
     setLoading(true)
 
-    // Ensure latest session is loaded (critical for email-confirmed users)
-    await supabase.auth.refreshSession()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      setLoading(false)
-      router.push(`/${locale}/login`)
-      return
-    }
+    try {
+      const response = await fetch('/api/create-wedding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bride_name: form.bride_name,
+          groom_name: form.groom_name,
+          wedding_date: form.wedding_date,
+          venue_name: form.venue_name,
+          venue_address: form.venue_address,
+          venue_city: form.venue_city,
+          venue_country: form.venue_country,
+          locale: form.invitation_locale,
+          rsvp_deadline: form.rsvp_deadline,
+          welcome_message: form.welcome_message,
+        }),
+      })
 
-    const baseSlug = slugify(form.bride_name, form.groom_name, form.wedding_date)
-    const weddingData = {
-      user_id: user.id,
-      bride_name: form.bride_name.trim(),
-      groom_name: form.groom_name.trim(),
-      wedding_date: form.wedding_date,
-      venue_name: form.venue_name.trim() || null,
-      venue_address: form.venue_address.trim() || null,
-      venue_city: form.venue_city.trim() || null,
-      venue_country: form.venue_country,
-      locale: form.invitation_locale,
-      rsvp_deadline: form.rsvp_deadline || null,
-      welcome_message: form.welcome_message.trim() || null,
-      max_guests: 200,
-      plan: 'free',
-      is_active: true,
-    }
+      const result = await response.json()
 
-    // Retry with numeric suffix if slug already exists (unique constraint)
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const slug = attempt === 0 ? baseSlug : `${baseSlug}-${attempt + 1}`
-      const { error: insertError } = await supabase
-        .from('weddings')
-        .insert({ ...weddingData, slug })
-        .select()
-        .single()
-
-      if (!insertError) {
-        // Full page reload bypasses Next.js router cache (avoids stale no-wedding redirect)
-        window.location.href = `/${locale}/dashboard`
+      if (!response.ok) {
+        if (result.code === 'AUTH_ERROR') {
+          setLoading(false)
+          router.push(`/${locale}/login`)
+          return
+        }
+        setError(result.error || l.errorCreate)
+        setLoading(false)
         return
       }
 
-      // Duplicate slug — retry with next suffix
-      if (insertError.code === '23505') continue
-
-      // Any other error — show and abort
-      setError(insertError.message)
+      // Full page reload bypasses Next.js router cache
+      window.location.href = `/${locale}/dashboard`
+    } catch (err) {
+      setError(`Network error: ${err instanceof Error ? err.message : String(err)}`)
       setLoading(false)
-      return
     }
-
-    // Exhausted all attempts
-    setError(l.errorCreate)
-    setLoading(false)
   }
+
 
   const inputCls =
     'w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:border-gold transition'
