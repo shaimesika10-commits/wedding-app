@@ -151,9 +151,6 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     switch (status) {
       case 'confirmed': return <span className="badge-confirmed">✓ {t.confirmed}</span>
       case 'declined':  return <span className="badge-declined">✗ {t.declined}</span>
-      default:          return <span className="badge-pending">‧ {t.pending}</span>
-    }
-  }e 'declined':  return <span className="badge-declined">✗ {t.declined}</span>
       default:          return <span className="badge-pending">… {t.pending}</span>
     }
   }
@@ -236,7 +233,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         const [by, bm, bd] = wedding.wedding_date.split('-').map(Number)
         const brunchDate = new Date(by, bm - 1, bd + 1)  // local time constructor
         const dateStr = `${brunchDate.getFullYear()}-${String(brunchDate.getMonth()+1).padStart(2,'0')}-${String(brunchDate.getDate()).padStart(2,'0')}`
-        const name = locale==='he'?'בראנץ׳ למחרת':locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
+        const name = locale==='he'?'בראנץ' למחרת':locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
 
         const res = await fetch('/api/weddings', {
           method: 'POST',
@@ -472,123 +469,412 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       {locale==='he'?'סטטוס':locale==='fr'?'Statut':'Status'}
                     </th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'סה״כ':locale==='fr'?'Total':'Total'}
+                      {locale===='he'?'סה״כ':locale==='fr'?'Total':total'}
                     </th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left w-36">
-                      {locale==='he'?'מספר שמוח':locale==='fr'?'N° de table':'Table #'}
+                      {locale==='he'?'מספר שולחן':locale==='fr'?'N° de table':'Table #'}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-50">
                   {guests.filter(g => g.rsvp_status === 'confirmed').map(g => (
                     <tr key={g.id} className="hover:bg-stone-50 transition-colors">
-                      <td className="px-5 py-3 font-medium text-stone-800">{`.name}</td>
+                      <td className="px-5 py-3 font-medium text-stone-800">{g.name}</td>
                       <td className="px-5 py-3">{statusBadge(g.rsvp_status)}</td>
                       <td className="px-5 py-3 text-stone-500">
                         {g.adults_count + g.children_count}
                       </td>
-                      <td classNamS�'��R��2#��F�b6�74��S�&f�W��FV�2�6V�FW"v�"#�Ɩ�W@�G�S�&�V�&W" �֖�׳Т�6V���FW#�.(	B �f�VS׷F&�T��WG5�r�E����r�F&�U��V�&W"��V���7G&��r�r�F&�U��V�&W"��rr�Т��6��vS׶R��6WEF&�T��WG2�&Wb�������&Wb��r�EӢR�F&vWB�f�VRҒ�Т��&�W#׶R����F�T76�v�F&�R�r�B�R�F&vWB�f�VR�Т��W�F�v�׶R�����b�R�W����tV�FW"r���F�T76�v�F&�R�r�B��R�F&vWB2�D�Ė�WDV�V�V�B��f�VR���Т6�74��S�'r�#��2���R&�&FW"&�&FW"�7F��R�#&r�7F��R�SFW�B�6�FW�B�6V�FW"f�7W3��WFƖ�R����Rf�7W3�&�&FW"ղ63��F5�&�V�FVB��rG&�6�F����6���'2 �F�#�&�G" ����6f��uF&�R���r�Bbb���7fr6�74��S�'r�B��BFW�B�7F��R�3��FR�7��f�W��6�&���"f����&���R"f�Wt&���##B#B#��6�&6�R6�74��S�&�6�G��#R"7��#""7��#""#�#"7G&��S�&7W'&V�D6���""7G&��Uv�GF��#B"���F�6�74��S�&�6�G��sR"f����&7W'&V�D6���""C�$�B&���Ӈc��"����7fs��Т��F�c���FC���G#���Т��F&�G����F&�S���F�c��wVW7G2�f��FW"�r��r�'7g�7FGW2���v6��f�&�VBr���V�wF����bb���F�b6�74��S�'��R��"FW�B�6V�FW"FW�B�7F��R�CFW�B�6�#����6�S���v�Rs�}y
-y�y�
-y
-y]z�y}y�y�
-z�y
-y�z�z�yR
-yMy-z-yB
-z-y=y�y�y�p����6�S���vg"s�$V7V���f�L:�6��f�&�:��W"�v��7F�B ��t��6��f�&�VBwVW7G2�WBwТ��F�c��Т�F�b6�74��S�'��R��2&r�7F��R�S&�&FW"�B&�&FW"�7F��R�FW�Bׇ2FW�B�7F��R�CFW�B�&�v�B#��wVW7G2�f��FW"�r��r�'7g�7FGW2���v6��f�&�VBrbbr�F&�U��V�&W"��V���V�wF�Т�r�wТ�wVW7G2�f��FW"�r��r�'7g�7FGW2���v6��f�&�VBr���V�wF�Т�rwТ���6�S���v�Rs�}yMy]z}zmyR
-y�z�y]y�y}z
-y]z�s���6�S���vg"s�v76�v�:�2:V�RF&�Rs�v76�v�VBF�F&�W2wТ��F�c���F�cࠢ��w&�WVB�'��F&�R�fW'f�Wr��Т��������6��7B6��f�&�VB�wVW7G2�f��FW"�r��r�'7g�7FGW2���v6��f�&�VBrbbr�F&�U��V�&W"��V���b�6��f�&�VB��V�wF�����&WGW&��V���6��7B'�F&�S�&V6�&C��V�&W"�wVW7E�����Т6��f�&�VB�f�$V6��r����6��7BD�V��r�F&�U��V�&W"��b�'�F&�U�D�V�Ғ'�F&�U�D�V����Т'�F&�U�D�V���W6��r��Ґ�6��7BF&�T�V�&W'2��&�V7B�W�2�'�F&�R�����V�&W"��6�'B���"����"��&WGW&����F�c�ƃ26�74��S�&f��B�6�&��&�BFW�B׆�FW�B�7F��R�s�"�B#����6�S���v�Rs�}z�zmy]y-yB
-y�zMy�
-z�y]y�y}y�s���6�S���vg"s�ugVR"F&�Rs�uf�Wr'�F&�RwТ���3��F�b6�74��S�&w&�Bw&�B�6��2�6Ӧw&�B�6��2�"�s�w&�B�6��2�2v�B#��F&�T�V�&W'2���F&�T�V�����6��7BF&�TwVW7G2�'�F&�U�F&�T�V�Т6��7BF�F��F&�TwVW7G2�&VGV6R��7V��r���7V��r�GV�G5�6�V�B�r�6���G&V��6�V�B���&WGW&����F�b�W�׷F&�T�V��6�74��S�&&r�v��FR&�&FW"&�&FW"�7F��R�&�V�FVB׆��B6�F�r�6�#��F�b6�74��S�&f�W��FV�2�6V�FW"�W7F�g��&WGvVV��"�2#��7�6�74��S�&f��B�6�&��&�BFW�B��rFW�B�7F��R�s#����6�S���v�Rs�}z�y]y�y}y�s���6�S���vg"s�uF&�Rs�uF&�Rw��F&�T�V�Т��7���7�6�74��S�'FW�Bׇ2FW�B�7F��R�C&r�7F��R�S��"��&�V�FVB�gV��#��F�F�����6�S���v�Rs�}y
-y]z�y}y�y�s���6�S���vg"s�v��f�L:�2s�vwVW7G2wТ��7����F�c��V�6�74��S�'76Rג��R#��F&�TwVW7G2���r�����ƒ�W�׶r�G�6�74��S�'FW�B�6�FW�B�7F��R�cf�W��FV�2�6V�FW"v�"#��7�6�74��S�'r��R���R&�V�FVB�gV��&rղ63��F5�f�W��6�&���"���7�6�74��S�'G'V�6FR#�r���W���7����r�GV�G5�6�V�B�r�6���G&V��6�V�B��bb���7�6�74��S�'FW�Bׇ2FW�B�7F��R�Cf�W��6�&���#�9w�r�GV�G5�6�V�B�r�6���G&V��6�V�GТ��7���Т��Ɠ���Т��V����F�c���җТ��F�c���F�c���Ғ��Т��F�c��Р���)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y �D#�TD�@�)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y��Т�7F�fUF"���vVF�Brbb���F�bF�#׶�5%D��w'F�s�v�G"w�6�74��S�&���r�'��76Rגӂ#ࠢ�VF�DW'&�"bb�F�b6�74��S�&&r�&VB�S&�&FW"&�&FW"�&VB�FW�B�&VB�cFW�B�6���B��2&�V�FVB׆�#�VF�DW'&�'���F�c�Т�VF�E7V66W72bb���F�b6�74��S�&&r�V�W&�B�S&�&FW"&�&FW"�V�W&�B�FW�B�V�W&�B�sFW�B�6���B��2&�V�FVB׆�f�W��FV�2�6V�FW"v�"#��7fr6�74��S�'r�B��B"f����&���R"f�Wt&���##B#B"7G&��S�&7W'&V�D6���"#��F�7G&��TƖ�V6�'&�V�B"7G&��TƖ�V�����'&�V�B"7G&��Uv�GF�׳'�C�$�R6�BD��r"����7fs����6�S���v�Rs�}z
-z�y�z�
-yyMzmy�y}yBs���6�S���vg"s�tV�&Vv�7G,:�fV27V6<:�2s�u6fVB7V66W76gV�ǒwТ��F�c��Р���)H)H
-yMymy]y")H)H��Т�F�c�ƃ26�74��S�&f��B�6�&��&�BFW�B׆�FW�B�7F��R�s�"�B"�"&�&FW"�"&�&FW"�7F��R�#����6�S���v�Rs�}yMymy]y"s���6�S���vg"s�t�W2�&�:�2s�uF�R6�W�RwТ���3��F�b6�74��S�&w&�Bw&�B�6��2�"v�B#��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}z�y�
-yMy�y�yBs���6�S���vg"s�%,:����FR��&�:�R#�$'&�FRw2��R'����&V��Ɩ�WBf�VS׶VF�Df�&��'&�FU���W���6��vS׶S��6WDVF�Df�&҇�⇲����'&�FU���S�R�F&vWB�f�VWҒ��6�74��S׶��WD6�7�����F�c��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}z�y�
-yMy}z�y�s���6�S���vg"s�%,:����GR�&�:�#�$w&���w2��R'����&V��Ɩ�WBf�VS׶VF�Df�&��w&������W���6��vS׶S��6WDVF�Df�&҇�⇲����w&������S�R�F&vWB�f�VWҒ��6�74��S׶��WD6�7�����F�c���F�c��F�b6�74��S�&�B�B#���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}z�y
-z�y�y�
-yMy}z�y]z
-yBs���6�S���vg"s�tFFRGR�&�vRs�uvVFF��rFFRw����&V��Ɩ�WBG�S�&FFR"f�VS׶VF�Df�&��vVFF��u�FFW���6��vS׶S��6WDVF�Df�&҇�⇲����vVFF��u�FFS�R�F&vWB�f�VWҒ��F�#�&�G""6�74��S׶��WD6�7�����F�c���F�cࠢ��)H)H
-y�z}y]y�)H)H��Т�F�c�ƃ26�74��S�&f��B�6�&��&�BFW�B׆�FW�B�7F��R�s�"�B"�"&�&FW"�"&�&FW"�7F��R�#����6�S���v�Rs�}y�z}y]y�
-yMy
-y�z�y]z"s���6�S���vg"s�t�RƖWRs�ufV�VRwТ���3��F�b6�74��S�'76Rג�2#��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}z�y�
-yMy
-y]y�y�s���6�S���vg"s�t���GRƖWRs�ufV�VR��Rw����&V��Ɩ�WBf�VS׶VF�Df�&��fV�VU���W���6��vS׶S��6WDVF�Df�&҇�⇲����fV�VU���S�R�F&vWB�f�VWҒ��6�74��S׶��WD6�7��6V���FW#׶��6�S���v�Rs�}y
-y]y�y�
-y
-y�z�y]z-y�y�s�t6�:'FVRFR���w�����F�c��F�b6�74��S�&w&�Bw&�B�6��2�"v�2#��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}z-y�z�s���6�S���vg"s�uf���Rs�t6�G�w����&V��Ɩ�WBf�VS׶VF�Df�&��fV�VU�6�G����6��vS׶S��6WDVF�Df�&҇�⇲����fV�VU�6�G��R�F&vWB�f�VWҒ��6�74��S׶��WD6�7�����F�c��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}y�z�y]yz�s���6�S���vg"s�tG&W76Rs�tFG&W72w����&V��Ɩ�WBf�VS׶VF�Df�&��fV�VU�FG&W77���6��vS׶S��6WDVF�Df�&҇�⇲����fV�VU�FG&W73�R�F&vWB�f�VWҒ��6�74��S׶��WD6�7�����F�c���F�c��F�b6�74��S�&w&�Bw&�B�6��2�"v�2#��F�c���&V�6�74��S׶�&V�6�7��v��v�R�2U$����&V��Ɩ�WBf�VS׶VF�Df�&��v��v�U��5�W&����6��vS׶S��6WDVF�Df�&҇�⇲����v��v�U��5�W&æR�F&vWB�f�VWҒ��6�74��S׶��WD6�7�F�#�&�G""�6V���FW#�&�GG3����2�v��v�R�6������"����F�c��F�c���&V�6�74��S׶�&V�6�7��v�RU$����&V��Ɩ�WBf�VS׶VF�Df�&��v�U�W&����6��vS׶S��6WDVF�Df�&҇�⇲����v�U�W&æR�F&vWB�f�VWҒ��6�74��S׶��WD6�7�F�#�&�G""�6V���FW#�&�GG3���v�R�6������"����F�c���F�c���F�c���F�cࠢ��)H)H
-yMy]y=z-yB
-y]z�y
-z�y�y�%5e)H)H��Т�F�c�ƃ26�74��S�&f��B�6�&��&�BFW�B׆�FW�B�7F��R�s�"�B"�"&�&FW"�"&�&FW"�7F��R�#����6�S���v�Rs�}z�y]y�y�
-yMyMymy�z
-yBs���6�S���vg"s�$6��FV�RFR�v��f�FF���#�t��f�FF���6��FV�BwТ���3��F�b6�74��S�'76Rג�2#��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}z�zMyB
-z�y
-z�y�z�s���6�S���vg"s�t��wVR&��6��Rs�t�����wVvRw����&V���F�b6�74��S�&f�W�v�"#����vg"r�v�Rr�vV�u�26��7B������s�•�'WGF���W�׶��w�G�S�&'WGF�� ���6Ɩ6�ײ����6WDVF�Df�&҇�⇲������6�S���wҒ�Т6�74��S�&f�W����"�R&�V�FVB׆�FW�B�6�f��B��VF�V�&�&FW"G&�6�F������ �7G��S׷��&6�w&�V�C�VF�Df�&����6�S�����s�r63��F2s�r6fc�cRr��6���#�VF�Df�&����6�S�����s�r6ffbs�r3s�sf2r��&�&FW$6���#�VF�Df�&����6�S�����s�r63��F2s�r6SvSVSBr��������s���vg"s�tg&�:v�2s���s���v�Rs�}z-yz�y�z�s�tV�vƗ6�wТ��'WGF�����Т��F�c��6�74��S�'FW�Bׇ2FW�B�7F��R�C�B��R#�	�����6�S���v�Rs�}yMy
-y]z�y}y�y�
-y�z�y
-yR
-y
-z�
-yMyMymy�z
-yB
-yz�zMyB
-z�y�yMy�
-y
-y]y�y]y�y�y�z�s���6�S���vg"s�$�W2��f�L:�2fW'&��B�v��f�FF���F�2�WW"&�&R��wVRWF��F�VV�V�B#�twVW7G2v���6VRF�R��f�FF�����F�V�"�v���wVvRWF��F�6�ǒwТ�����F�c��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}yMy]y=z-z�
-zMz�y�y}yBs���6�S���vg"s�t�W76vRFR&�V�fV�VRs�uvV�6��R�W76vRw����&V���FW�F&Vf�VS׶VF�Df�&��vV�6��U��W76vW���6��vS׶S��6WDVF�Df�&҇�⇲����vV�6��U��W76vS�R�F&vWB�f�VWҒ�Т&�w3׳G�6�74��S׶��WD6�2�r&W6��R����Rw�����F�c��F�c���&V�6�74��S׶�&V�6�7����6�S���v�Rs�}z�y
-z�y�y�
-y
-y}z�y]y�
-y�y
-y�z�y]z�s���6�S���vg"s�tFFRƖ֗FR%5es�u%5eFVFƖ�Rw����&V��Ɩ�WBG�S�&FFR"f�VS׶VF�Df�&��'7g�FVFƖ�W���6��vS׶S��6WDVF�Df�&҇�⇲����'7g�FVFƖ�S�R�F&vWB�f�VWҒ��F�#�&�G""6�74��S׶��WD6�7�����F�c���F�c���F�cࠢ��)H)H
-y�yR-yc�
-y�zMz�y]z�
-yz�y
-z
-zRr)H)H��Т�F�c�ƃ26�74��S�&f��B�6�&��&�BFW�B׆�FW�B�7F��R�s�"�B"�"&�&FW"�"&�&FW"�7F��R�#����6�S���v�Rs�-y�yU�-yb
-yMy
-y�z�y]z"#���6�S���vg"s�%&�w&��RFR�|:�l:��V�V�B#�tWfV�B66�VGV�RwТ���3��F�b6�74��S�&f�W��FV�2�6V�FW"�W7F�g��&WGvVV��B&r�7F��R�S&�V�FVB׆�&�&FW"&�&FW"�7F��R�#��F�c��6�74��S�'FW�B�6�f��B��VF�V�FW�B�7F��R�s#����6�S���v�Rs�}yz�y
-z
-z]{2
-y�y�y}z�z�s���6�S���vg"s�t''V�6�GR�V�FV���s�t��&��r�gFW"''V�6�wТ����6�74��S�'FW�Bׇ2FW�B�7F��R�C�B��R#����6�S���v�Rs�}yMy]zz2
-yz�y
-z
-z]{2
-yy�y]y�
-z�y
-y}z�y�
-yMy}z�y]z
-yB��(	3C��p����6�S���vg"s�$��WFW"V�''V�6��R�V�FV���GR�&�vR��(	3F�� ��tFB''V�6�WfV�BF�RF�gFW"F�RvVFF��r��(	3'ҒwТ�����F�c���F�vv�R7v�F6���Т�'WGF��G�S�&'WGF�� ���6Ɩ6�׶��F�UF�vv�T''V�6�ТF�6&�VC׷F�vvƖ�t''V�6�Т&��&W76VC׶''V�6�V�&�VGТ6�74��S�'&V�F�fR��Ɩ�R�f�W���rr�"�FV�2�6V�FW"&�V�FVB�gV��G&�6�F����6���'2f�7W3��WFƖ�R����RF�6&�VC��6�G��cf�W��6�&��� �7G��S׷�&6�w&�V�C�''V�6�V�&�VB�r63��F2r�r6CFC6"r�Т��7�6�74��S�&��Ɩ�R�&��6���Rr�RG&�6f�&�&�V�FVB�gV��&r�v��FR6�F�r�6�G&�6�F����G&�6f�&�GW&F����# �7G��S׷�G&�6f�&Ӣ''V�6�V�&�VB�wG&�6�FU��#'��r�wG&�6�FU��'��r�Т����'WGF�����F�c���
-z�z�y�y�z�
-y
-y�z�y]z-y�y�
-z}y�y�y�y�y���Т�66�VGV�R��V�wF��bb���F�b6�74��S�&�B�276Rג�"#��66�VGV�R���Wb�����F�b�W�׶Wb�G�6�74��S�&f�W��FV�2�6V�FW"�W7F�g��&WGvVV���"��2&r�v��FR&�&FW"&�&FW"�7F��R�&�V�FVB��rFW�B�6�#��7�6�74��S�'FW�B�7F��R�s#�Wb�WfV�E���W���7���7�6�74��S�'FW�Bׇ2FW�B�7F��R�C#�Wb�7F'E�F��S��6Ɩ6R��R����7����F�c���Т��F�c��Т��F�cࠢ��)H)H
-y�zMz�y]z�
-z�y�y�z�yB)H)H��Т�F�b6�74��S�'B�"#��'WGF����6Ɩ6�׶��F�U6fTVF�G�F�6&�VC׷6f��tVF�GТ6�74��S�'�ӂ��2�RFW�B�v��FRFW�B�6�f��B��VF�V�G&6���r�v�FW"WW&66R&�V�FVB׆�G&�6�F������F�6&�VC��6�G��c �7G��S׷�&6�w&�V�C�6f��tVF�C�r6�#�Rs�r63��F2r�&��6�F�s�6f��tVF�C�v���Rs�sG�G�&v&�#�c��sb��#R�r����6f��tVF�@�����6�S���v�Rs�}z�y]y�z����s���6�S���vg"s�tV�&Vv�7G&V�V�B���s�u6f��r���r������6�S���v�Rs�}z�y�y]z�
-z�y�z
-y]y�y�y�s���6�S���vg"s�tV�&Vv�7G&W"�W2��F�f�6F���2s�u6fR6��vW2r�Т��'WGF�����F�c���F�c��Р���)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y �D#�$Ud�Up�)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y��Т�7F�fUF"���w&Wf�Wrrbb���F�b6�74��S�'FW�B�6V�FW"��"#��6�74��S�'FW�B�7F��R�CFW�B�6��"�b#����6�S���v�Rs�}y�zmzMy�y�yB
-yyMymy�z
-yB
-y�zMy�
-z�yMy
-y]z�y}y�y�
-z�y]y
-y�y�
-y
-y]z�yBs���6�S���vg"s�%f��"�v��f�FF���FV��RVR�W2��f�L:�2�f��V�B#�u6VRF�R��f�FF���2wVW7G26VR�BwТ������&Vc׷vVFF��r�6�Vr��G���6�W��G�vVFF��r�6�Vw��r2wТF&vWC�%�&�� �&V��&���V�W"��&VfW'&W" �6�74��S�&��Ɩ�R�f�W��FV�2�6V�FW"v�"�ӂ��2�RFW�B�v��FRFW�B�6�f��B��VF�V�G&6���r�v�FW"WW&66R&�V�FVB׆� �7G��S׷�&6�w&�V�C�r63��F2r�&��6�F�s�sG�G�&v&�#�c��sb��#R�r�Т��7fr6�74��S�'r�B��B"f����&���R"f�Wt&���##B#B"7G&��S�&7W'&V�D6���"#��F�7G&��TƖ�V6�'&�V�B"7G&��TƖ�V�����'&�V�B"7G&��Uv�GF�׳'�C�$�d�f""�"'c"""&�"""�'b�D�BF�f�cf��d�B"����7fs����6�S���v�Rs�}zMz�yr
-yMymy�z
-yBs���6�S���vg"s�$�Wg&�"�v��f�FF���#�t�V���f�FF���w�(ip�����F�b6�74��S�&�B�b#��6�74��S�'FW�Bׇ2FW�B�7F��R�C�"�"#����6�S���v�Rs�}z}y�z�y]z�
-yMyMymy�z
-yBs���6�S���vg"s�$ƖV�FR�v��f�FF���#�t��f�FF���Ɩ�wТ����F�b6�74��S�&f�W��FV�2�6V�FW"v�"���r�6�ׂ�WF�#��6�FR6�74��S�&f�W��FW�Bׇ2&r�7F��R���2��"&�V�FVB��rFW�B�7F��R�cG'V�6FRF�"��G""F�#�&�G"#��G�V�bv��F�r��wV�FVf��VBs�v��F�r���6F�����&�v��rw�����6�W���vVFF��r�6�Vr��~(
-bwТ��6�FS��'WGF����6Ɩ6�ײ����vVFF��r�6�Vrbb�f�vF�"�6Ɨ&�&C��w&�FUFW�B�G�v��F�r���6F�����&�v����G���6�W��G�vVFF��r�6�Vw��Т6�74��S�'�"&r�7F��R���fW#�&r�7F��R�#&�V�FVB��rG&�6�F����6���'2 �F�F�S�$6�� ���7fr6�74��S�'r�B��BFW�B�7F��R�S"f����&���R"f�Wt&���##B#B"7G&��S�&7W'&V�D6���"#��F�7G&��TƖ�V6�'&�V�B"7G&��TƖ�V�����'&�V�B"7G&��Uv�GF�׳'�C�$ӂT�f""�"'c&"""&�"""�'b�$ӂV"""&�&"""�$ӂV"""�&�&"""""����7fs���'WGF�����F�c���F�c���F�c��Р���)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y �
-y�y]y=y
-y�
-yMy]zzMz�
-y
-y]z�yp�)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y)Y��Т�6��tFD��F�bb���F�b6�74��S�&f��VB��6WB���Sf�W��FV�2�6V�FW"�W7F�g��6V�FW"�B �7G��S׷�&6�w&�V�C�w&v&�����B�r�Т��6Ɩ6�׶R����b�R�F&vWC���R�7W'&V�EF&vWB�6WE6��tFD��Ff�6R�����F�bF�#׶�5%D��w'F�s�v�G"wТ6�74��S�&&r�v��FRr�gV�����r��r��ւճ�f���fW&f��rג�WF�6�F�r�'��#��F�b6�74��S�&f�W��FV�2�6V�FW"�W7F�g��&WGvVV���b��B&�&FW"�"&�&FW"�7F��R�#�ƃ"6�74��S�&f��B�6�&��&�BFW�B׆�FW�B�7F��RӃ#�B�FDwVW7EF�F�W����#��'WGF����6Ɩ6�ײ����6WE6��tFD��Ff�6R��6�74��S�'FW�B�7F��R�3��fW#�FW�B�7F��R�cG&�6�F����6���'2FW�B�'���VF��r����R#�9s��'WGF�����F�c��F�b6�74��S�'��b��R76Rג�B#��wVW7D��F�W'&�"bb�F�b6�74��S�&&r�&VB�S&�&FW"&�&FW"�&VB�FW�B�&VB�cFW�B�6���B��2&�V�FVB��r#�wVW7D��F�W'&�'���F�c�Т�F�c���&V�6�74��S׶�&V�6�7��B���W�����&V��Ɩ�WBf�VS׶�WtwVW7B���W���6��vS׶S��6WD�WtwVW7B��⇲������S�R�F&vWB�f�VWҒ�Т�6V���FW#׶��6�S���v�Rs�}y�z�z�y
-y�
-y�z�z�y
-y�y�s�t�&�RGW��BwТ6�74��S׶��WD6�7�����F�c��F�b6�74��S�&w&�Bw&�B�6��2�"v�2#��F�c���&V�6�74��S׶�&V�6�7��B�V�������&V��Ɩ�WBG�S�&V���"f�VS׶�WtwVW7B�V������6��vS׶S��6WD�WtwVW7B��⇲����V��æR�F&vWB�f�VWҒ��6�74��S׶��WD6�7�F�#�&�G""����F�c��F�c���&V�6�74��S׶�&V�6�7��B����W����&V��Ɩ�WBG�S�'FV�"f�VS׶�WtwVW7B����W���6��vS׶S��6WD�WtwVW7B��⇲�������S�R�F&vWB�f�VWҒ��6�74��S׶��WD6�7�F�#�&�G""����F�c���F�c��F�b6�74��S�&w&�Bw&�B�6��2�"v�2#��F�c���&V�6�74��S׶�&V�6�7��B�GV�G7����&V��Ɩ�WBG�S�&�V�&W""֖�׳�f�VS׶�WtwVW7B�GV�G5�6�V�G���6��vS׶S��6WD�WtwVW7B��⇲����GV�G5�6�V�C�'6T��B�R�F&vWB�f�VR���Ғ��6�74��S׶��WD6�7�F�#�&�G""����F�c��F�c���&V�6�74��S׶�&V�6�7��B�6���G&V�����&V��Ɩ�WBG�S�&�V�&W""֖�׳�f�VS׶�WtwVW7B�6���G&V��6�V�G���6��vS׶S��6WD�WtwVW7B��⇲����6���G&V��6�V�C�'6T��B�R�F&vWB�f�VR���Ғ��6�74��S׶��WD6�7�F�#�&�G""����F�c���F�c��F�c���&V�6�74��S׶�&V�6�7��B�7FGW7����&V���F�b6�74��S�&f�W�v�"#����v6��f�&�VBr�wV�F��rr�vFV6Ɩ�VBu�26��7B����3�•�'WGF���W�׷7�G�S�&'WGF��"��6Ɩ6�ײ����6WD�WtwVW7B��⇲����'7g�7FGW3�7Ғ�Т6�74��S�&f�W����"FW�Bׇ2f��B��VF�V�&�&FW"G&�6�F������&�V�FVB��r �7G��S׷��&6�w&�V�C��WtwVW7B�'7g�7FGW3���3�3���v6��f�&�VBs�r6V6fFcRs�3���vFV6Ɩ�VBs�r6fVc&c"s�r6fff&V"r��r6ffc�r��6���#��WtwVW7B�'7g�7FGW3���3�3���v6��f�&�VBs�r3S�cc�s�3���vFV6Ɩ�VBs�r6VcCCCBs�r6C�ssbr��r6�#�Rr��&�&FW$6���#��WtwVW7B�'7g�7FGW3���3�3���v6��f�&�VBs�r3fVSv#rs�3���vFV6Ɩ�VBs�r6f6VRs�r6f6C3FBr��r6SvSVSBr������3���v6��f�&�VBs�B�6��f�&�VC�3���vFV6Ɩ�VBs�B�FV6Ɩ�VC�B�V�F��wТ��'WGF�����Т��F�c���F�c��F�c���&V�6�74��S׶�&V�6�7��B�F�WF'�����&V��Ɩ�WBf�VS׶�WtwVW7B�F�WF'��&VfW&V�6W7���6��vS׶S��6WD�WtwVW7B��⇲����F�WF'��&VfW&V�6W3�R�F&vWB�f�VWҒ�Т�6V���FW#׶��6�S���v�Rs�}zmy�y}y]z
-y��
-y�z�z����s�ul:�|:�F&�V��66�W"���w�6�74��S׶��WD6�7�����F�c��F�c���&V�6�74��S׶�&V�6�7��B���W&v�W7����&V��Ɩ�WBf�VS׶�WtwVW7B���W&v�W7���6��vS׶S��6WD�WtwVW7B��⇲������W&v�W3�R�F&vWB�f�VWҒ�Т�6V���FW#׶��6�S���v�Rs�}y
-y-y]ymy�y��
-y-y�y]y�y����s�t�����v�WFV����w�6�74��S׶��WD6�7�����F�c��F�c���&V�6�74��S׶�&V�6�7��B���FW7����&V���FW�F&Vf�VS׶�WtwVW7B���FW7���6��vS׶S��6WD�WtwVW7B��⇲������FW3�R�F&vWB�f�VWҒ��&�w3׳'�6�74��S׶��WD6�2�r&W6��R����Rw�����F�c���F�c��F�b6�74��S�&f�W�v�2��b��B&�&FW"�B&�&FW"�7F��R�&r�7F��R�S#��'WGF����6Ɩ6�ײ����6WE6��tFD��Ff�6R�Т6�74��S�&f�W����2&�&FW"&�&FW"�7F��R�#FW�B�7F��R�cFW�B�6�f��B��VF�V�G&6���r�v�FR��fW#�&r�7F��R�G&�6�F����6���'2#��B�6�6V�Т��'WGF����'WGF����6Ɩ6�׶��F�TFDwVW7G�F�6&�VC׷6f��twVW7GТ6�74��S�&f�W����2FW�B�v��FRFW�B�6�f��B��VF�V�G&6���r�v�FRG&�6�F����6���'2F�6&�VC��6�G��c �7G��S׷�&6�w&�V�C�6f��twVW7C�r6�#�Rs�r63��F2r����6f��twVW7B�B�6f��r�B�6fWТ
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min={1}
+                            placeholder="—"
+                            value={tableInputs[g.id] ?? (g.table_number != null ? String(g.table_number) : '')}
+                            onChange={e => setTableInputs(prev => ({ ...prev, [g.id]: e.target.value }))}
+                            onBlur={e => handleAssignTable(g.id, e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleAssignTable(g.id, (e.target as HTMLInputElement).value)
+                            }}
+                            className="w-20 px-3 py-1.5 border border-stone-200 bg-stone-50 text-sm text-center focus:outline-none focus:border-[#c9a84c] rounded-lg transition-colors"
+                            dir="ltr"
+                          />
+                          {savingTable === g.id && (
+                            <svg className="w-4 h-4 text-stone-300 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                            </svg>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {guests.filter(g => g.rsvp_status === 'confirmed').length === 0 && (
+              <div className="px-5 py-12 text-center text-stone-400 text-sm">
+                {locale==='he'?'אין אורחים שאישרו הגעה עדיין'
+                  :locale==='fr'?"Aucun invité confirmé pour l'instant"
+                  :'No confirmed guests yet'}
+              </div>
+            )}
+            <div className="px-5 py-3 bg-stone-50 border-t border-stone-100 text-xs text-stone-400 text-right">
+              {guests.filter(g => g.rsvp_status === 'confirmed' && g.table_number != null).length}
+              {' / '}
+              {guests.filter(g => g.rsvp_status === 'confirmed').length}
+              {' '}
+              {locale==='he'?'הוקצו לשולחנות':locale==='fr'?'assignés à une table':'assigned to tables'}
+            </div>
+          </div>
+
+          {/* Grouped-by-table overview */}
+          {(() => {
+            const confirmed = guests.filter(g => g.rsvp_status === 'confirmed' && g.table_number != null)
+            if (confirmed.length === 0) return null
+            const byTable: Record<number, Guest[]> = {}
+            confirmed.forEach(g => {
+              const tNum = g.table_number!
+              if (!byTable[tNum]) byTable[tNum] = []
+              byTable[tNum].push(g)
+            })
+            const tableNumbers = Object.keys(byTable).map(Number).sort((a, b) => a - b)
+            return (
+              <div>
+                <h3 className="font-cormorant text-xl text-stone-700 mb-4">
+                  {locale==='he'?'תצוגה לפי שולחן':locale==='fr'?'Vue par table':'View by Table'}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {tableNumbers.map(tableNum => {
+                    const tableGuests = byTable[tableNum]
+                    const total = tableGuests.reduce((sum, g) => sum + g.adults_count + g.children_count, 0)
+                    return (
+                      <div key={tableNum} className="bg-white border border-stone-100 rounded-xl p-4 shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-cormorant text-lg text-stone-700">
+                            {locale==='he'?'שולחן':locale==='fr'?'Table':'Table'} {tableNum}
+                          </span>
+                          <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-full">
+                            {total} {locale==='he'?'אורחים':locale==='fr'?'invités':'guests'}
+                          </span>
+                        </div>
+                        <ul className="space-y-1.5">
+                          {tableGuests.map(g => (
+                            <li key={g.id} className="text-sm text-stone-600 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] flex-shrink-0"/>
+                              <span className="truncate">{g.name}</span>
+                              {(g.adults_count + g.children_count) > 1 && (
+                                <span className="text-xs text-stone-400 flex-shrink-0">
+                                  ×{g.adults_count + g.children_count}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════
+          TAB: EDIT
+      ══════════════════════════════════════════════ */}
+      {activeTab === 'edit' && (
+        <div dir={isRTL?'rtl':'ltr'} className="max-w-2xl space-y-8">
+
+          {editError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl">{editError}</div>}
+          {editSuccess && (
+            <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
+              </svg>
+              {locale==='he'?'נשמר בהצלחה!':locale==='fr'?'Enregistré avec succès !':'Saved successfully!'}
+            </div>
+          )}
+
+          {/* ── הזוג ── */}
+          <div>
+            <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
+              {locale==='he'?'הזוג':locale==='fr'?'Les mariés':'The Couple'}
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>{locale==='he'?'שם הכלה':locale==='fr'?"Prénom de la mariée":"Bride's name"}</label>
+                <input value={editForm.bride_name} onChange={e=>setEditForm(p=>({...p,bride_name:e.target.value}))} className={inputCls}/>
+              </div>
+              <div>
+                <label className={labelCls}>{locale==='he'?'שם החתן':locale==='fr'?"Prénom du marié":"Groom's name"}</label>
+                <input value={editForm.groom_name} onChange={e=>setEditForm(p=>({...p,groom_name:e.target.value}))} className={inputCls}/>
+              </div>
+            </div>
+            <div className="mt-4">
+              <label className={labelCls}>{locale==='he'?'תאריך החתונה':locale==='fr'?'Date du mariage':'Wedding date'}</label>
+              <input type="date" value={editForm.wedding_date} onChange={e=>setEditForm(p=>({...p,wedding_date:e.target.value}))} dir="ltr" className={inputCls}/>
+            </div>
+          </div>
+
+          {/* ── מקום ── */}
+          <div>
+            <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
+              {locale==='he'?'מקום האירוע':locale==='fr'?'Le lieu':'Venue'}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className={labelCls}>{locale==='he'?'שם האולם':locale==='fr'?'Nom du lieu':'Venue name'}</label>
+                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Château de...'}/>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>{locale==='he'?'עיר':locale==='fr'?'Ville':'City'}</label>
+                  <input value={editForm.venue_city} onChange={e=>setEditForm(p=>({...p,venue_city:e.target.value}))} className={inputCls}/>
+                </div>
+                <div>
+                  <label className={labelCls}>{locale==='he'?'כתובת':locale==='fr'?'Adresse':'Address'}</label>
+                  <input value={editForm.venue_address} onChange={e=>setEditForm(p=>({...p,venue_address:e.target.value}))} className={inputCls}/>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Google Maps URL</label>
+                  <input value={editForm.google_maps_url} onChange={e=>setEditForm(p=>({...p,google_maps_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://maps.google.com/..."/>
+                </div>
+                <div>
+                  <label className={labelCls}>Waze URL</label>
+                  <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://waze.com/..."/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── הודעה ותאריך RSVP ── */}
+          <div>
+            <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
+              {locale==='he'?'תוכן ההזמנה':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className={labelCls}>{locale==='he'?'שפה ראשית':locale==='fr'?'Langue principale':'Main language'}</label>
+                <div className="flex gap-2">
+                  {(['fr','he','en'] as const).map(lang=>(
+                    <button key={lang} type="button"
+                      onClick={()=>setEditForm(p=>({...p,locale:lang}))}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all"
+                      style={{
+                        background:editForm.locale===lang?'#c9a84c':'#faf8f5',
+                        color:editForm.locale===lang?'#fff':'#78716c',
+                        borderColor:editForm.locale===lang?'#c9a84c':'#e7e5e4',
+                      }}>
+                      {lang==='fr'?'Français':lang==='he'?'עברית':'English'}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-stone-400 mt-1.5">
+                  🌐 {locale==='he'?'האורחים יראו את ההזמנה בשפה שלהם אוטומטית':locale==='fr'?"Les invités verront l'invitation dans leur propre langue automatiquement":'Guests will see the invitation in their own language automatically'}
+                </p>
+              </div>
+              <div>
+                <label className={labelCls}>{locale==='he'?'הודעת פתיחה':locale==='fr'?'Message de bienvenue':'Welcome message'}</label>
+                <textarea value={editForm.welcome_message} onChange={e=>setEditForm(p=>({...p,welcome_message:e.target.value}))}
+                  rows={4} dir="auto" className={inputCls+' resize-none'}/>
+              </div>
+              <div>
+                <label className={labelCls}>{locale==='he'?'תאריך אחרון לאישור':locale==='fr'?'Date limite RSVP':'RSVP deadline'}</label>
+                <input type="date" value={editForm.rsvp_deadline} onChange={e=>setEditForm(p=>({...p,rsvp_deadline:e.target.value}))} dir="ltr" className={inputCls}/>
+              </div>
+            </div>
+          </div>
+
+          {/* ── לו"ז: כפתור בראנץ' ── */}
+          <div>
+            <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
+              {locale==='he'?"לו\"ז האירוע":locale==='fr'?"Programme de l'événement":'Event Schedule'}
+            </h3>
+            <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100">
+              <div>
+                <p className="text-sm font-medium text-stone-700">
+                  {locale==='he'?'בראנץ' למחרת':locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
+                </p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {locale==='he'?'הוסף בראנץ' ביום שאחרי החתונה (11:00–14:00)'
+                    :locale==='fr'?"Ajouter un brunch le lendemain du mariage (11h–14h)"
+                    :'Add a brunch event the day after the wedding (11am–2pm)'}
+                </p>
+              </div>
+              {/* Toggle switch */}
+              <button
+                type="button"
+                onClick={handleToggleBrunch}
+                disabled={togglingBrunch}
+                aria-pressed={brunchEnabled}
+                className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0"
+                style={{ background: brunchEnabled ? '#c9a84c' : '#d4d0cb' }}
+              >
+                <span
+                  className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200"
+                  style={{ transform: brunchEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
+                />
+              </button>
+            </div>
+            {/* רשימת אירועים קיימים */}
+            {schedule.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {schedule.map(ev => (
+                  <div key={ev.id} className="flex items-center justify-between py-2 px-3 bg-white border border-stone-100 rounded-lg text-sm">
+                    <span className="text-stone-700">{ev.event_name}</span>
+                    <span className="text-xs text-stone-400">{ev.start_time?.slice(0,5)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── כפתור שמירה ── */}
+          <div className="pt-2">
+            <button onClick={handleSaveEdit} disabled={savingEdit}
+              className="px-8 py-3.5 text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all disabled:opacity-60"
+              style={{ background: savingEdit?'#a8a29e':'#c9a84c', boxShadow: savingEdit?'none':'0 4px 14px rgba(201,168,76,0.25)' }}>
+              {savingEdit
+                ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...')
+                : (locale==='he'?'שמור שינויים':locale==='fr'?'Enregistrer les modifications':'Save changes')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════
+          TAB: PREVIEW
+      ══════════════════════════════════════════════ */}
+      {activeTab === 'preview' && (
+        <div className="text-center py-12">
+          <p className="text-stone-400 text-sm mb-6">
+            {locale==='he'?'לצפייה בהזמנה כפי שהאורחים רואים אותה':locale==='fr'?"Voir l'invitation telle que les invités la voient":'See the invitation as guests see it'}
+          </p>
+          <a
+            href={wedding.slug ? `/${locale}/${wedding.slug}` : '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-8 py-3.5 text-white text-sm font-medium tracking-wider uppercase rounded-xl"
+            style={{ background:'#c9a84c', boxShadow:'0 4px 14px rgba(201,168,76,0.25)' }}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↗
+          </a>
+          <div className="mt-6">
+            <p className="text-xs text-stone-400 mb-2">
+              {locale==='he'?'קישור ההזמנה':locale==='fr'?"Lien de l'invitation":'Invitation link'}
+            </p>
+            <div className="flex items-center gap-2 max-w-sm mx-auto">
+              <code className="flex-1 text-xs bg-stone-100 px-3 py-2 rounded-lg text-stone-600 truncate dir-ltr" dir="ltr">
+                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug ?? '…'}
+              </code>
+              <button
+                onClick={() => wedding.slug && navigator.clipboard?.writeText(`${window.location.origin}/${locale}/${wedding.slug}`)}
+                className="p-2 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
+                title="Copy"
+              >
+                <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════
+          מודאל הוספת אורח
+      ══════════════════════════════════════════════ */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background:'rgba(0,0,0,0.4)' }}
+          onClick={e => { if (e.target===e.currentTarget) setShowAddModal(false) }}>
+          <div dir={isRTL?'rtl':'ltr'}
+            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+              <h2 className="font-cormorant text-xl text-stone-800">{t.addGuestTitle}</h2>
+              <button onClick={()=>setShowAddModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              {guestModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{guestModalError}</div>}
+              <div>
+                <label className={labelCls}>{t.name} *</label>
+                <input value={newGuest.name} onChange={e=>setNewGuest(p=>({...p,name:e.target.value}))}
+                  placeholder={locale==='he'?'ישראל ישראלי':'Marie Dupont'}
+                  dir="auto"
+                  className={inputCls}/>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>{t.email}</label>
+                  <input type="email" value={newGuest.email} onChange={e=>setNewGuest(p=>({...p,email:e.target.value}))} className={inputCls} dir="ltr"/>
+                </div>
+                <div>
+                  <label className={labelCls}>{t.phone}</label>
+                  <input type="tel" value={newGuest.phone} onChange={e=>setNewGuest(p=>({...p,phone:e.target.value}))} className={inputCls} dir="ltr"/>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>{t.adults}</label>
+                  <input type="number" min={0} value={newGuest.adults_count} onChange={e=>setNewGuest(p=>({...p,adults_count:parseInt(e.target.value)||0}))} className={inputCls} dir="ltr"/>
+                </div>
+                <div>
+                  <label className={labelCls}>{t.children}</label>
+                  <input type="number" min={0} value={newGuest.children_count} onChange={e=>setNewGuest(p=>({...p,children_count:parseInt(e.target.value)||0}))} className={inputCls} dir="ltr"/>
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>{t.status}</label>
+                <div className="flex gap-2">
+                  {(['confirmed','pending','declined'] as const).map(s=>(
+                    <button key={s} type="button" onClick={()=>setNewGuest(p=>({...p,rsvp_status:s}))}
+                      className="flex-1 py-2 text-xs font-medium border transition-all rounded-lg"
+                      style={{
+                        background: newGuest.rsvp_status===s?(s==='confirmed'?'#ecfdf5':s==='declined'?'#fef2f2':'#fffbeb'):'#fafaf9',
+                        color: newGuest.rsvp_status===s?(s==='confirmed'?'#059669':s==='declined'?'#ef4444':'#d97706'):'#a8a29e',
+                        borderColor: newGuest.rsvp_status===s?(s==='confirmed'?'#6ee7b7':s==='declined'?'#fca5a5':'#fcd34d'):'#e7e5e4',
+                      }}>
+                      {s==='confirmed'?t.confirmed:s==='declined'?t.declined:t.pending}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className={labelCls}>{t.dietary}</label>
+                <input value={newGuest.dietary_preferences} onChange={e=>setNewGuest(p=>({...p,dietary_preferences:e.target.value}))}
+                  placeholder={locale==='he'?'צמחוני, כשר...':'Végétarien, Casher...'} className={inputCls}/>
+              </div>
+              <div>
+                <label className={labelCls}>{t.allergies}</label>
+                <input value={newGuest.allergies} onChange={e=>setNewGuest(p=>({...p,allergies:e.target.value}))}
+                  placeholder={locale==='he'?'אגוזים, גלוטן...':'Noix, gluten...'} className={inputCls}/>
+              </div>
+              <div>
+                <label className={labelCls}>{t.notes}</label>
+                <textarea value={newGuest.notes} onChange={e=>setNewGuest(p=>({...p,notes:e.target.value}))} rows={2} dir="auto" className={inputCls+' resize-none'}/>
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-stone-100 bg-stone-50">
+              <button onClick={()=>setShowAddModal(false)}
+                className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors">
+                {t.cancel}
+              </button>
+              <button onClick={handleAddGuest} disabled={savingGuest}
+                className="flex-1 py-3 text-white text-sm font-medium tracking-wide transition-colors disabled:opacity-60"
+                style={{ background: savingGuest?'#a8a29e':'#c9a84c' }}>
+                {savingGuest ? t.saving : t.save}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
