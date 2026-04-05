@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite – Onboarding Page
+//  GrandInvite – Onboarding Pageh
 //  (יצירת חתונה ראשונה לזוג חדש)
 //  src/app/[locale]/onboarding/page.tsx
 // ============================================================
