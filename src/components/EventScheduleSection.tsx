@@ -2,9 +2,16 @@
 import type { EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
 
-interface Props { schedule: EventSchedule[]; locale: Locale; t: Record<string, string> }
+const DEFAULT_T: Record<Locale, Record<string, string>> = {
+  fr: { googleMaps: 'Google Maps', waze: 'Waze' },
+  he: { googleMaps: 'מפות גוגל', waze: 'ווייז' },
+  en: { googleMaps: 'Google Maps', waze: 'Waze' },
+}
 
-export default function EventScheduleSection({ schedule, locale, t }: Props) {
+interface Props { schedule: EventSchedule[]; locale: Locale; t?: Record<string, string> }
+
+export default function EventScheduleSection({ schedule, locale, t: tProp }: Props) {
+  const t = tProp ?? DEFAULT_T[locale] ?? DEFAULT_T.en
   const timeFormat = (time: string) => { const [h, m] = time.split(':'); return `${h}:${m}` }
   const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString(
     locale === 'he' ? 'he-IL' : locale === 'fr' ? 'fr-FR' : 'en-GB',
