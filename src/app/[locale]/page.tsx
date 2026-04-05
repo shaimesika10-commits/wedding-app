@@ -242,6 +242,19 @@ export default async function HomePage({
       </nav>
 
       {/* ── HERO ── */}
+      
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .hero-sub { animation: fadeSlideUp 1.2s ease 0.3s forwards; opacity: 0; }
+        .hero-cta { animation: fadeSlideUp 1.2s ease 0.6s forwards; opacity: 0; }
+      `}</style>
       <section style={{ textAlign: 'center', padding: '5rem 2rem 4rem', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fff',
@@ -253,15 +266,15 @@ export default async function HomePage({
           <span style={{ color: gold }}>✦</span>
         </div>
 
-        <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', fontWeight: 300, lineHeight: 1.2, marginBottom: '1.5rem', letterSpacing: '-0.01em', whiteSpace: 'pre-line' }}>
+        <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', fontWeight: 300, lineHeight: 1.2, marginBottom: '1.5rem', letterSpacing: '-0.01em', whiteSpace: 'pre-line', animation: 'fadeSlideUp 1s ease forwards', opacity: 0 }}>
           {c.hero}
         </h1>
 
-        <p style={{ fontSize: '1.05rem', color: '#78716c', lineHeight: 1.75, marginBottom: '2.5rem', fontFamily: 'system-ui, sans-serif', fontWeight: 300, maxWidth: '620px', margin: '0 auto 2.5rem' }}>
+        <p className="hero-sub" style={{ fontSize: '1.05rem', color: '#78716c', lineHeight: 1.75, marginBottom: '2.5rem', fontFamily: 'system-ui, sans-serif', fontWeight: 300, maxWidth: '620px', margin: '0 auto 2.5rem' }}>
           {c.heroSub}
         </p>
 
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <div className="hero-cta" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <Link href={`/${locale}/login`} style={{
             padding: '0.9rem 2.5rem', background: gold, color: '#fff', borderRadius: '10px',
             textDecoration: 'none', fontSize: '0.9rem', fontFamily: 'system-ui, sans-serif',
