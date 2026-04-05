@@ -469,7 +469,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       {locale==='he'?'סטטוס':locale==='fr'?'Statut':'Status'}
                     </th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale===='he'?'סה״כ':locale==='fr'?'Total':total'}
+                      {locale==='he'?'סה״כ':locale==='fr'?'Total':'Total'}
                     </th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left w-36">
                       {locale==='he'?'מספר שולחן':locale==='fr'?'N° de table':'Table #'}
