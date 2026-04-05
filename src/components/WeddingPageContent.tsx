@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite Ã¢ÂÂ Wedding Page Content (Client Component)
+//  GrandInvite – Wedding Page Content (Client Component)
 //  Handles language switching + AI translation for guests
 //  src/components/WeddingPageContent.tsx
 // ============================================================
@@ -28,8 +28,6 @@ interface Wedding {
   rsvp_deadline: string | null
   max_guests: number
   slug: string
-  font_style: string | null
-  layout_style: string | null
 }
 
 interface WeddingPageContentProps {
@@ -54,23 +52,6 @@ export default function WeddingPageContent({
 
   const isRTL = locale === 'he'
   const tr = t(locale)
-
-  // ── Font selection ──
-  const FONT_MAP: Record<string, { family: string; url: string }> = {
-    playfair:      { family: "'Playfair Display', Georgia, serif",  url: 'Playfair+Display:ital,wght@0,400;0,700;1,400' },
-    'eb-garamond': { family: "'EB Garamond', Georgia, serif",        url: 'EB+Garamond:ital,wght@0,400;1,400' },
-    'great-vibes': { family: "'Great Vibes', cursive",               url: 'Great+Vibes' },
-  }
-  const fontKey = wedding.font_style ?? 'cormorant'
-  const chosenFont = FONT_MAP[fontKey]
-
-  // ── Layout / colour theme ──
-  const LAYOUT_VARS: Record<string, string> = {
-    romantic: '--gold:#d4687a;--gold-dark:#a84d5c;--gold-light:#f2c4cc;--cream:#fdf0f2;',
-    garden:   '--gold:#7a9e7e;--gold-dark:#4e7a53;--gold-light:#c3dbc5;--cream:#f5f9f5;',
-    modern:   '--gold:#1c1917;--gold-dark:#0c0a09;--gold-light:#78716c;--cream:#ffffff;',
-  }
-  const layoutVars = wedding.layout_style ? (LAYOUT_VARS[wedding.layout_style] ?? '') : ''
 
   const formatDate = (loc: Locale) =>
     new Date(wedding.wedding_date).toLocaleDateString(
@@ -121,26 +102,19 @@ export default function WeddingPageContent({
 
   return (
     <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#faf8f5]">
-      {chosenFont && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-          <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${chosenFont.url}&display=swap`} />
-          <style dangerouslySetInnerHTML={{ __html: `.font-cormorant { font-family: ${chosenFont.family} !important; }` }} />
-        </>
-      )}
 
-      {/* Ã¢ÂÂÃ¢ÂÂ Floating Language Switcher Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── Floating Language Switcher ── */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
         {isPending && (
           <span className="text-xs text-stone-400 animate-pulse mx-1">
-            {locale === 'he' ? 'ÃÂÃÂªÃÂ¨ÃÂÃÂ...' : locale === 'fr' ? '...' : '...'}
+            {locale === 'he' ? 'מתרגם...' : locale === 'fr' ? '...' : '...'}
           </span>
         )}
         {(['fr', 'he', 'en'] as const).map(lang => (
           <button
             key={lang}
             onClick={() => switchLanguage(lang)}
-            title={lang === 'fr' ? 'FranÃÂ§ais' : lang === 'he' ? 'ÃÂ¢ÃÂÃÂ¨ÃÂÃÂª' : 'English'}
+            title={lang === 'fr' ? 'Français' : lang === 'he' ? 'עברית' : 'English'}
             className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
             style={{
               background: locale === lang ? '#c9a84c' : 'transparent',
@@ -153,7 +127,7 @@ export default function WeddingPageContent({
         ))}
       </div>
 
-      {/* Ã¢ÂÂÃ¢ÂÂ Hero Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── Hero ── */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {wedding.cover_image_url ? (
           <div
@@ -167,17 +141,17 @@ export default function WeddingPageContent({
         )}
 
         <div className="relative z-10 text-center text-white px-6">
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="h-px w-16 bg-[#c9a84c]" />
+          <div className="fade-in flex items-center justify-center gap-4 mb-8">
+            <div className="h-px w-16 bg-[#c9a84c] shimmer" />
             <span className="text-[#c9a84c] text-xs tracking-[0.4em] uppercase font-light">
               {tr.wedding.saveDate}
             </span>
-            <div className="h-px w-16 bg-[#c9a84c]" />
+            <div className="h-px w-16 bg-[#c9a84c] shimmer" />
           </div>
 
           <h1 className="font-cormorant font-light leading-none mb-6">
             <span className="hero-name block text-5xl md:text-7xl lg:text-8xl">{wedding.bride_name}</span>
-            <span className="block fade-in-delay text-[#c9a84c] text-2xl md:text-3xl my-4 font-light tracking-widest">&amp;</span>
+            <span className="fade-in-delay block text-[#c9a84c] text-2xl md:text-3xl my-4 font-light tracking-widest">&amp;</span>
             <span className="hero-name-delayed block text-5xl md:text-7xl lg:text-8xl">{wedding.groom_name}</span>
           </h1>
 
@@ -186,9 +160,9 @@ export default function WeddingPageContent({
           </p>
 
           {wedding.venue_name && (
-            <p className="text-stone-300 text-base mt-2 font-light">
+            <p className="fade-in-slow text-stone-300 text-base mt-2 font-light">
               {wedding.venue_name}
-              {wedding.venue_city ? ` ÃÂ· ${wedding.venue_city}` : ''}
+              {wedding.venue_city ? ` · ${wedding.venue_city}` : ''}
             </p>
           )}
 
@@ -200,21 +174,21 @@ export default function WeddingPageContent({
         </div>
       </section>
 
-      {/* Ã¢ÂÂÃ¢ÂÂ Welcome Message Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── Welcome Message ── */}
       {welcomeMsg && (
         <section className="max-w-2xl mx-auto px-6 py-20 text-center">
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
           <p
             className="font-cormorant text-xl md:text-2xl text-stone-600 font-light leading-relaxed italic transition-opacity duration-500"
             style={{ opacity: isPending ? 0.4 : 1 }}
           >
             {welcomeMsg}
           </p>
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
         </section>
       )}
 
-      {/* Ã¢ÂÂÃ¢ÂÂ Schedule Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── Schedule ── */}
       {schedule.length > 0 && (
         <section className="bg-white py-20">
           <div className="max-w-4xl mx-auto px-6">
@@ -224,7 +198,7 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* Ã¢ÂÂÃ¢ÂÂ Venue Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── Venue ── */}
       {(wedding.venue_name || wedding.google_maps_url || wedding.waze_url) && (
         <section className="py-20 px-6 bg-stone-50">
           <div className="max-w-4xl mx-auto text-center">
@@ -253,16 +227,16 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* Ã¢ÂÂÃ¢ÂÂ Gallery Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── Gallery ── */}
       <section className="bg-[#faf8f5]">
         <GallerySection weddingId={wedding.id} locale={locale} initialPhotos={galleryPhotos} />
       </section>
 
-      {/* Ã¢ÂÂÃ¢ÂÂ RSVP Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── RSVP ── */}
       <section id="rsvp" className="py-24 px-6 bg-white">
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-12">
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
             <h2 className="section-title mb-3">{tr.rsvp.title}</h2>
             <p className="text-stone-500 font-light">{tr.rsvp.subtitle}</p>
             {wedding.rsvp_deadline && (
@@ -274,13 +248,13 @@ export default function WeddingPageContent({
                 )}
               </p>
             )}
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
           </div>
           <RSVPForm weddingId={wedding.id} locale={locale} t={tr.rsvp} maxGuests={wedding.max_guests} />
         </div>
       </section>
 
-      {/* Ã¢ÂÂÃ¢ÂÂ Footer Ã¢ÂÂÃ¢ÂÂ */}
+      {/* ── Footer ── */}
       <footer className="py-10 text-center bg-stone-900 text-stone-400">
         <p className="font-cormorant text-2xl text-white mb-2">
           {wedding.bride_name} &amp; {wedding.groom_name}
@@ -289,13 +263,13 @@ export default function WeddingPageContent({
         <p className="text-xs mt-6 text-stone-600">
           Powered by <span className="text-[#c9a84c]">GrandInvite</span>
         </p>
-        {/* Host-only management link */}
+        {/* Host-only management link — subtle, always available */}
         <a
           href={`/${locale}/login`}
           className="inline-block mt-4 text-[10px] tracking-widest text-stone-700 hover:text-[#c9a84c] transition-colors uppercase"
-          title={locale === 'he' ? '×× ××¡×ª ×××¨×××' : locale === 'fr' ? 'AccÃ¨s organisateurs' : 'Host login'}
+          title={locale === 'he' ? 'כניסת מארחים' : locale === 'fr' ? 'Accès organisateurs' : 'Host login'}
         >
-          â {locale === 'he' ? '× ××××' : locale === 'fr' ? 'Gestion' : 'Manage'}
+          ⚙ {locale === 'he' ? 'ניהול' : locale === 'fr' ? 'Gestion' : 'Manage'}
         </a>
       </footer>
     </main>
