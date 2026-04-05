@@ -7,23 +7,31 @@ import RSVPForm from '@/components/RSVPForm'
 import GallerySection from '@/components/GallerySection'
 import EventScheduleSection from '@/components/EventScheduleSection'
 
+interface EventItem {
+  id: string
+  event_name: string | null
+  event_date: string | null
+  start_time: string | null
+  end_time: string | null
+  sort_order?: number | null
+}
+
 interface Wedding {
   id: string
-  partner1_name: string
-  partner2_name: string
+  bride_name: string
+  groom_name: string
   wedding_date: string | null
   venue_name: string | null
   venue_address: string | null
+  venue_city: string | null
   welcome_message: string | null
-  invitation_locale: string
+  locale: string
   rsvp_deadline: string | null
-  couple_photo_url: string | null
-  has_brunch: boolean
-  brunch_date: string | null
-  brunch_venue: string | null
-  design_layout: string | null
-  wedding_slug: string
-  schedule?: any[]
+  cover_image_url: string | null
+  slug: string
+  google_maps_url: string | null
+  waze_url: string | null
+  event_schedule?: EventItem[]
 }
 
 interface Props {
@@ -66,10 +74,10 @@ export default function WeddingPageContent({ wedding, photos, locale, couplePhot
   const l = langLabels[currentLocale] || langLabels.fr
   const isRtl = currentLocale === 'he'
 
-  // Auto-translate welcome_message when locale differs from invitation_locale
+  // Auto-translate welcome_message when locale differs from wedding.locale
   useEffect(() => {
     if (!wedding.welcome_message) return
-    if (currentLocale === wedding.invitation_locale) {
+    if (currentLocale === wedding.locale) {
       setTranslatedMessage(null)
       return
     }
@@ -92,16 +100,18 @@ export default function WeddingPageContent({ wedding, photos, locale, couplePhot
       })
       .catch(() => {})
       .finally(() => setTranslating(false))
-  }, [currentLocale, wedding.invitation_locale, wedding.welcome_message])
+  }, [currentLocale, wedding.locale, wedding.welcome_message])
 
   const displayMessage = translatedMessage || wedding.welcome_message
 
-  const mapsUrl = wedding.venue_address
-    ? `https://www.google.com/maps/search/${encodeURIComponent(wedding.venue_address)}`
-    : null
-  const wazeUrl = wedding.venue_address
-    ? `https://waze.com/ul?q=${encodeURIComponent(wedding.venue_address)}`
-    : null
+  const mapsUrl = wedding.google_maps_url ||
+    (wedding.venue_address ? `https://www.google.com/maps/search/${encodeURIComponent(wedding.venue_address)}` : null)
+  const wazeUrl = wedding.waze_url ||
+    (wedding.venue_address ? `https://waze.com/ul?q=${encodeURIComponent(wedding.venue_address)}` : null)
+  const brunchEvent = wedding.event_schedule?.find(e =>
+    e.event_name?.toLowerCase().includes('brunch') || e.event_name?.includes('בראנץ')
+  )
+  const hasBrunch = !!brunchEvent
 
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-stone-50">
@@ -132,7 +142,7 @@ export default function WeddingPageContent({ wedding, photos, locale, couplePhot
             GrandInvite
           </p>
           <h1 className={`text-5xl md:text-7xl font-cormorant mb-6 ${couplePhotoUrl ? 'text-white' : 'text-stone-800'}`}>
-            {wedding.partner1_name} & {wedding.partner2_name}
+            {wedding.bride_name} & {wedding.groom_name}
           </h1>
           {wedding.wedding_date && (
             <p className={`text-lg font-montserrat tracking-wide ${couplePhotoUrl ? 'text-white/80' : 'text-stone-500'}`}>
@@ -182,7 +192,7 @@ export default function WeddingPageContent({ wedding, photos, locale, couplePhot
       )}
 
       {/* Brunch section */}
-      {wedding.has_brunch && wedding.brunch_date && (
+      {hasBrunch && wedding.brunch_date && (
         <section className="py-12 px-4 bg-stone-50">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-2xl font-cormorant text-stone-800 mb-4">{l.brunchTitle}</h2>
@@ -193,8 +203,8 @@ export default function WeddingPageContent({ wedding, photos, locale, couplePhot
       )}
 
       {/* Schedule */}
-      {wedding.schedule && wedding.schedule.length > 0 && (
-        <EventScheduleSection schedule={wedding.schedule} locale={currentLocale} />
+      {wedding.event_schedule && wedding.event_schedule.length > 0 && (
+        <EventScheduleSection schedule={wedding.event_schedule} locale={currentLocale} />
       )}
 
       {/* Gallery */}
@@ -203,7 +213,7 @@ export default function WeddingPageContent({ wedding, photos, locale, couplePhot
       )}
 
       {/* RSVP */}
-      <RSVPForm weddingId={wedding.id} locale={currentLocale} hasBrunch={wedding.has_brunch} rsvpDeadline={wedding.rsvp_deadline} />
+      <RSVPForm weddingId={wedding.id} locale={currentLocale} hasBrunch={hasBrunch} rsvpDeadline={wedding.rsvp_deadline} />
     </div>
   )
 }
