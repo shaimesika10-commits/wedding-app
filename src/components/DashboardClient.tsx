@@ -255,7 +255,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     <div>
       {/* ── Tab Bar ── */}
       <div className="flex border-b border-stone-200 mb-8 gap-1">
-        x([
+        {([
           { key:'guests', label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
           { key:'edit',   label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
           { key:'preview',label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
