@@ -139,7 +139,7 @@ export default function OnboardingPage() {
   const [error, setError] = useState('')
 
   const l = labels[locale] ?? labels.fr
-  const isRTL = locale === 'he'
+  const isRTL = locale === 'he' && step > 0
 
   const [form, setForm] = useState({
     bride_name: '',
