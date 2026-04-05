@@ -233,7 +233,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         const [by, bm, bd] = wedding.wedding_date.split('-').map(Number)
         const brunchDate = new Date(by, bm - 1, bd + 1)  // local time constructor
         const dateStr = `${brunchDate.getFullYear()}-${String(brunchDate.getMonth()+1).padStart(2,'0')}-${String(brunchDate.getDate()).padStart(2,'0')}`
-        const name = locale==='he'?'בראנץ' למחרת':locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
+        const name = locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
 
         const res = await fetch('/api/weddings', {
           method: 'POST',
@@ -697,10 +697,10 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100">
               <div>
                 <p className="text-sm font-medium text-stone-700">
-                  {locale==='he'?'בראנץ' למחרת':locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
+                  {locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
                 </p>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  {locale==='he'?'הוסף בראנץ' ביום שאחרי החתונה (11:00–14:00)'
+                  {locale==='he'?"הוסף בראנץ' ביום שאחרי החתונה (11:00–14:00)"
                     :locale==='fr'?"Ajouter un brunch le lendemain du mariage (11h–14h)"
                     :'Add a brunch event the day after the wedding (11am–2pm)'}
                 </p>
