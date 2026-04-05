@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite – Login / Register Page
+//  GrandInvite â Login / Register Page
 //  src/app/[locale]/login/page.tsx
 // ============================================================
 
@@ -10,85 +10,85 @@ import { createClient } from '@/lib/supabase'
 import type { Locale } from '@/lib/i18n'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
-// ── Labels ──────────────────────────────────────────────────
+// ââ Labels ââââââââââââââââââââââââââââââââââââââââââââââââââ
 const L = {
   fr: {
-    confirmSubject: 'Vérifiez votre e-mail',
-    confirmMsg: (email: string) => `Un lien de confirmation a été envoyé à ${email}. Cliquez sur le lien pour activer votre compte.`,
+    confirmSubject: 'VÃ©rifiez votre e-mail',
+    confirmMsg: (email: string) => `Un lien de confirmation a Ã©tÃ© envoyÃ© Ã  ${email}. Cliquez sur le lien pour activer votre compte.`,
     tabLogin: 'Se connecter',
-    tabRegister: 'Créer un compte',
+    tabRegister: 'CrÃ©er un compte',
     email: 'Adresse e-mail',
     password: 'Mot de passe',
     confirmPassword: 'Confirmer le mot de passe',
-    brideName: 'Prénom de la mariée',
-    groomName: 'Prénom du marié',
+    brideName: 'PrÃ©nom de la mariÃ©e',
+    groomName: 'PrÃ©nom du mariÃ©',
     weddingDate: 'Date du mariage',
-    venue: 'Lieu de réception (facultatif)',
+    venue: 'Lieu de rÃ©ception (facultatif)',
     language: "Langue de l'invitation",
     loginBtn: 'Se connecter',
-    registerBtn: 'Créer mon compte',
+    registerBtn: 'CrÃ©er mon compte',
     loggingIn: 'Connexion...',
-    registering: 'Création...',
+    registering: 'CrÃ©ation...',
     orWith: 'ou',
     google: 'Continuer avec Google',
     facebook: 'Continuer avec Facebook',
-    forgotPassword: 'Mot de passe oublié ?',
+    forgotPassword: 'Mot de passe oubliÃ© ?',
     passwordMismatch: 'Les mots de passe ne correspondent pas.',
     errorLogin: 'Email ou mot de passe incorrect.',
-    errorRegister: 'Une erreur est survenue. Veuillez réessayer.',
-    langFr: 'Français',
-    langHe: 'Hébreu',
+    errorRegister: 'Une erreur est survenue. Veuillez rÃ©essayer.',
+    langFr: 'FranÃ§ais',
+    langHe: 'HÃ©breu',
     langEn: 'Anglais',
     subtitle: 'Votre espace mariage de luxe',
-    passwordHint: 'Minimum 8 caractères',
+    passwordHint: 'Minimum 8 caractÃ¨res',
     // forgot password
-    forgotTitle: 'Mot de passe oublié',
-    forgotSubtitle: 'Entrez votre e-mail pour recevoir un lien de réinitialisation.',
+    forgotTitle: 'Mot de passe oubliÃ©',
+    forgotSubtitle: 'Entrez votre e-mail pour recevoir un lien de rÃ©initialisation.',
     forgotBtn: 'Envoyer le lien',
     forgotSending: 'Envoi...',
-    forgotSentTitle: 'Vérifiez votre e-mail',
-    forgotSentMsg: (email: string) => `Un lien de réinitialisation a été envoyé à ${email}.`,
-    backToLogin: 'Retour à la connexion',
+    forgotSentTitle: 'VÃ©rifiez votre e-mail',
+    forgotSentMsg: (email: string) => `Un lien de rÃ©initialisation a Ã©tÃ© envoyÃ© Ã  ${email}.`,
+    backToLogin: 'Retour Ã  la connexion',
     forgotEmailError: 'Veuillez entrer une adresse e-mail valide.',
   },
   he: {
-    confirmSubject: 'בדקו את האימייל שלכם',
-    confirmMsg: (email: string) => `נשלח קישור אישור לכתובת ${email}. לחצו על הקישור כדי להפעיל את החשבון.`,
-    tabLogin: 'כניסה',
-    tabRegister: 'יצירת חשבון',
-    email: 'כתובת אימייל',
-    password: 'סיסמה',
-    confirmPassword: 'אימות סיסמה',
-    brideName: 'שם הכלה',
-    groomName: 'שם החתן',
-    weddingDate: 'תאריך החתונה',
-    venue: 'מקום האירוע (אופציונלי)',
-    language: 'שפת ההזמנה',
-    loginBtn: 'כניסה',
-    registerBtn: 'יצירת חשבון',
-    loggingIn: 'מתחבר...',
-    registering: 'יוצר חשבון...',
-    orWith: 'או',
-    google: 'המשך עם Google',
-    facebook: 'המשך עם Facebook',
-    forgotPassword: 'שכחת סיסמה?',
-    passwordMismatch: 'הסיסמאות אינן תואמות.',
-    errorLogin: 'אימייל או סיסמה שגויים.',
-    errorRegister: 'אירעה שגיאה. אנא נסה/י שוב.',
-    langFr: 'צרפתית',
-    langHe: 'עברית',
-    langEn: 'אנגלית',
-    subtitle: 'מרחב החתונה היוקרתי שלכם',
-    passwordHint: 'לפחות 8 תווים',
+    confirmSubject: '×××§× ××ª ××××××× ×©×××',
+    confirmMsg: (email: string) => `× ×©×× ×§××©××¨ ×××©××¨ ×××ª×××ª ${email}. ×××¦× ×¢× ××§××©××¨ ××× ×××¤×¢×× ××ª ×××©×××.`,
+    tabLogin: '×× ××¡×',
+    tabRegister: '××¦××¨×ª ××©×××',
+    email: '××ª×××ª ××××××',
+    password: '×¡××¡××',
+    confirmPassword: '×××××ª ×¡××¡××',
+    brideName: '×©× ××××',
+    groomName: '×©× ×××ª×',
+    weddingDate: '×ª××¨×× ×××ª×× ×',
+    venue: '××§×× ××××¨××¢ (×××¤×¦××× ××)',
+    language: '×©×¤×ª ××××× ×',
+    loginBtn: '×× ××¡×',
+    registerBtn: '××¦××¨×ª ××©×××',
+    loggingIn: '××ª×××¨...',
+    registering: '×××¦×¨ ××©×××...',
+    orWith: '××',
+    google: '×××©× ×¢× Google',
+    facebook: '×××©× ×¢× Facebook',
+    forgotPassword: '×©×××ª ×¡××¡××?',
+    passwordMismatch: '××¡××¡××××ª ××× × ×ª×××××ª.',
+    errorLogin: '×××××× ×× ×¡××¡×× ×©×××××.',
+    errorRegister: '×××¨×¢× ×©××××. ×× × × ×¡×/× ×©××.',
+    langFr: '×¦×¨×¤×ª××ª',
+    langHe: '×¢××¨××ª',
+    langEn: '×× ××××ª',
+    subtitle: '××¨×× ×××ª×× × ××××§×¨×ª× ×©×××',
+    passwordHint: '××¤×××ª 8 ×ª××××',
     // forgot password
-    forgotTitle: 'שכחת סיסמה',
-    forgotSubtitle: 'הזינו את כתובת האימייל שלכם לקבלת קישור לאיפוס סיסמה.',
-    forgotBtn: 'שלח קישור',
-    forgotSending: 'שולח...',
-    forgotSentTitle: 'בדקו את האימייל שלכם',
-    forgotSentMsg: (email: string) => `קישור לאיפוס סיסמה נשלח לכתובת ${email}.`,
-    backToLogin: 'חזרה לכניסה',
-    forgotEmailError: 'אנא הזינו כתובת אימייל תקינה.',
+    forgotTitle: '×©×××ª ×¡××¡××',
+    forgotSubtitle: '×××× × ××ª ××ª×××ª ××××××× ×©××× ××§×××ª ×§××©××¨ ××××¤××¡ ×¡××¡××.',
+    forgotBtn: '×©×× ×§××©××¨',
+    forgotSending: '×©×××...',
+    forgotSentTitle: '×××§× ××ª ××××××× ×©×××',
+    forgotSentMsg: (email: string) => `×§××©××¨ ××××¤××¡ ×¡××¡×× × ×©×× ×××ª×××ª ${email}.`,
+    backToLogin: '×××¨× ××× ××¡×',
+    forgotEmailError: '×× × ×××× × ××ª×××ª ×××××× ×ª×§×× ×.',
   },
   en: {
     confirmSubject: 'Check your email',
@@ -138,11 +138,11 @@ function slugify(bride: string, groom: string, date: string): string {
   return `${clean(bride)}-${clean(groom)}-${year}`
 }
 
-// ── Shared field style ───────────────────────────────────────
+// ââ Shared field style âââââââââââââââââââââââââââââââââââââââ
 const fieldCls = 'w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-500 transition bg-stone-50'
 const labelCls = 'block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider'
 
-// ── OAuth button ─────────────────────────────────────────────
+// ââ OAuth button âââââââââââââââââââââââââââââââââââââââââââââ
 function OAuthButton({
   provider,
   label,
@@ -166,7 +166,7 @@ function OAuthButton({
   )
 }
 
-// ── Google Icon ──────────────────────────────────────────────
+// ââ Google Icon ââââââââââââââââââââââââââââââââââââââââââââââ
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 48 48">
@@ -178,7 +178,7 @@ function GoogleIcon() {
   )
 }
 
-// ── Facebook Icon ────────────────────────────────────────────
+// ââ Facebook Icon ââââââââââââââââââââââââââââââââââââââââââââ
 function FacebookIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
@@ -187,7 +187,7 @@ function FacebookIcon() {
   )
 }
 
-// ── Divider ──────────────────────────────────────────────────
+// ââ Divider ââââââââââââââââââââââââââââââââââââââââââââââââââ
 function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 my-5">
@@ -198,7 +198,7 @@ function Divider({ label }: { label: string }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════
+// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 export default function LoginPage() {
   const params = useParams()
   const router = useRouter()
@@ -237,7 +237,7 @@ export default function LoginPage() {
     invitation_locale: locale,
   })
 
-  // ── Handle login ─────────────────────────────────────────
+  // ââ Handle login âââââââââââââââââââââââââââââââââââââââââ
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -254,7 +254,7 @@ export default function LoginPage() {
     router.push(`/${locale}/dashboard`)
   }
 
-  // ── Handle register ──────────────────────────────────────
+  // ââ Handle register ââââââââââââââââââââââââââââââââââââââ
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -282,7 +282,7 @@ export default function LoginPage() {
         return
       }
 
-      // אם הסשן קיים (אימות אימייל מבוטל) — יצירת חתונה מיידית
+      // ×× ××¡×©× ×§××× (×××××ª ×××××× ×××××) â ××¦××¨×ª ××ª×× × ××××××ª
       if (authData.session) {
         const slug = slugify(reg.bride_name, reg.groom_name, reg.wedding_date)
         await supabase.from('weddings').insert({
@@ -301,7 +301,7 @@ export default function LoginPage() {
         return
       }
 
-      // אישור אימייל נדרש — הצג מסך אישור
+      // ×××©××¨ ×××××× × ××¨×© â ××¦× ××¡× ×××©××¨
       setSentEmail(reg.email)
       setView('confirm-email')
       setLoading(false)
@@ -311,7 +311,7 @@ export default function LoginPage() {
     }
   }
 
-  // ── Handle forgot password ──────────────────────────────
+  // ââ Handle forgot password ââââââââââââââââââââââââââââââ
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -338,7 +338,7 @@ export default function LoginPage() {
     }
   }
 
-  // ── Handle OAuth ─────────────────────────────────────────
+  // ââ Handle OAuth âââââââââââââââââââââââââââââââââââââââââ
   const handleOAuth = async (provider: 'google' | 'facebook') => {
     await supabase.auth.signInWithOAuth({
       provider,
@@ -355,7 +355,13 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-lg">
 
-        {/* ── Language Switcher + Logo ── */}
+        {/* ââ Language Switcher + Logo ââ */}
+                <a
+          href={`/${locale}`}
+          className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-[#c9a84c] transition-colors tracking-wide uppercase mb-4 no-underline"
+        >
+          ← {locale === 'he' ? 'דף הבית' : locale === 'fr' ? 'Accueil' : 'Home'}
+        </a>
         <div className="flex justify-end mb-4">
           <LanguageSwitcher currentLocale={locale} variant="inline" />
         </div>
@@ -369,9 +375,9 @@ export default function LoginPage() {
           <p className="text-stone-400 text-sm">{l.subtitle}</p>
         </div>
 
-        {/* ══════════════════════════════════════
-            מסך: אישור אימייל לאחר הרשמה
-        ══════════════════════════════════════ */}
+        {/* ââââââââââââââââââââââââââââââââââââââ
+            ××¡×: ×××©××¨ ×××××× ××××¨ ××¨×©××
+        ââââââââââââââââââââââââââââââââââââââ */}
         {view === 'confirm-email' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#fdf6e3' }}>
@@ -390,9 +396,9 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* ══════════════════════════════════════
-            מסך: שכחת סיסמה — הזנת אימייל
-        ══════════════════════════════════════ */}
+        {/* ââââââââââââââââââââââââââââââââââââââ
+            ××¡×: ×©×××ª ×¡××¡×× â ××× ×ª ××××××
+        ââââââââââââââââââââââââââââââââââââââ */}
         {view === 'forgot' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
             <div className="mb-6">
@@ -433,14 +439,14 @@ export default function LoginPage() {
               onClick={() => { setView('login'); setError('') }}
               className="mt-4 w-full text-center text-xs text-stone-400 hover:text-stone-600 transition"
             >
-              ← {l.backToLogin}
+              â {l.backToLogin}
             </button>
           </div>
         )}
 
-        {/* ══════════════════════════════════════
-            מסך: שכחת סיסמה — לינק נשלח
-        ══════════════════════════════════════ */}
+        {/* ââââââââââââââââââââââââââââââââââââââ
+            ××¡×: ×©×××ª ×¡××¡×× â ××× ×§ × ×©××
+        ââââââââââââââââââââââââââââââââââââââ */}
         {view === 'forgot-sent' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#fdf6e3' }}>
@@ -459,9 +465,9 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* ══════════════════════════════════════
+        {/* ââââââââââââââââââââââââââââââââââââââ
             Tabs + Card (login / register)
-        ══════════════════════════════════════ */}
+        ââââââââââââââââââââââââââââââââââââââ */}
         {(view === 'login' || view === 'register') && (<>
 
         <div className="flex bg-stone-100 rounded-2xl p-1 mb-6">
@@ -481,7 +487,7 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* ── Card ── */}
+        {/* ââ Card ââ */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
 
           {(error || urlError) && (
@@ -490,7 +496,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* ════ LOGIN TAB ════ */}
+          {/* ââââ LOGIN TAB ââââ */}
           {view === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
@@ -523,7 +529,7 @@ export default function LoginPage() {
                   required
                   dir="ltr"
                   className={fieldCls}
-                  placeholder="••••••••"
+                  placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"
                 />
               </div>
 
@@ -543,7 +549,7 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* ════ REGISTER TAB ════ */}
+          {/* ââââ REGISTER TAB ââââ */}
           {view === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4">
 
@@ -570,7 +576,7 @@ export default function LoginPage() {
                     required
                     dir="ltr"
                     className={fieldCls}
-                    placeholder="••••••••"
+                    placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"
                   />
                 </div>
                 <div>
@@ -582,7 +588,7 @@ export default function LoginPage() {
                     required
                     dir="ltr"
                     className={fieldCls}
-                    placeholder="••••••••"
+                    placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"
                   />
                 </div>
               </div>
@@ -601,7 +607,7 @@ export default function LoginPage() {
                     onChange={e => setReg(p => ({ ...p, bride_name: e.target.value }))}
                     required
                     className={fieldCls}
-                    placeholder={locale === 'he' ? 'נועה' : locale === 'en' ? 'Sophie' : 'Sophie'}
+                    placeholder={locale === 'he' ? '× ××¢×' : locale === 'en' ? 'Sophie' : 'Sophie'}
                   />
                 </div>
                 <div>
@@ -612,7 +618,7 @@ export default function LoginPage() {
                     onChange={e => setReg(p => ({ ...p, groom_name: e.target.value }))}
                     required
                     className={fieldCls}
-                    placeholder={locale === 'he' ? 'דניאל' : locale === 'en' ? 'James' : 'Antoine'}
+                    placeholder={locale === 'he' ? '×× ×××' : locale === 'en' ? 'James' : 'Antoine'}
                   />
                 </div>
               </div>
@@ -635,7 +641,7 @@ export default function LoginPage() {
                   value={reg.venue}
                   onChange={e => setReg(p => ({ ...p, venue: e.target.value }))}
                   className={fieldCls}
-                  placeholder={locale === 'he' ? 'אולם אירועים' : 'Château de Versailles'}
+                  placeholder={locale === 'he' ? '×××× ×××¨××¢××' : 'ChÃ¢teau de Versailles'}
                 />
               </div>
 
@@ -680,7 +686,7 @@ export default function LoginPage() {
         </>)}
 
         <p className="text-center text-xs text-stone-300 mt-6">
-          © {new Date().getFullYear()} GrandInvite
+          Â© {new Date().getFullYear()} GrandInvite
         </p>
       </div>
     </main>
