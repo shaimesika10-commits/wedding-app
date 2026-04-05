@@ -48,7 +48,7 @@ export async function getWeddingBySlug(slug: string): Promise<WeddingWithSchedul
     .eq('is_active', true)
     .single()
 
-  if (error) return null
+  if (error) { console.error('[getWeddingBySlug] slug:', slug, 'error:', JSON.stringify(error)); return null }
   return data as unknown as WeddingWithSchedule
 }
 
