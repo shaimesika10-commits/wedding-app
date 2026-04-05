@@ -33,6 +33,7 @@ export interface Database {
           rsvp_deadline: string | null
           max_guests: number
           locale: string
+          invitation_locale: string | null
           is_active: boolean
           plan: string
           created_at: string
@@ -56,6 +57,7 @@ export interface Database {
           rsvp_deadline?: string | null
           max_guests?: number
           locale?: string
+          invitation_locale?: string | null
           is_active?: boolean
           plan?: string
           created_at?: string
@@ -79,6 +81,7 @@ export interface Database {
           rsvp_deadline?: string | null
           max_guests?: number
           locale?: string
+          invitation_locale?: string | null
           is_active?: boolean
           plan?: string
           updated_at?: string
