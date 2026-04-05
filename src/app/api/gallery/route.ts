@@ -1,9 +1,9 @@
-// ============================================================
+// ===========================================================
 //  GrandInvite – Gallery API Route
-//  POST /api/gallery  → העלאת תמונה ל-Supabase Storage
-//  GET  /api/gallery?wedding_id=xxx → רשימת תמונות
+//  POST /api/gallery  → העלאת תמונה  ל-Supabase Storage
+//  GET  /api/gallery?wedding_id=xxx → רשימת תמונה
 //  src/app/api/gallery/route.ts
-// ============================================================
+// ===========================================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
@@ -11,14 +11,17 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 const BUCKET_NAME = 'wedding-gallery'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-
+// ── GET – רשימת תמונות ──────────────────────────────────────
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const wedding_id = searchParams.get('wedding_id')
 
     if (!wedding_id) {
-      return NextResponse.json({ error: 'Missing wedding_id' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Missing wedding_id' },
+        { status: 400 }
+      )
     }
 
     const supabase = await createServerSupabaseClient()
@@ -40,7 +43,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
+// ── POST – פעלאת  תמונה ──────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
@@ -50,9 +53,13 @@ export async function POST(req: NextRequest) {
     const caption = formData.get('caption') as string | null
 
     if (!file || !wedding_id) {
-      return NextResponse.json({ error: 'Missing file or wedding_id' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Missing file or wedding_id' },
+        { status: 400 }
+      )
     }
 
+    // Validation
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
         { error: 'Invalid file type. Only JPEG, PNG, WebP and GIF are allowed.' },
@@ -69,6 +76,7 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createServerSupabaseClient()
 
+    // וידוא שהחתונה  קייקה ופעילה
     const { data: wedding } = await supabase
       .from('weddings')
       .select('id')
@@ -77,26 +85,41 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (!wedding) {
-      return NextResponse.json({ error: 'Wedding not found or inactive' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Wedding not found or inactive' },
+        { status: 404 }
+      )
     }
 
+    // ימירת ייח חיקודי
     const ext = file.name.split('.').pop() ?? 'jpg'
     const fileName = `${wedding_id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
+    // העלאה  ל-Storage
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
     const { error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
-      .upload(fileName, buffer, { contentType: file.type, upsert: false })
+      .upload(fileName, buffer, {
+        contentType: file.type,
+        upsert: false,
+      })
 
     if (uploadError) {
       console.error('Storage upload error:', uploadError)
-      return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Failed to upload image' },
+        { status: 500 }
+      )
     }
 
-    const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(fileName)
+    // ייקת URL ציבורי
+    const { data: urlData } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(fileName)
 
+    // שמירה ב-DB
     const { data: photo, error: dbError } = await supabase
       .from('gallery_photos')
       .insert({
@@ -120,7 +143,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
+// ── DELETE – מחיקת תמונה (מאקור בלבד) ───────────────────────
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -128,7 +151,10 @@ export async function DELETE(req: NextRequest) {
     const wedding_id = searchParams.get('wedding_id')
 
     if (!photo_id || !wedding_id) {
-      return NextResponse.json({ error: 'Missing photo_id or wedding_id' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Missing photo_id or wedding_id' },
+        { status: 400 }
+      )
     }
 
     const supabase = await createServerSupabaseClient()
@@ -178,4 +204,4 @@ export async function DELETE(req: NextRequest) {
     console.error('Gallery DELETE error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-    }
+}
