@@ -143,6 +143,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     google_maps_url: wedding.google_maps_url ?? '',
     waze_url: wedding.waze_url ?? '',
     locale: wedding.locale,
+    font_style: wedding.font_style ?? 'cormorant',
   })
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState('')
@@ -518,6 +519,32 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             </div>
           </div>
 
+
+          {/* ── Font / Appearance ── */}
+          <div>
+            <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
+              {locale==='he'?'עיצוב גופן':locale==='fr'?"Typographie":'Typography'}
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { key:'cormorant',   label:locale==='he'?'קלאסי':locale==='fr'?'Classique':'Classic',   preview:'Garamond', css:"'Cormorant Garamond',serif" },
+                { key:'playfair',    label:locale==='he'?'רומנטי':locale==='fr'?'Romantique':'Romantic', preview:'Playfair', css:"'Playfair Display',serif" },
+                { key:'eb-garamond', label:locale==='he'?'אלגנטי':locale==='fr'?'Élégant':'Elegant',    preview:'Garamond', css:"'EB Garamond',serif" },
+                { key:'great-vibes', label:locale==='he'?'כתב יד':locale==='fr'?'Script':'Script',       preview:'Script',   css:"'Great Vibes',cursive" },
+              ] as const).map(font=>(
+                <button key={font.key} type="button"
+                  onClick={()=>setEditForm(p=>({...p,font_style:font.key}))}
+                  className="p-3 border-2 rounded-xl text-center transition-all"
+                  style={{
+                    borderColor:editForm.font_style===font.key?'#c9a84c':'#e7e5e4',
+                    background:editForm.font_style===font.key?'#fffbf0':'#faf8f5',
+                  }}>
+                  <span className="text-2xl" style={{fontFamily:font.css}}>{font.preview}</span>
+                  <p className="text-xs text-stone-500 mt-1">{font.label}</p>
+                </button>
+              ))}
+            </div>
+          </div>
           {/* ── לו"W�: כפתור בראנץ' ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
