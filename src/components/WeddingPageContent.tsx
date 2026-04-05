@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite â Wedding Page Content (Client Component)
+//  GrandInvite Ã¢ÂÂ Wedding Page Content (Client Component)
 //  Handles language switching + AI translation for guests
 //  src/components/WeddingPageContent.tsx
 // ============================================================
@@ -103,18 +103,18 @@ export default function WeddingPageContent({
   return (
     <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#faf8f5]">
 
-      {/* ââ Floating Language Switcher ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ Floating Language Switcher Ã¢ÂÂÃ¢ÂÂ */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
         {isPending && (
           <span className="text-xs text-stone-400 animate-pulse mx-1">
-            {locale === 'he' ? '××ª×¨××...' : locale === 'fr' ? '...' : '...'}
+            {locale === 'he' ? 'ÃÂÃÂªÃÂ¨ÃÂÃÂ...' : locale === 'fr' ? '...' : '...'}
           </span>
         )}
         {(['fr', 'he', 'en'] as const).map(lang => (
           <button
             key={lang}
             onClick={() => switchLanguage(lang)}
-            title={lang === 'fr' ? 'FranÃ§ais' : lang === 'he' ? '×¢××¨××ª' : 'English'}
+            title={lang === 'fr' ? 'FranÃÂ§ais' : lang === 'he' ? 'ÃÂ¢ÃÂÃÂ¨ÃÂÃÂª' : 'English'}
             className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
             style={{
               background: locale === lang ? '#c9a84c' : 'transparent',
@@ -127,7 +127,7 @@ export default function WeddingPageContent({
         ))}
       </div>
 
-      {/* ââ Hero ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ Hero Ã¢ÂÂÃ¢ÂÂ */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {wedding.cover_image_url ? (
           <div
@@ -140,7 +140,7 @@ export default function WeddingPageContent({
           <div className="absolute inset-0 bg-gradient-to-b from-stone-800 to-stone-900" />
         )}
 
-        <div className="relative z-10 text-center text-white px-6 fade-in">
+        <div className="relative z-10 text-center text-white px-6">
           <div className="flex items-center justify-center gap-4 mb-8">
             <div className="h-px w-16 bg-[#c9a84c]" />
             <span className="text-[#c9a84c] text-xs tracking-[0.4em] uppercase font-light">
@@ -150,23 +150,23 @@ export default function WeddingPageContent({
           </div>
 
           <h1 className="font-cormorant font-light leading-none mb-6">
-            <span className="block text-5xl md:text-7xl lg:text-8xl">{wedding.bride_name}</span>
-            <span className="block text-[#c9a84c] text-2xl md:text-3xl my-4 font-light tracking-widest">&amp;</span>
-            <span className="block text-5xl md:text-7xl lg:text-8xl">{wedding.groom_name}</span>
+            <span className="hero-name block text-5xl md:text-7xl lg:text-8xl">{wedding.bride_name}</span>
+            <span className="block fade-in-delay text-[#c9a84c] text-2xl md:text-3xl my-4 font-light tracking-widest">&amp;</span>
+            <span className="hero-name-delayed block text-5xl md:text-7xl lg:text-8xl">{wedding.groom_name}</span>
           </h1>
 
-          <p className="text-stone-200 text-lg md:text-xl font-light tracking-widest uppercase mt-6">
+          <p className="fade-in-slow text-stone-200 text-lg md:text-xl font-light tracking-widest uppercase mt-6">
             {weddingDateFormatted}
           </p>
 
           {wedding.venue_name && (
             <p className="text-stone-300 text-base mt-2 font-light">
               {wedding.venue_name}
-              {wedding.venue_city ? ` Â· ${wedding.venue_city}` : ''}
+              {wedding.venue_city ? ` ÃÂ· ${wedding.venue_city}` : ''}
             </p>
           )}
 
-          <div className="mt-12 animate-bounce">
+          <div className="mt-12 scroll-pulse">
             <svg className="w-6 h-6 mx-auto text-[#c9a84c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
             </svg>
@@ -174,21 +174,21 @@ export default function WeddingPageContent({
         </div>
       </section>
 
-      {/* ââ Welcome Message ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ Welcome Message Ã¢ÂÂÃ¢ÂÂ */}
       {welcomeMsg && (
         <section className="max-w-2xl mx-auto px-6 py-20 text-center">
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
           <p
             className="font-cormorant text-xl md:text-2xl text-stone-600 font-light leading-relaxed italic transition-opacity duration-500"
             style={{ opacity: isPending ? 0.4 : 1 }}
           >
             {welcomeMsg}
           </p>
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
         </section>
       )}
 
-      {/* ââ Schedule ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ Schedule Ã¢ÂÂÃ¢ÂÂ */}
       {schedule.length > 0 && (
         <section className="bg-white py-20">
           <div className="max-w-4xl mx-auto px-6">
@@ -198,7 +198,7 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* ââ Venue ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ Venue Ã¢ÂÂÃ¢ÂÂ */}
       {(wedding.venue_name || wedding.google_maps_url || wedding.waze_url) && (
         <section className="py-20 px-6 bg-stone-50">
           <div className="max-w-4xl mx-auto text-center">
@@ -227,16 +227,16 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* ââ Gallery ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ Gallery Ã¢ÂÂÃ¢ÂÂ */}
       <section className="bg-[#faf8f5]">
         <GallerySection weddingId={wedding.id} locale={locale} initialPhotos={galleryPhotos} />
       </section>
 
-      {/* ââ RSVP ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ RSVP Ã¢ÂÂÃ¢ÂÂ */}
       <section id="rsvp" className="py-24 px-6 bg-white">
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-12">
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
             <h2 className="section-title mb-3">{tr.rsvp.title}</h2>
             <p className="text-stone-500 font-light">{tr.rsvp.subtitle}</p>
             {wedding.rsvp_deadline && (
@@ -248,13 +248,13 @@ export default function WeddingPageContent({
                 )}
               </p>
             )}
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">Ã¢ÂÂ¦</span></div>
           </div>
           <RSVPForm weddingId={wedding.id} locale={locale} t={tr.rsvp} maxGuests={wedding.max_guests} />
         </div>
       </section>
 
-      {/* ââ Footer ââ */}
+      {/* Ã¢ÂÂÃ¢ÂÂ Footer Ã¢ÂÂÃ¢ÂÂ */}
       <footer className="py-10 text-center bg-stone-900 text-stone-400">
         <p className="font-cormorant text-2xl text-white mb-2">
           {wedding.bride_name} &amp; {wedding.groom_name}
@@ -267,9 +267,9 @@ export default function WeddingPageContent({
         <a
           href={`/${locale}/login`}
           className="inline-block mt-4 text-[10px] tracking-widest text-stone-700 hover:text-[#c9a84c] transition-colors uppercase"
-          title={locale === 'he' ? 'כניסת מארחים' : locale === 'fr' ? 'Accès organisateurs' : 'Host login'}
+          title={locale === 'he' ? '×× ××¡×ª ×××¨×××' : locale === 'fr' ? 'AccÃ¨s organisateurs' : 'Host login'}
         >
-          ⚙ {locale === 'he' ? 'ניהול' : locale === 'fr' ? 'Gestion' : 'Manage'}
+          â {locale === 'he' ? '× ××××' : locale === 'fr' ? 'Gestion' : 'Manage'}
         </a>
       </footer>
     </main>
