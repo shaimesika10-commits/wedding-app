@@ -28,6 +28,7 @@ interface Wedding {
   rsvp_deadline: string | null
   max_guests: number
   slug: string
+  font_style: string | null
 }
 
 interface WeddingPageContentProps {
@@ -52,6 +53,15 @@ export default function WeddingPageContent({
 
   const isRTL = locale === 'he'
   const tr = t(locale)
+
+  // ── Font selection ──
+  const FONT_MAP: Record<string, { family: string; url: string }> = {
+    playfair:      { family: "'Playfair Display', Georgia, serif",  url: 'Playfair+Display:ital,wght@0,400;0,700;1,400' },
+    'eb-garamond': { family: "'EB Garamond', Georgia, serif",        url: 'EB+Garamond:ital,wght@0,400;1,400' },
+    'great-vibes': { family: "'Great Vibes', cursive",               url: 'Great+Vibes' },
+  }
+  const fontKey = wedding.font_style ?? 'cormorant'
+  const chosenFont = FONT_MAP[fontKey]
 
   const formatDate = (loc: Locale) =>
     new Date(wedding.wedding_date).toLocaleDateString(
@@ -102,6 +112,13 @@ export default function WeddingPageContent({
 
   return (
     <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#faf8f5]">
+      {chosenFont && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+          <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?family=${chosenFont.url}&display=swap`} />
+          <style dangerouslySetInnerHTML={{ __html: `.font-cormorant { font-family: ${chosenFont.family} !important; }` }} />
+        </>
+      )}
 
       {/* Ã¢ÂÂÃ¢ÂÂ Floating Language Switcher Ã¢ÂÂÃ¢ÂÂ */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
