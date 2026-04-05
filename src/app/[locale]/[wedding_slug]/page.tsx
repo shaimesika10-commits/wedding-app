@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite â Wedding Invitation Page (Server Component)
+//  GrandInvite – Wedding Invitation Page (Server Component)
 //  Fetches data server-side, renders via client component
 //  src/app/[locale]/[wedding_slug]/page.tsx
 // ============================================================
@@ -17,13 +17,44 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale; wedding_slug: string }>
 }): Promise<Metadata> {
-  const { wedding_slug } = await params
+  const { locale, wedding_slug } = await params
   const wedding = await getWeddingBySlug(wedding_slug)
   if (!wedding) return { title: 'Invitation | GrandInvite' }
+
+  const coupleNames = `${wedding.bride_name} & ${wedding.groom_name}`
+  const pageTitle = `${coupleNames} — Invitation`
+
+  // Locale-aware description
+  const desc =
+    wedding.welcome_message ??
+    (locale === 'fr'
+      ? `Vous êtes invité(e) au mariage de ${coupleNames}. Confirmez votre présence.`
+      : locale === 'he'
+      ? `אתם מוזמנים לחתונה של ${coupleNames}. אשרו הגעה.`
+      : `You're invited to celebrate the wedding of ${coupleNames}. Please RSVP.`)
+
+  const images = wedding.cover_image_url
+    ? [{ url: wedding.cover_image_url, width: 1200, height: 630, alt: coupleNames }]
+    : [{ url: 'https://wedding-app-pearl-alpha.vercel.app/logo512.png', width: 512, height: 512, alt: 'GrandInvite' }]
+
   return {
-    title: `${wedding.bride_name} & ${wedding.groom_name} | GrandInvite`,
-    description: wedding.welcome_message ?? 'Join us to celebrate our wedding!',
-    openGraph: { images: wedding.cover_image_url ? [wedding.cover_image_url] : [] },
+    title: pageTitle,
+    description: desc,
+    openGraph: {
+      title: pageTitle,
+      description: desc,
+      type: 'website',
+      siteName: 'GrandInvite',
+      locale: locale === 'he' ? 'he_IL' : locale === 'fr' ? 'fr_FR' : 'en_US',
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: desc,
+      images: images.map(function(img) { return img.url }),
+    },
+    robots: { index: false, follow: false }, // private invitations — no indexing
   }
 }
 
@@ -51,7 +82,7 @@ export default async function WeddingPage({
         originalLocale={locale}
       />
 
-      {/* Floating AI assistant â visible to guests who want help */}
+      {/* Floating AI assistant — visible to guests who want help */}
       {/* Note: this is a lightweight helper for guests, not for building the invitation */}
     </>
   )
