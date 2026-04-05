@@ -4,9 +4,9 @@
 //  (יצירת חתונה ראשונה לזוג חדש)
 //  src/app/[locale]/onboarding/page.tsx
 // ============================================================
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase'
 import type { Locale } from '@/lib/i18n'
 
 const labels = {
@@ -103,9 +103,9 @@ const labels = {
 }
 
 const LANGUAGES: { code: Locale; flag: string; label: string; nativeLabel: string; dir: 'ltr' | 'rtl' }[] = [
-  { code: 'fr', flag: '🇫🇷', label: 'Français',  nativeLabel: 'French',  dir: 'ltr' },
-  { code: 'he', flag: '🇮🇱', label: 'עברית',     nativeLabel: 'Hebrew',  dir: 'rtl' },
-  { code: 'en', flag: '🇬🇧', label: 'English',   nativeLabel: 'English', dir: 'ltr' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français', nativeLabel: 'French', dir: 'ltr' },
+  { code: 'he', flag: '🇮🇱', label: 'עברית', nativeLabel: 'Hebrew', dir: 'rtl' },
+  { code: 'en', flag: '🇬🇧', label: 'English', nativeLabel: 'English', dir: 'ltr' },
 ]
 
 function slugify(bride: string, groom: string, date: string): string {
@@ -132,10 +132,19 @@ export default function OnboardingPage() {
   const [locale, setLocale] = useState<Locale>(urlLocale)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [userEmail, setUserEmail] = useState('')
 
   const l = labels[locale] ?? labels.fr
-  // Only apply RTL direction from step 1 onwards — applying dir change at step 0 causes
-  // a layout shift mid-click that requires a double-click to advance (browser click-cancel bug)
+
+  // Fetch current user email for display in header
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.email) setUserEmail(data.user.email)
+    })
+  }, [])
+
+  // Only apply RTL direction from step 1 onwards
   const isRTL = locale === 'he' && step > 0
 
   const [form, setForm] = useState({
@@ -164,14 +173,12 @@ export default function OnboardingPage() {
       invitation_locale: lang,
       venue_country: lang === 'he' ? 'Israel' : 'France',
     }))
-    // Update URL without full reload so back-button works correctly
     setStep(1)
   }
 
   const handleCreate = async () => {
     setError('')
     setLoading(true)
-
     try {
       const response = await fetch('/api/create-wedding', {
         method: 'POST',
@@ -189,9 +196,7 @@ export default function OnboardingPage() {
           welcome_message: form.welcome_message,
         }),
       })
-
       const result = await response.json()
-
       if (!response.ok) {
         if (result.code === 'AUTH_ERROR') {
           setLoading(false)
@@ -202,8 +207,6 @@ export default function OnboardingPage() {
         setLoading(false)
         return
       }
-
-      // Full page reload bypasses Next.js router cache
       window.location.href = `/${locale}/dashboard`
     } catch (err) {
       setError(`Network error: ${err instanceof Error ? err.message : String(err)}`)
@@ -211,9 +214,7 @@ export default function OnboardingPage() {
     }
   }
 
-
-  const inputCls =
-    'w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:border-gold transition'
+  const inputCls = 'w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:border-gold transition'
 
   return (
     <main
@@ -222,24 +223,31 @@ export default function OnboardingPage() {
       style={{ background: '#faf8f5' }}
     >
       <div className="w-full max-w-lg">
-
-        {/* ── Logo ── */}
-        <div className="text-center mb-8">
-          <h1 className="font-cormorant text-4xl font-light text-stone-900 tracking-widest mb-2">
-            Grand<span style={{ color: '#c9a84c' }}>Invite</span>
-          </h1>
+        {/* ── Logo → home link + user email ── */}
+        <div className="relative text-center mb-8">
+          {/* User email pill — top right corner */}
+          {userEmail && step > 0 && (
+            <div className="absolute top-0 right-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-stone-100 shadow-sm">
+              <div className="w-2 h-2 rounded-full bg-[#c9a84c]" />
+              <span className="text-xs text-stone-500 max-w-[140px] truncate">{userEmail}</span>
+            </div>
+          )}
+          <a href={`/${locale}`} className="inline-block">
+            <h1 className="font-cormorant text-4xl font-light text-stone-900 tracking-widest mb-2 hover:opacity-80 transition-opacity">
+              Grand<span style={{ color: '#c9a84c' }}>Invite</span>
+            </h1>
+          </a>
           <div className="h-px w-16 mx-auto my-4" style={{ background: '#c9a84c' }} />
         </div>
 
         {/* ══════════════════════════════════════════════
             STEP 0 — Language selector
-        ══════════════════════════════════════════════ */}
+            ══════════════════════════════════════════════ */}
         {step === 0 && (
           <div className="text-center">
             <p className="text-stone-400 text-xs uppercase tracking-widest mb-8">
               Choose your language · Choisissez votre langue · בחרו שפה
             </p>
-
             <div className="space-y-3">
               {LANGUAGES.map(lang => (
                 <button
@@ -255,7 +263,11 @@ export default function OnboardingPage() {
                     </p>
                     <p className="text-xs text-stone-400 mt-0.5">{lang.nativeLabel}</p>
                   </div>
-                  <svg className="w-4 h-4 text-stone-300 flex-shrink-0" style={{ transform: lang.dir === 'rtl' ? 'rotate(180deg)' : '' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    className="w-4 h-4 text-stone-300 flex-shrink-0"
+                    style={{ transform: lang.dir === 'rtl' ? 'rotate(180deg)' : '' }}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -266,7 +278,7 @@ export default function OnboardingPage() {
 
         {/* ══════════════════════════════════════════════
             STEPS 1-3 — Form
-        ══════════════════════════════════════════════ */}
+            ══════════════════════════════════════════════ */}
         {step > 0 && (
           <>
             {/* Progress indicator */}
@@ -292,7 +304,7 @@ export default function OnboardingPage() {
               ))}
             </div>
 
-            {/* Language badge — lets them go back and change */}
+            {/* Language badge */}
             <div className="flex justify-center mb-4">
               <button
                 onClick={() => setStep(0)}
@@ -317,38 +329,15 @@ export default function OnboardingPage() {
               {/* ── Step 1: The couple ── */}
               {step === 1 && (
                 <div className="space-y-5">
-                  <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">
-                    {l.step1}
-                  </h2>
-
+                  <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">{l.step1}</h2>
                   <div>
-                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                      {l.brideName}
-                    </label>
-                    <input
-                      name="bride_name"
-                      value={form.bride_name}
-                      onChange={handleChange}
-                      required
-                      className={inputCls}
-                      placeholder="Sophie"
-                    />
+                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.brideName}</label>
+                    <input name="bride_name" value={form.bride_name} onChange={handleChange} required className={inputCls} placeholder="Sophie" />
                   </div>
-
                   <div>
-                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                      {l.groomName}
-                    </label>
-                    <input
-                      name="groom_name"
-                      value={form.groom_name}
-                      onChange={handleChange}
-                      required
-                      className={inputCls}
-                      placeholder="Antoine"
-                    />
+                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.groomName}</label>
+                    <input name="groom_name" value={form.groom_name} onChange={handleChange} required className={inputCls} placeholder="Antoine" />
                   </div>
-
                   <button
                     onClick={() => form.bride_name && form.groom_name && setStep(2)}
                     disabled={!form.bride_name || !form.groom_name}
@@ -363,97 +352,36 @@ export default function OnboardingPage() {
               {/* ── Step 2: Date & Venue ── */}
               {step === 2 && (
                 <div className="space-y-5">
-                  <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">
-                    {l.step2}
-                  </h2>
-
+                  <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">{l.step2}</h2>
                   <div>
-                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                      {l.weddingDate}
-                    </label>
-                    <input
-                      type="date"
-                      name="wedding_date"
-                      value={form.wedding_date}
-                      onChange={handleChange}
-                      required
-                      className={inputCls}
-                      dir="ltr"
-                    />
+                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.weddingDate}</label>
+                    <input type="date" name="wedding_date" value={form.wedding_date} onChange={handleChange} required className={inputCls} dir="ltr" />
                   </div>
-
                   <div>
-                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                      {l.venueName}
-                    </label>
-                    <input
-                      name="venue_name"
-                      value={form.venue_name}
-                      onChange={handleChange}
-                      className={inputCls}
-                      placeholder="Château de Versailles"
-                    />
+                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.venueName}</label>
+                    <input name="venue_name" value={form.venue_name} onChange={handleChange} className={inputCls} placeholder="Château de Versailles" />
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                        {l.venueCity}
-                      </label>
-                      <input
-                        name="venue_city"
-                        value={form.venue_city}
-                        onChange={handleChange}
-                        className={inputCls}
-                        placeholder="Paris"
-                      />
+                      <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.venueCity}</label>
+                      <input name="venue_city" value={form.venue_city} onChange={handleChange} className={inputCls} placeholder="Paris" />
                     </div>
                     <div>
-                      <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                        {l.venueCountry}
-                      </label>
-                      <select
-                        name="venue_country"
-                        value={form.venue_country}
-                        onChange={handleChange}
-                        className={inputCls + ' bg-white'}
-                      >
+                      <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.venueCountry}</label>
+                      <select name="venue_country" value={form.venue_country} onChange={handleChange} className={inputCls + ' bg-white'}>
                         <option value="France">{l.france}</option>
                         <option value="Israel">{l.israel}</option>
                         <option value="Other">{l.other}</option>
                       </select>
                     </div>
                   </div>
-
                   <div>
-                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                      {l.rsvpDeadline}
-                    </label>
-                    <input
-                      type="date"
-                      name="rsvp_deadline"
-                      value={form.rsvp_deadline}
-                      onChange={handleChange}
-                      className={inputCls}
-                      dir="ltr"
-                    />
+                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.rsvpDeadline}</label>
+                    <input type="date" name="rsvp_deadline" value={form.rsvp_deadline} onChange={handleChange} className={inputCls} dir="ltr" />
                   </div>
-
                   <div className="flex gap-3">
-                    <button
-                      onClick={() => setStep(1)}
-                      className="flex-1 py-3.5 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium tracking-wider uppercase transition hover:bg-stone-50"
-                    >
-                      {l.back}
-                    </button>
-                    <button
-                      onClick={() => form.wedding_date && setStep(3)}
-                      disabled={!form.wedding_date}
-                      className="flex-1 py-3.5 rounded-xl text-white text-sm font-medium tracking-wider uppercase transition-all disabled:opacity-40"
-                      style={{ background: '#c9a84c' }}
-                    >
-                      {l.next}
-                    </button>
+                    <button onClick={() => setStep(1)} className="flex-1 py-3.5 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium tracking-wider uppercase transition hover:bg-stone-50">{l.back}</button>
+                    <button onClick={() => form.wedding_date && setStep(3)} disabled={!form.wedding_date} className="flex-1 py-3.5 rounded-xl text-white text-sm font-medium tracking-wider uppercase transition-all disabled:opacity-40" style={{ background: '#c9a84c' }}>{l.next}</button>
                   </div>
                 </div>
               )}
@@ -461,53 +389,22 @@ export default function OnboardingPage() {
               {/* ── Step 3: Preferences ── */}
               {step === 3 && (
                 <div className="space-y-5">
-                  <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">
-                    {l.step3}
-                  </h2>
-
+                  <h2 className="font-cormorant text-2xl font-light text-stone-800 mb-6">{l.step3}</h2>
                   <div>
-                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                      {l.locale}
-                    </label>
-                    <select
-                      name="invitation_locale"
-                      value={form.invitation_locale}
-                      onChange={handleChange}
-                      className={inputCls + ' bg-white'}
-                    >
+                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.locale}</label>
+                    <select name="invitation_locale" value={form.invitation_locale} onChange={handleChange} className={inputCls + ' bg-white'}>
                       <option value="fr">{l.localeFr}</option>
                       <option value="he">{l.localeHe}</option>
                       <option value="en">{l.localeEn}</option>
                     </select>
                   </div>
-
                   <div>
-                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">
-                      {l.welcomeMessage}
-                    </label>
-                    <textarea
-                      name="welcome_message"
-                      value={form.welcome_message}
-                      onChange={handleChange}
-                      rows={4}
-                      placeholder={l.welcomePlaceholder}
-                      className={inputCls + ' resize-none'}
-                    />
+                    <label className="block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider">{l.welcomeMessage}</label>
+                    <textarea name="welcome_message" value={form.welcome_message} onChange={handleChange} rows={4} placeholder={l.welcomePlaceholder} className={inputCls + ' resize-none'} />
                   </div>
-
                   <div className="flex gap-3">
-                    <button
-                      onClick={() => setStep(2)}
-                      className="flex-1 py-3.5 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium tracking-wider uppercase transition hover:bg-stone-50"
-                    >
-                      {l.back}
-                    </button>
-                    <button
-                      onClick={handleCreate}
-                      disabled={loading}
-                      className="flex-1 py-3.5 rounded-xl text-white text-sm font-medium tracking-wider uppercase transition-all disabled:opacity-60"
-                      style={{ background: loading ? '#a8a29e' : '#c9a84c' }}
-                    >
+                    <button onClick={() => setStep(2)} className="flex-1 py-3.5 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium tracking-wider uppercase transition hover:bg-stone-50">{l.back}</button>
+                    <button onClick={handleCreate} disabled={loading} className="flex-1 py-3.5 rounded-xl text-white text-sm font-medium tracking-wider uppercase transition-all disabled:opacity-60" style={{ background: loading ? '#a8a29e' : '#c9a84c' }}>
                       {loading ? l.creating : l.create}
                     </button>
                   </div>
