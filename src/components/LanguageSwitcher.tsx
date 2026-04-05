@@ -1,60 +1,86 @@
 'use client'
-import { useRouter, usePathname } from 'next/navigation'
+// ============================================================
+//  GrandInvite – Language Switcher Component
+//  משתמש ב-URL-based routing לשינוי שפה (locale)
+//  src/components/LanguageSwitcher.tsx
+// ============================================================
+
+import { usePathname, useRouter } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
 
 interface Props {
   currentLocale: Locale
-  variant?: 'inline' | 'dropdown'
+  /** style נוסף לבחירה: 'floating' (עיגול צף) | 'inline' (inline buttons) */
+  variant?: 'floating' | 'inline'
 }
 
-const LABELS: Record<Locale, string> = { fr: 'FR', he: 'HE', en: 'EN' }
+const LANG_LABELS: Record<Locale, string> = {
+  fr: 'FR',
+  he: 'HE',
+  en: 'EN',
+}
+
+const LANG_NAMES: Record<Locale, string> = {
+  fr: 'Français',
+  he: 'עברית',
+  en: 'English',
+}
 
 export default function LanguageSwitcher({ currentLocale, variant = 'inline' }: Props) {
-  const router = useRouter()
   const pathname = usePathname()
+  const router = useRouter()
 
   const switchLocale = (newLocale: Locale) => {
+    if (newLocale === currentLocale) return
+    // מחליפים את ה-locale segment ב-URL
+    // /fr/dashboard → /he/dashboard
     const segments = pathname.split('/')
-    // segments: ['', locale, ...rest]
-    if (segments.length > 1) segments[1] = newLocale
+    if (segments[1] && ['fr','he','en'].includes(segments[1])) {
+      segments[1] = newLocale
+    } else {
+      segments.splice(1, 0, newLocale)
+    }
     router.push(segments.join('/') || '/')
   }
 
-  const locales: Locale[] = ['fr', 'he', 'en']
-
-  if (variant === 'dropdown') {
+  if (variant === 'floating') {
     return (
-      <select
-        value={currentLocale}
-        onChange={e => switchLocale(e.target.value as Locale)}
-        className="text-xs text-stone-500 bg-transparent border border-stone-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-yellow-400/30 cursor-pointer"
-      >
-        {locales.map(loc => (
-          <option key={loc} value={loc}>{LABELS[loc]}</option>
+      <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
+        {(['fr','he','en'] as Locale[]).map(lang => (
+          <button
+            key={lang}
+            onClick={() => switchLocale(lang)}
+            title={LANG_NAMES[lang]}
+            className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
+            style={{
+              background: currentLocale === lang ? '#c9a84c' : 'transparent',
+              color: currentLocale === lang ? '#fff' : '#a8a29e',
+              transform: currentLocale === lang ? 'scale(1.05)' : 'scale(1)',
+            }}
+          >
+            {LANG_LABELS[lang]}
+          </button>
         ))}
-      </select>
+      </div>
     )
   }
 
+  // inline variant
   return (
-    <div className="flex gap-1 items-center">
-      {locales.map((loc, i) => (
-        <span key={loc} className="flex items-center gap-1">
-          <button
-            onClick={() => switchLocale(loc)}
-            className="text-xs font-medium transition-colors px-1"
-            style={{
-              color: currentLocale === loc ? '#c9a84c' : '#a8a29e',
-              borderBottom: currentLocale === loc ? '1px solid #c9a84c' : '1px solid transparent',
-              paddingBottom: '1px',
-            }}
-          >
-            {LABELS[loc]}
-          </button>
-          {i < locales.length - 1 && (
-            <span className="text-stone-200 text-xs">|</span>
-          )}
-        </span>
+    <div className="flex items-center gap-1">
+      {(['fr','he','en'] as Locale[]).map(lang => (
+        <button
+          key={lang}
+          onClick={() => switchLocale(lang)}
+          title={LANG_NAMES[lang]}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+          style={{
+            background: currentLocale === lang ? '#c9a84c' : 'transparent',
+            color: currentLocale === lang ? '#fff' : '#a8a29e',
+          }}
+        >
+          {LANG_LABELS[lang]}
+        </button>
       ))}
     </div>
   )
