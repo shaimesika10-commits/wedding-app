@@ -144,6 +144,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     waze_url: wedding.waze_url ?? '',
     locale: wedding.locale,
     font_style: wedding.font_style ?? 'cormorant',
+    layout_style: wedding.layout_style ?? 'classic',
   })
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState('')
@@ -546,7 +547,57 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             </div>
           </div>
           {/* ── לו"W�: כפתור בראנץ' ── */}
+          
+          {/* ── Layout / Template ── */}
           <div>
+            <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
+              {locale==='he'?'תבנית עיצוב':locale==='fr'?'Modèle de mise en page':'Layout Template'}
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                {
+                  key: 'classic',
+                  label: locale==='he'?'קלאסי':locale==='fr'?'Classique':'Classic',
+                  desc:  locale==='he'?'זהב ושמנת':locale==='fr'?'Or & crème':'Gold & Cream',
+                  bg: 'linear-gradient(135deg,#faf8f5 60%,#c9a84c 100%)',
+                },
+                {
+                  key: 'romantic',
+                  label: locale==='he'?'רומנטי':locale==='fr'?'Romantique':'Romantic',
+                  desc:  locale==='he'?'ורוד ורד':locale==='fr'?'Rose & blush':'Rose & Blush',
+                  bg: 'linear-gradient(135deg,#fdf0f2 60%,#d4687a 100%)',
+                },
+                {
+                  key: 'garden',
+                  label: locale==='he'?'גן פרחים':locale==='fr'?'Jardin':'Garden',
+                  desc:  locale==='he'?'ירוק ופסטל':locale==='fr'?'Vert & pastel':'Green & Pastel',
+                  bg: 'linear-gradient(135deg,#f5f9f5 60%,#7a9e7e 100%)',
+                },
+                {
+                  key: 'modern',
+                  label: locale==='he'?'מינימליסטי':locale==='fr'?'Moderne':'Modern',
+                  desc:  locale==='he'?'שחור ולבן':locale==='fr'?'Noir & blanc':'Black & White',
+                  bg: 'linear-gradient(135deg,#ffffff 60%,#1c1917 100%)',
+                },
+              ] as const).map(tpl => (
+                <button key={tpl.key} type="button"
+                  onClick={()=>setEditForm(p=>({...p, layout_style: tpl.key}))}
+                  className="rounded-xl border-2 overflow-hidden transition-all text-left"
+                  style={{
+                    borderColor: editForm.layout_style===tpl.key ? '#c9a84c' : '#e7e5e4',
+                    boxShadow: editForm.layout_style===tpl.key ? '0 0 0 3px rgba(201,168,76,0.15)' : 'none',
+                  }}>
+                  {/* Colour swatch */}
+                  <div className="h-14" style={{ background: tpl.bg }} />
+                  <div className="px-3 py-2" style={{ background: editForm.layout_style===tpl.key ? '#fffbf0' : '#faf8f5' }}>
+                    <p className="text-sm font-medium text-stone-700">{tpl.label}</p>
+                    <p className="text-xs text-stone-400">{tpl.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+<div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
               {locale==='he'?"לו\"ז האירוע":locale==='fr'?"Programme de l'événement":'Event Schedule'}
             </h3>
