@@ -202,9 +202,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     try {
       if (nextEnabled) {
         // הוספת אירוע בראנץ'
-        const brunchDate = new Date(wedding.wedding_date)
-        brunchDate.setDate(brunchDate.getDate() + 1)
-        const dateStr = brunchDate.toISOString().split('T')[0]
+        const [by, bm, bd] = wedding.wedding_date.split('-').map(Number)
+        const brunchDate = new Date(by, bm - 1, bd + 1)  // local time constructor
+        const dateStr = `${brunchDate.getFullYear()}-${String(brunchDate.getMonth()+1).padStart(2,'0')}-${String(brunchDate.getDate()).padStart(2,'0')}`
         const name = locale==='he'?'בראנץ׳ למחרת':locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
 
         const res = await fetch('/api/weddings', {
