@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite – Next.js Middleware
+//  GrandInvite â Next.js Middleware
 //  (i18n routing + Supabase auth session refresh)
 //  src/middleware.ts
 // ============================================================
@@ -10,7 +10,7 @@ import { createServerClient } from '@supabase/ssr'
 const SUPPORTED_LOCALES = ['fr', 'he', 'en']
 const DEFAULT_LOCALE = 'fr'
 
-// Detect locale from Accept-Language header
+// ××××× ×©×¤× ××-Accept-Language header
 function getLocaleFromRequest(request: NextRequest): string {
   const acceptLanguage = request.headers.get('accept-language') ?? ''
 
@@ -25,25 +25,20 @@ function getLocaleFromRequest(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // ── 1. i18n Redirect ──
-  // Skip locale redirect for API routes, Next.js internals, and auth callback
+  // ââ 1. i18n Redirect ââ
+  // ×× ×× ×ª×× ×× ××ª××× ××©×¤× ×ª×§×× ×, ××¤× × ××©×¤× ×××ª××××
   const pathnameHasLocale = SUPPORTED_LOCALES.some(
     locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   )
 
-  const isInternalPath =
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/auth') // Auth callback must NOT be redirected to a locale
-
-  if (!pathnameHasLocale && !isInternalPath) {
+  if (!pathnameHasLocale && !pathname.startsWith('/api') && !pathname.startsWith('/_next') && !pathname.startsWith('/auth')) {
     const locale = getLocaleFromRequest(request)
     const newUrl = request.nextUrl.clone()
     newUrl.pathname = `/${locale}${pathname}`
     return NextResponse.redirect(newUrl)
   }
 
-  // ── 2. Supabase Auth Session Refresh ──
+  // ââ 2. Supabase Auth Session Refresh ââ
   let response = NextResponse.next({
     request: { headers: request.headers },
   })
@@ -69,10 +64,10 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session (important for SSR auth!)
+  // ×¨×¢× ×× session (××©××!)
   await supabase.auth.getUser()
 
-  // ── 3. Protect Dashboard ──
+  // ââ 3. ××× × ×¢× Dashboard ââ
   const locale = SUPPORTED_LOCALES.find(l => pathname.startsWith(`/${l}/`))
   if (locale && pathname.includes('/dashboard')) {
     const { data: { user } } = await supabase.auth.getUser()
