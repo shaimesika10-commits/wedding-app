@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite â RSVPForm Component
+//  GrandInvite – RSVPForm Component
 //  src/components/RSVPForm.tsx
 // ============================================================
 
@@ -36,7 +36,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-   => {
+  ) => {
     const { name, value } = e.target
     setForm(prev => ({
       ...prev,
@@ -55,15 +55,17 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
     e.preventDefault()
     if (!attending) return
     setFormState('submitting')
+
     try {
       const response = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, wedding_id: weddingId }),
       })
+
       if (!response.ok) throw new Error('Failed')
 
-      // ð Fire-and-forget: notify wedding owner
+      // Notify the wedding owner (fire-and-forget)
       if (weddingSlug) {
         fetch('/api/wedding/rsvp-notify', {
           method: 'POST',
@@ -73,10 +75,10 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
             guest_name: form.name,
             adults: form.adults_count,
             children: form.children_count,
-            attending: attending,
-            notes: form.notes,
+            attending: attending === 'confirmed',
+            notes: form.notes || undefined,
           }),
-        }).catch(() => {/* non-critical */})
+        }).catch(() => {})
       }
 
       setFormState(
@@ -92,7 +94,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
     return (
       <div className="text-center py-16 fade-in">
         <div className="text-5xl mb-6">
-          {formState === 'success-confirm' ? 'ð% : 'ð'}
+          {formState === 'success-confirm' ? '🎉' : '💌'}
         </div>
         <p className="font-cormorant text-2xl text-stone-700 font-light">
           {formState === 'success-confirm' ? t.successConfirm : t.successDecline}
@@ -104,7 +106,8 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 fade-in">
-      {/* ââ ×©× ââ */}
+
+      {/* name */}
       <div>
         <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
           {t.name} <span className="text-[#c9a84c]">*</span>
@@ -121,7 +124,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         />
       </div>
 
-      {/* ââ ×××××× ââ */}
+      {/* email */}
       <div>
         <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
           {t.email}
@@ -136,7 +139,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         />
       </div>
 
-      {/* ââ ××× ××××¢? ââ */}
+      {/* attending */}
       <div>
         <label className="block text-xs tracking-widest uppercase text-stone-400 mb-4">
           {t.attending} <span className="text-[#c9a84c]">*</span>
@@ -167,52 +170,95 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         </div>
       </div>
 
-      {/* ââ ×©×××ª × ××¡×¤×× ×¨×§ ×× ××××¢ ââ */}
       {attending === 'confirmed' && (
         <>
-          {/* ××¡×¤×¨ ×××××¨×× + ××××× */}
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
                 {t.adults}
               </label>
               <div className="flex items-center border-b border-stone-300 focus-within:border-[#c9a84c] transition-colors">
-                <button type="button" onClick={() => setForm(p => ({ ...p, adults_count: Math.max(1, p.adults_count - 1) }))} className="px-3 py-2 text-stone-400 hover:text-stone-700">â</button>
-                <input type="number" name="adults_count" value={form.adults_count} onChange={handleChange} min={1} max={maxGuests} className="flex-1 text-center py-2 bg-transparent focus:outline-none text-stone-800" />
-                <button type="button" onClick={() => setForm(p => ({ ...p, adults_count: Math.min(maxGuests, p.adults_count + 1) }))} className="px-3 py-2 text-stone-400 hover:text-stone-700">+</button>
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, adults_count: Math.max(1, p.adults_count - 1) }))}
+                  className="px-3 py-2 text-stone-400 hover:text-stone-700"
+                >−</button>
+                <input
+                  type="number"
+                  name="adults_count"
+                  value={form.adults_count}
+                  onChange={handleChange}
+                  min={1}
+                  max={maxGuests}
+                  className="flex-1 text-center py-2 bg-transparent focus:outline-none text-stone-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, adults_count: Math.min(maxGuests, p.adults_count + 1) }))}
+                  className="px-3 py-2 text-stone-400 hover:text-stone-700"
+                >+</button>
               </div>
             </div>
+
             <div>
               <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
                 {t.children}
               </label>
               <div className="flex items-center border-b border-stone-300 focus-within:border-[#c9a84c] transition-colors">
-                <button type="button" onClick={() => setForm(p => ({ ...p, children_count: Math.max(0, p.children_count - 1) }))} className="px-3 py-2 text-stone-400 hover:text-stone-700">â</button>
-                <input type="number" name="children_count" value={form.children_count} onChange={handleChange} min={0} className="flex-1 text-center py-2 bg-transparent focus:outline-none text-stone-800" />
-                <button type="button" onClick={() => setForm(p => ({ ...p, children_count: p.children_count + 1 }))} className="px-3 py-2 text-stone-400 hover:text-stone-700">+</button>
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, children_count: Math.max(0, p.children_count - 1) }))}
+                  className="px-3 py-2 text-stone-400 hover:text-stone-700"
+                >−</button>
+                <input
+                  type="number"
+                  name="children_count"
+                  value={form.children_count}
+                  onChange={handleChange}
+                  min={0}
+                  className="flex-1 text-center py-2 bg-transparent focus:outline-none text-stone-800"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, children_count: p.children_count + 1 }))}
+                  className="px-3 py-2 text-stone-400 hover:text-stone-700"
+                >+</button>
               </div>
             </div>
           </div>
 
-          {/* ××¢××¤××ª ×ª××× ×ª×××ª */}
           <div>
             <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
               {t.dietary}
             </label>
-            <input type="text" name="dietary_preferences" value={form.dietary_preferences} onChange={handleChange} placeholder={t.dietaryPlaceholder} dir="auto" className="input-grand" />
+            <input
+              type="text"
+              name="dietary_preferences"
+              value={form.dietary_preferences}
+              onChange={handleChange}
+              placeholder={t.dietaryPlaceholder}
+              dir="auto"
+              className="input-grand"
+            />
           </div>
 
-          {/* ×××¨××××ª */}
           <div>
             <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
               {t.allergies}
             </label>
-            <input type="text" name="allergies" value={form.allergies} onChange={handleChange} placeholder={t.allergiesPlaceholder} dir="auto" className="input-grand" />
+            <input
+              type="text"
+              name="allergies"
+              value={form.allergies}
+              onChange={handleChange}
+              placeholder={t.allergiesPlaceholder}
+              dir="auto"
+              className="input-grand"
+            />
           </div>
         </>
       )}
 
-      {/* ââ ×©×× '×××¨ / ××¢×¨××ª × ××¡×¤××ª' â ×ª××× ×××× ââ */}
       {attending && (
         <div>
           <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
@@ -225,21 +271,25 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
             placeholder={t.notesPlaceholder}
             rows={3}
             dir="auto"
-            className="w-full px-4 py-3 bg-transparent border-b border-stone-300 focus:border-[#c9a84c] focus:outline-none resize-none text-stone-800 placeholder-stone-400 transition-colors duration-200"
+            className="w-full px-4 py-3 bg-transparent border-b border-stone-300
+                       focus:border-[#c9a84c] focus:outline-none resize-none
+                       text-stone-800 placeholder-stone-400 transition-colors duration-200"
           />
         </div>
-     )}
+      )}
 
-      {/* ââ ××¤×ª××¨ ×©×××× ââ */}
       {attending && (
         <div className="pt-4">
           <button
             type="submit"
             disabled={formState === 'submitting' || !form.name.trim()}
-            className={`w-full py-4 font-medium tracking-widest uppercase text-sm transition-all duration-300 border ${attending === 'confirmed'
-              ? 'bg-[#c9a84c] hover:bg-[#9a7d35] text-white border-[#c9a84c]'
-              : 'bg-stone-800 hover:bg-stone-900 text-white border-stone-800'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`w-full py-4 font-medium tracking-widest uppercase text-sm
+                        transition-all duration-300 border
+                        ${attending === 'confirmed'
+                          ? 'bg-[#c9a84c] hover:bg-[#9a7d35] text-white border-[#c9a84c]'
+                          : 'bg-stone-800 hover:bg-stone-900 text-white border-stone-800'
+                        }
+                        disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {formState === 'submitting'
               ? t.submitting
@@ -248,6 +298,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
               : t.decline
             }
           </button>
+
           {formState === 'error' && (
             <p className="text-center text-red-500 text-sm mt-4">{t.error}</p>
           )}
