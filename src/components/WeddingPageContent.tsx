@@ -1,7 +1,7 @@
 'use client'
 // ============================================================
-//  GrandInvite – Wedding Page Content (Client Component)
-//  Handles language switching + AI translation for guests
+//  GrandInvite â Wedding Page Content (Client Component)
+//  Handles language switching, PIN gate, AI translation
 //  src/components/WeddingPageContent.tsx
 // ============================================================
 
@@ -28,6 +28,8 @@ interface Wedding {
   rsvp_deadline: string | null
   max_guests: number
   slug: string
+  guest_pin?: string | null
+  is_hidden?: boolean
 }
 
 interface WeddingPageContentProps {
@@ -50,6 +52,12 @@ export default function WeddingPageContent({
   const [welcomeMsg, setWelcomeMsg] = useState(wedding.welcome_message)
   const [isPending, startTransition] = useTransition()
 
+  // ââ PIN Gate ââ
+  const requiresPin = !!wedding.guest_pin
+  const [pinUnlocked, setPinUnlocked] = useState(!requiresPin)
+  const [pinInput, setPinInput] = useState('')
+  const [pinError, setPinError] = useState(false)
+
   const isRTL = locale === 'he'
   const tr = t(locale)
 
@@ -58,28 +66,23 @@ export default function WeddingPageContent({
       loc === 'he' ? 'he-IL' : loc === 'fr' ? 'fr-FR' : 'en-GB',
       { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
     )
-
   const [weddingDateFormatted, setWeddingDateFormatted] = useState(formatDate(originalLocale))
 
   const switchLanguage = async (newLocale: Locale) => {
     if (newLocale === locale) return
     setLocale(newLocale)
     setWeddingDateFormatted(formatDate(newLocale))
-
     if (newLocale === originalLocale) {
       setWelcomeMsg(wedding.welcome_message)
       return
     }
-
     if (!wedding.welcome_message) return
-
     startTransition(async () => {
       const cacheKey = `${wedding.id}-${newLocale}`
       if (translationCache[cacheKey]) {
         setWelcomeMsg(translationCache[cacheKey])
         return
       }
-
       try {
         const res = await fetch('/api/ai/translate', {
           method: 'POST',
@@ -100,21 +103,94 @@ export default function WeddingPageContent({
     })
   }
 
+  const handlePinSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (pinInput === wedding.guest_pin) {
+      setPinUnlocked(true)
+      setPinError(false)
+    } else {
+      setPinError(true)
+      setPinInput('')
+    }
+  }
+
+  // ââ Promo / dashboard button labels per locale ââ
+  const promoLabel =
+    locale === 'fr'
+      ? 'Vous voulez une invitation comme celle-ci ? Cliquez ici'
+      : locale === 'he'
+      ? '×¨××¦× ×××× × ××× ××××¨××¢ ××× ×©××? ×××¥ ×××'
+      : 'Want an invitation like this for your event? Click here'
+
+  const manageLabel =
+    locale === 'fr'
+      ? 'Organisateur ? GÃ©rer mon invitation'
+      : locale === 'he'
+      ? '××¢× ××××¨××¢? ×× ××¡× ×× ×××× ××××× ×'
+      : 'Event host? Manage your invitation'
+
+  // ââ PIN Gate Screen ââ
+  if (!pinUnlocked) {
+    return (
+      <main className="min-h-screen bg-[#faf8f5] flex items-center justify-center px-6">
+        <div className="w-full max-w-sm text-center">
+          <div className="mb-8">
+            <div className="h-px w-16 bg-[#c9a84c] mx-auto mb-6" />
+            <h1 className="font-cormorant text-3xl text-stone-800 font-light mb-2">
+              {wedding.bride_name} &amp; {wedding.groom_name}
+            </h1>
+            <p className="text-stone-400 text-sm tracking-widest uppercase mt-4">
+              {locale === 'fr'
+                ? 'Entrez le code d\'accÃ¨s'
+                : locale === 'he'
+                ? '×××× × ××ª ×§×× ××××©×'
+                : 'Enter access code'}
+            </p>
+            <div className="h-px w-16 bg-[#c9a84c] mx-auto mt-6" />
+          </div>
+          <form onSubmit={handlePinSubmit} className="space-y-4">
+            <input
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={4}
+              value={pinInput}
+              onChange={e => { setPinInput(e.target.value); setPinError(false) }}
+              placeholder="â¢ â¢ â¢ â¢"
+              className="w-full text-center text-2xl tracking-[1em] py-4 bg-white border border-stone-200 focus:border-[#c9a84c] focus:outline-none text-stone-800 placeholder-stone-300 transition-colors"
+              autoFocus
+            />
+            {pinError && (
+              <p className="text-red-400 text-sm">
+                {locale === 'fr' ? 'Code incorrect' : locale === 'he' ? '×§×× ×©×××, × ×¡× ×©××' : 'Incorrect code, try again'}
+              </p>
+            )}
+            <button
+              type="submit"
+              className="w-full py-3 bg-[#c9a84c] hover:bg-[#9a7d35] text-white text-sm tracking-widest uppercase transition-colors"
+            >
+              {locale === 'fr' ? 'AccÃ©der' : locale === 'he' ? '×× ××¡×' : 'Enter'}
+            </button>
+          </form>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#faf8f5]">
-
-      {/* ── Floating Language Switcher ── */}
+      {/* ââ Floating Language Switcher ââ */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
         {isPending && (
           <span className="text-xs text-stone-400 animate-pulse mx-1">
-            {locale === 'he' ? 'מתרגם...' : locale === 'fr' ? '...' : '...'}
+            {locale === 'he' ? '××ª×¨××...' : locale === 'fr' ? '...' : '...'}
           </span>
         )}
         {(['fr', 'he', 'en'] as const).map(lang => (
           <button
             key={lang}
             onClick={() => switchLanguage(lang)}
-            title={lang === 'fr' ? 'Français' : lang === 'he' ? 'עברית' : 'English'}
+            title={lang === 'fr' ? 'FranÃ§ais' : lang === 'he' ? '×¢××¨××ª' : 'English'}
             className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
             style={{
               background: locale === lang ? '#c9a84c' : 'transparent',
@@ -127,7 +203,7 @@ export default function WeddingPageContent({
         ))}
       </div>
 
-      {/* ── Hero ── */}
+      {/* ââ Hero ââ */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {wedding.cover_image_url ? (
           <div
@@ -139,7 +215,6 @@ export default function WeddingPageContent({
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-stone-800 to-stone-900" />
         )}
-
         <div className="relative z-10 text-center text-white px-6">
           <div className="fade-in flex items-center justify-center gap-4 mb-8">
             <div className="h-px w-16 bg-[#c9a84c] shimmer" />
@@ -148,24 +223,19 @@ export default function WeddingPageContent({
             </span>
             <div className="h-px w-16 bg-[#c9a84c] shimmer" />
           </div>
-
           <h1 className="font-cormorant font-light leading-none mb-6">
             <span className="hero-name block text-5xl md:text-7xl lg:text-8xl">{wedding.bride_name}</span>
             <span className="fade-in-delay block text-[#c9a84c] text-2xl md:text-3xl my-4 font-light tracking-widest">&amp;</span>
             <span className="hero-name-delayed block text-5xl md:text-7xl lg:text-8xl">{wedding.groom_name}</span>
           </h1>
-
           <p className="fade-in-slow text-stone-200 text-lg md:text-xl font-light tracking-widest uppercase mt-6">
             {weddingDateFormatted}
           </p>
-
           {wedding.venue_name && (
             <p className="fade-in-slow text-stone-300 text-base mt-2 font-light">
-              {wedding.venue_name}
-              {wedding.venue_city ? ` · ${wedding.venue_city}` : ''}
+              {wedding.venue_name}{wedding.venue_city ? ` Â· ${wedding.venue_city}` : ''}
             </p>
           )}
-
           <div className="mt-12 scroll-pulse">
             <svg className="w-6 h-6 mx-auto text-[#c9a84c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
@@ -174,21 +244,21 @@ export default function WeddingPageContent({
         </div>
       </section>
 
-      {/* ── Welcome Message ── */}
+      {/* ââ Welcome Message ââ */}
       {welcomeMsg && (
         <section className="max-w-2xl mx-auto px-6 py-20 text-center">
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
           <p
             className="font-cormorant text-xl md:text-2xl text-stone-600 font-light leading-relaxed italic transition-opacity duration-500"
             style={{ opacity: isPending ? 0.4 : 1 }}
           >
             {welcomeMsg}
           </p>
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
         </section>
       )}
 
-      {/* ── Schedule ── */}
+      {/* ââ Schedule ââ */}
       {schedule.length > 0 && (
         <section className="bg-white py-20">
           <div className="max-w-4xl mx-auto px-6">
@@ -198,7 +268,7 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* ── Venue ── */}
+      {/* ââ Venue ââ */}
       {(wedding.venue_name || wedding.google_maps_url || wedding.waze_url) && (
         <section className="py-20 px-6 bg-stone-50">
           <div className="max-w-4xl mx-auto text-center">
@@ -227,16 +297,16 @@ export default function WeddingPageContent({
         </section>
       )}
 
-      {/* ── Gallery ── */}
+      {/* ââ Gallery ââ */}
       <section className="bg-[#faf8f5]">
         <GallerySection weddingId={wedding.id} locale={locale} initialPhotos={galleryPhotos} />
       </section>
 
-      {/* ── RSVP ── */}
+      {/* ââ RSVP ââ */}
       <section id="rsvp" className="py-24 px-6 bg-white">
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-12">
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
             <h2 className="section-title mb-3">{tr.rsvp.title}</h2>
             <p className="text-stone-500 font-light">{tr.rsvp.subtitle}</p>
             {wedding.rsvp_deadline && (
@@ -248,29 +318,47 @@ export default function WeddingPageContent({
                 )}
               </p>
             )}
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">â¦</span></div>
           </div>
-          <RSVPForm weddingId={wedding.id} locale={locale} t={tr.rsvp} maxGuests={wedding.max_guests} />
+          <RSVPForm
+            weddingId={wedding.id}
+            weddingSlug={wedding.slug}
+            locale={locale}
+            t={tr.rsvp}
+            maxGuests={wedding.max_guests}
+          />
         </div>
       </section>
 
-      {/* ── Footer ── */}
+      {/* ââ Footer ââ */}
       <footer className="py-10 text-center bg-stone-900 text-stone-400">
         <p className="font-cormorant text-2xl text-white mb-2">
           {wedding.bride_name} &amp; {wedding.groom_name}
         </p>
         <p className="text-xs tracking-widest uppercase text-[#c9a84c]">{weddingDateFormatted}</p>
-        <p className="text-xs mt-6 text-stone-600">
+
+        {/* ââ CTA buttons ââ */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 px-6">
+          {/* Promo â link to home */}
+          <a
+            href={`/${locale}`}
+            className="inline-block px-6 py-3 bg-[#c9a84c] hover:bg-[#9a7d35] text-white text-xs tracking-widest uppercase transition-colors font-medium"
+          >
+            {promoLabel}
+          </a>
+
+          {/* Dashboard â link to login/dashboard for the event owner */}
+          <a
+            href={`/${locale}/login`}
+            className="inline-block px-6 py-3 border border-stone-600 hover:border-[#c9a84c] text-stone-400 hover:text-[#c9a84c] text-xs tracking-widest uppercase transition-colors"
+          >
+            {manageLabel}
+          </a>
+        </div>
+
+        <p className="text-xs mt-8 text-stone-600">
           Powered by <span className="text-[#c9a84c]">GrandInvite</span>
         </p>
-        {/* Host-only management link — subtle, always available */}
-        <a
-          href={`/${locale}/login`}
-          className="inline-block mt-4 text-[10px] tracking-widest text-stone-700 hover:text-[#c9a84c] transition-colors uppercase"
-          title={locale === 'he' ? 'כניסת מארחים' : locale === 'fr' ? 'Accès organisateurs' : 'Host login'}
-        >
-          ⚙ {locale === 'he' ? 'ניהול' : locale === 'fr' ? 'Gestion' : 'Manage'}
-        </a>
       </footer>
     </main>
   )
