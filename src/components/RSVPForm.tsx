@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import type { Locale } from '@/lib/i18n'
-import type { RSVPFormData } from 'A/types'
+import type { RSVPFormData } from '@/types'
 
 interface RSVPFormProps {
   weddingId: string
