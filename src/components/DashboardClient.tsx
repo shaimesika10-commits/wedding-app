@@ -2,7 +2,7 @@
 // ============================================================
 //  GrandInvite – Dashboard Client Component
 //  טאב 1: ניהול אורחים | טאב 2: ישיבה | טאב 3: עריכה
-//  טאב 4: תצוגה | טאב 5: ××××¨××ª
+//  טאב 4: תצוגה | טאב 5: הגדרות
 //  src/components/DashboardClient.tsx
 // ============================================================
 import { useState, useMemo, Fragment, useEffect } from 'react'
@@ -100,7 +100,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   useEffect(() => { setMounted(true) }, [])
 
   // ════════════════════════════════════════
-  // TAB 5 — SETTINGS (××××¨××ª)
+  // TAB 5 — SETTINGS (הגדרות)
   // ════════════════════════════════════════
   const [isHidden, setIsHidden] = useState(wedding.is_hidden ?? false)
   const [savingVisibility, setSavingVisibility] = useState(false)
@@ -159,7 +159,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   // ── delete request handler ──
   const handleRequestDelete = async () => {
     const msg = locale === 'he'
-      ? '××× את× ב×××? × ×©×× ×××××× לאישור מחיקת ×××©ב××.'
+      ? 'האם אתה בטוח? נשלח אימייל לאישור מחיקת החשבון.'
       : locale === 'fr'
       ? 'Ãtes-vous sÃ»r ? Un email de confirmation sera envoyé.'
       : 'Are you sure? A confirmation email will be sent.'
@@ -362,13 +362,13 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     : `/${locale}/${wedding.slug ?? ''}`
 
   const shareText = locale === 'he'
-    ? `×× ×× × ×©×××× ××ז××× את×× ×××ª×× × ×©× ${wedding.bride_name} ×${wedding.groom_name}! ${invitationUrl}`
+    ? `אנחנו שמחים להזמין אתכם לחתונה של ${wedding.bride_name} ו${wedding.groom_name}! ${invitationUrl}`
     : locale === 'fr'
     ? `Nous avons le plaisir de vous inviter au mariage de ${wedding.bride_name} & ${wedding.groom_name} ! ${invitationUrl}`
     : `We are delighted to invite you to the wedding of ${wedding.bride_name} & ${wedding.groom_name}! ${invitationUrl}`
 
   const emailSubject = locale === 'he'
-    ? `הזמנה ×××ª×× × - ${wedding.bride_name} ×${wedding.groom_name}`
+    ? `הזמנה לחתונה - ${wedding.bride_name} ו${wedding.groom_name}`
     : locale === 'fr'
     ? `Invitation au mariage de ${wedding.bride_name} & ${wedding.groom_name}`
     : `Wedding invitation - ${wedding.bride_name} & ${wedding.groom_name}`
@@ -382,7 +382,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
           { key:'edit', label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
           { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
-          { key:'settings', label: locale==='he'?'××××¨××ª':locale==='fr'?'Paramètres':'Settings' },
+          { key:'settings', label: locale==='he'?'הגדרות':locale==='fr'?'Paramètres':'Settings' },
         ] as const).map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             className="flex-shrink-0 px-4 md:px-6 py-3 text-sm font-medium tracking-wide transition-all relative whitespace-nowrap"
@@ -804,7 +804,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
-              {locale==='he'?'×©×× ב××××××':locale==='fr'?"Partager par e-mail":'Share by email'}
+              {locale==='he'?'שלח באימייל':locale==='fr'?"Partager par e-mail":'Share by email'}
             </a>
           </div>
 
@@ -837,10 +837,10 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           {/* ── Visibility ── */}
           <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
             <h3 className="font-cormorant text-xl text-stone-800 mb-1">
-              {locale==='he'?'× ×¨×××ª ההזמנה':locale==='fr'?"Visibilité de l'invitation":'Invitation visibility'}
+              {locale==='he'?'נראות ההזמנה':locale==='fr'?"Visibilité de l'invitation":'Invitation visibility'}
             </h3>
             <p className="text-xs text-stone-400 mb-5">
-              {locale==='he'?'×××©×¨ ההזמנה ×××¡×ª×¨×ª, האורחים ×× ×××לו ×××©×ª ××××'
+              {locale==='he'?'כאשר ההזמנה מוסתרת, האורחים לא יוכלו לגשת אליה'
                 :locale==='fr'?"Quand l'invitation est cachée, les invités ne peuvent pas y accéder"
                 :'When hidden, guests cannot access the invitation page'}
             </p>
@@ -848,13 +848,13 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               <div>
                 <p className="text-sm font-medium text-stone-700">
                   {isHidden
-                    ? (locale==='he'?'ההזמנה ×××¡×ª×¨×ª':locale==='fr'?'Invitation cachée':'Invitation hidden')
-                    : (locale==='he'?'ההזמנה ×¤××ב××ª':locale==='fr'?'Invitation publique':'Invitation public')}
+                    ? (locale==='he'?'ההזמנה מוסתרת':locale==='fr'?'Invitation cachée':'Invitation hidden')
+                    : (locale==='he'?'ההזמנה פומבית':locale==='fr'?'Invitation publique':'Invitation public')}
                 </p>
                 <p className="text-xs text-stone-400 mt-0.5">
                   {isHidden
-                    ? (locale==='he'?'×××¥ ×××¤×× ××¦×ב××¨××ª':locale==='fr'?'Cliquer pour rendre publique':'Click to make public')
-                    : (locale==='he'?'×××¥ ×××¡×ª××¨':locale==='fr'?'Cliquer pour cacher':'Click to hide')}
+                    ? (locale==='he'?'לחץ להפוך לציבורית':locale==='fr'?'Cliquer pour rendre publique':'Click to make public')
+                    : (locale==='he'?'לחץ להסתיר':locale==='fr'?'Cliquer pour cacher':'Click to hide')}
                 </p>
               </div>
               <button type="button" onClick={handleToggleVisibility} disabled={savingVisibility}
@@ -869,16 +869,16 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           {/* ── Guest PIN ── */}
           <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
             <h3 className="font-cormorant text-xl text-stone-800 mb-1">
-              {locale==='he'?'××× ×ª PIN ×אורחים':locale==='fr'?'PIN de protection':'Guest PIN protection'}
+              {locale==='he'?'הגנת PIN לאורחים':locale==='fr'?'PIN de protection':'Guest PIN protection'}
             </h3>
             <p className="text-xs text-stone-400 mb-5">
-              {locale==='he'?'אורחים ××¦××¨×× ××ז×× ×§×× 4 ×¡×¤×¨××ª כדי ×××©×ª ×הזמנה. ××©××¨ ×¨××§ ×ב×××× ×-PIN.'
+              {locale==='he'?'אורחים יצטרכו להזין קוד 4 ספרות כדי לגשת להזמנה. השאר ריק לביטול ה-PIN.'
                 :locale==='fr'?"Les invités devront saisir un code à 4 chiffres. Laisser vide pour désactiver."
                 :'Guests must enter a 4-digit code to view the invitation. Leave empty to disable.'}
             </p>
             {pinSuccess && (
               <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs px-3 py-2 rounded-lg mb-3">
-                {locale==='he'?'×-PIN ×¢×××× בהצלחה':locale==='fr'?'PIN mis à jour':'PIN updated successfully'}
+                {locale==='he'?'ה-PIN עודכן בהצלחה':locale==='fr'?'PIN mis à jour':'PIN updated successfully'}
               </div>
             )}
             <div className="flex gap-3">
@@ -899,21 +899,21 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           {/* ── Design Panel ── */}
           <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
             <h3 className="font-cormorant text-xl text-stone-800 mb-1">
-              {locale==='he'?'×¢××¦×ב ההזמנה':locale==='fr'?"Design de l'invitation":'Invitation design'}
+              {locale==='he'?'עיצוב ההזמנה':locale==='fr'?"Design de l'invitation":'Invitation design'}
             </h3>
             <p className="text-xs text-stone-400 mb-5">
-              {locale==='he'?'ב××¨ ×××¤× ××¤×¨××¡× ×הזמנה ×©××'
+              {locale==='he'?'בחר גופן ופריסה להזמנה שלך'
                 :locale==='fr'?"Choisissez la police et la mise en page"
                 :'Choose font style and layout for your invitation'}
             </p>
             {designSuccess && (
               <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs px-3 py-2 rounded-lg mb-4">
-                {locale==='he'?'××¢××¦×ב ×¢××××':locale==='fr'?'Design mis à jour':'Design updated'}
+                {locale==='he'?'העיצוב עודכן':locale==='fr'?'Design mis à jour':'Design updated'}
               </div>
             )}
             <div className="space-y-5">
               <div>
-                <label className={labelCls}>{locale==='he'?'×××¤×':locale==='fr'?'Police':'Font'}</label>
+                <label className={labelCls}>{locale==='he'?'גופן':locale==='fr'?'Police':'Font'}</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'cormorant', label: 'Cormorant', preview: 'Aa' },
@@ -933,12 +933,12 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 </div>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'×¤×¨××¡×':locale==='fr'?'Mise en page':'Layout'}</label>
+                <label className={labelCls}>{locale==='he'?'פריסה':locale==='fr'?'Mise en page':'Layout'}</label>
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { value: 'centered', label: locale==='he'?'××¨×ז':locale==='fr'?'Centré':'Centered' },
-                    { value: 'elegant', label: locale==='he'?'×××× ××':locale==='fr'?'Ãlégant':'Elegant' },
-                    { value: 'minimal', label: locale==='he'?'××× ×××××¡××':locale==='fr'?'Minimaliste':'Minimal' },
+                    { value: 'centered', label: locale==='he'?'מרכז':locale==='fr'?'Centré':'Centered' },
+                    { value: 'elegant', label: locale==='he'?'אלגנטי':locale==='fr'?'Ãlégant':'Elegant' },
+                    { value: 'minimal', label: locale==='he'?'מינימליסטי':locale==='fr'?'Minimaliste':'Minimal' },
                   ].map(l => (
                     <button key={l.value} onClick={() => setLayoutStyle(l.value)}
                       className="p-4 border rounded-xl text-center transition-all"
@@ -973,7 +973,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 style={{ background: savingDesign?'#a8a29e':'#c9a84c' }}>
                 {savingDesign
                   ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...')
-                  : (locale==='he'?'שמור ×¢××¦×ב':locale==='fr'?'Enregistrer le design':'Save design')}
+                  : (locale==='he'?'שמור עיצוב':locale==='fr'?'Enregistrer le design':'Save design')}
               </button>
             </div>
           </div>
@@ -981,17 +981,17 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           {/* ── Danger Zone ── */}
           <div className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm">
             <h3 className="font-cormorant text-xl text-red-700 mb-1">
-              {locale==='he'?'מחיקת ××©ב××':locale==='fr'?'Supprimer le compte':'Delete account'}
+              {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
             </h3>
             <p className="text-xs text-stone-400 mb-5">
-              {locale==='he'?'מחיקת ×××©ב×× ×ª×××§ את ההזמנה ×את ×× ×××××¢ ×¢× האורחים. ×¤×¢××× ז× ב××ª× ××¤×××.'
+              {locale==='he'?'מחיקת החשבון תמחק את ההזמנה ואת כל המידע על האורחים. פעולה זו בלתי הפיכה.'
                 :locale==='fr'?"La suppression effacera définitivement l'invitation et toutes les données invités."
                 :'Deletes the invitation and all guest data permanently. This cannot be undone.'}
             </p>
             {deleteConfirmUrl ? (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-sm text-amber-800 font-medium mb-2">
-                  {locale==='he'?'קישור ×××©××¨ מחיקה × ×©×× ××××××× ×©××. ×××לו×¤××, ×××¥ ×××:'
+                  {locale==='he'?'קישור אישור מחיקה נשלח לאימייל שלך. לחילופין, לחץ כאן:'
                     :locale==='fr'?"Un lien de confirmation a été envoyé à votre email. Alternativement :"
                     :'A confirmation link was sent to your email. Alternatively:'}
                 </p>
@@ -1004,8 +1004,8 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                 </svg>
                 {deleteLoading
-                  ? (locale==='he'?'×©×××...':locale==='fr'?'Envoi...':'Sending...')
-                  : (locale==='he'?'ב×§×© מחיקת ××©ב××':locale==='fr'?'Demander la suppression':'Request account deletion')}
+                  ? (locale==='he'?'שולח...':locale==='fr'?'Envoi...':'Sending...')
+                  : (locale==='he'?'בקש מחיקת חשבון':locale==='fr'?'Demander la suppression':'Request account deletion')}
               </button>
             )}
           </div>
