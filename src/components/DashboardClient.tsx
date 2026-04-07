@@ -38,7 +38,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const [copiedDashboard, setCopiedDashboard] = useState(false)
 
   // ════════════════════════════════════════
-const handleDashboardShare = async () => {
+  const handleDashboardShare = async () => {
     const url = typeof window !== 'undefined'
       ? `${window.location.origin}/${locale}/${wedding.slug ?? ''}`
       : `/${locale}/${wedding.slug ?? ''}`
@@ -58,7 +58,7 @@ const handleDashboardShare = async () => {
     }
   }
 
-    // TAB 1 — אורחים
+  // TAB 1 — אורחים
   // ════════════════════════════════════════
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<RSVPStatus>('all')
