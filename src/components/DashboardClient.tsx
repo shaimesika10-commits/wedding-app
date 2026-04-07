@@ -654,7 +654,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                               <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] flex-shrink-0"/>
                               <span className="truncate">{g.name}</span>
                               {(g.adults_count + g.children_count) > 1 && (
-                                <span className="text-xs text-stone-400 flex-shrink-0">×{g.adults_count + g.children_count}</span>
+                                <span className="text-xs text-stone-400 flex-shrink-0">{g.adults_count + g.children_count}</span>
                               )}
                             </li>
                           ))}
