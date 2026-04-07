@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createAdminSupabaseClient } from '@/lib/supabase-server'
 
-// ── PATCH – עדכון חתונה ───────────────────────────────────────────────
+// ── PATCH – עדכון חתונה ──────────────────────────────────────
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json()
@@ -21,7 +21,7 @@ export async function PATCH(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // וידאור שהחתונה שייכת למשתמש
+    // וידוא שהחתונה שייכת למשתמש
     const { data: wedding } = await supabase
       .from('weddings')
       .select('id')
@@ -40,9 +40,16 @@ export async function PATCH(req: NextRequest) {
       'font_style',
       'layout_style',
     ]
+    const dateFields = ['wedding_date', 'rsvp_deadline']
+    const nullableStringFields = ['cover_image_url', 'google_maps_url', 'waze_url', 'venue_name', 'venue_address', 'venue_city', 'welcome_message']
     const safeUpdates: Record<string, unknown> = {}
     for (const key of allowed) {
-      if (key in updates) safeUpdates[key] = updates[key]
+      if (key in updates) {
+        const val = updates[key]
+        if (dateFields.includes(key) && val === '') safeUpdates[key] = null
+        else if (nullableStringFields.includes(key) && val === '') safeUpdates[key] = null
+        else safeUpdates[key] = val
+      }
     }
     safeUpdates.updated_at = new Date().toISOString()
 
@@ -61,7 +68,7 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// ── POST – הוספת אירוע ללו"ז ───────────────────────────────────────────────
+// ── POST – הוספת אירוע ללו"ז ─────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -81,7 +88,6 @@ export async function POST(req: NextRequest) {
       .single()
     if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    // Use admin client to bypass RLS for the insert (ownership already verified above)
     const admin = createAdminSupabaseClient()
     const { data, error } = await admin
       .from('event_schedule')
@@ -97,7 +103,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// ── DELETE – מחיקת אירוע מלו"ז ───────────────────────────────────────────────
+// ── DELETE – מחיקת אירוע מלו"ז ───────────────────────────────
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -120,7 +126,6 @@ export async function DELETE(req: NextRequest) {
       .single()
     if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    // Use admin client to bypass RLS for the delete (ownership already verified above)
     const admin = createAdminSupabaseClient()
     const { error } = await admin
       .from('event_schedule')
