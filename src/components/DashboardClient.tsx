@@ -1,6 +1,9 @@
 'use client'
 // ============================================================
-//  GrandInvite - Dashboard Client Component
+//  GrandInvite â Dashboard Client Component
+//  ××× 1: × ×××× ×××¨××× (×××¤××© / ×¤×××××¨ / ×××¡×¤× / ××××§× / CSV)
+//  ××× 2: ×¢×¨×××ª ×××× × (×¤×¨××× + ××"× + ××¨×× ×¥')
+//  ××× 3: ×ª×¦××× ××§××××
 //  src/components/DashboardClient.tsx
 // ============================================================
 
@@ -218,7 +221,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       const { url } = await res.json()
       setEditForm(p => ({ ...p, cover_image_url: url }))
     } catch {
-      setCoverUploadError(locale === 'he' ? '×©××××ª ××¢×××' : locale === 'fr' ? "Erreur d'upload" : 'Upload error')
+      setCoverUploadError(locale === 'he' ? '×©××××ª ××¢×××' : locale === 'fr' = "Erreur d'upload" : 'Upload error')
     } finally {
       setUploadingCover(false)
     }
@@ -689,7 +692,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                           ))}
                         </ul>
                       </div>
-                    *
+                    )
                   })}
                 </div>
               </div>
@@ -743,7 +746,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <div className="space-y-3">
               <div>
                 <label className={labelCls}>{locale==='he'?'×©× ×××××':locale==='fr'?'Nom du lieu':'Venue name'}</label>
-                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'×××× ×××¨××¢××':'ChÃ¢teau de...'}/>
+                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'×××× ×××¨××¢××':'hÃ¢teau de...'}/>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1160,7 +1163,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{locale==='he'?'×ª××¨×× *':locale==='fr'?'Date *'}</label>
+                  <label className={labelCls}>{locale==='he'?'×ª××¨×× *':locale==='fr'?'Date *':'Date *'}</label>
                   <input type="date" value={eventForm.event_date} onChange={e => setEventForm(p => ({ ...p, event_date: e.target.value }))} dir="ltr" className={inputCls}/>
                 </div>
                 <div>
