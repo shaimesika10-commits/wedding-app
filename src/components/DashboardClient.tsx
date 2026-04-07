@@ -436,15 +436,6 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   return (
     <div>
       {/* ── Tab Bar ── */}
-      <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
-        {([
-          { key:'guests', label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
-          { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
-          { key:'edit', label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
-          { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
-          { key:'settings', label: locale==='he'?'הגדרות':locale==='fr'?'Paramètres':'Settings' },
-        ] as const).map(tab => (
-          <button key={tab.key}{/* ── Dashboard Header ── */}
       <div className="flex items-center justify-between mb-4">
         <p className="font-cormorant text-lg text-stone-600 tracking-wide">
           {wedding.bride_name} {'&'} {wedding.groom_name}
@@ -462,6 +453,15 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             : (locale === 'fr' ? "Partager" : locale === 'he' ? 'שתף' : 'Share')}
         </button>
       </div>
+      <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
+        {([
+          { key:'guests', label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
+          { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
+          { key:'edit', label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
+          { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
+          { key:'settings', label: locale==='he'?'הגדרות':locale==='fr'?'Paramètres':'Settings' },
+        ] as const).map(tab => (
+          <button key={tab.key}
        onClick={() => setActiveTab(tab.key)}
             className="flex-shrink-0 px-4 md:px-6 py-3 text-sm font-medium tracking-wide transition-all relative whitespace-nowrap"
             style={{ color: activeTab===tab.key ? '#c9a84c' : '#a8a29e' }}
