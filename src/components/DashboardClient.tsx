@@ -505,8 +505,8 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                         </td>
                         <td className="px-4 py-4">{statusBadge(guest.rsvp_status)}</td>
                         <td className="px-4 py-4 text-stone-500">
-                          {guest.adults_count > 0 && <span>{guest.adults_count} ὆4</span>}
-                          {guest.children_count > 0 && <span className="ml-2">{guest.children_count} ὇6</span>}
+                          {guest.adults_count > 0 && <span>{guest.adults_count} מב'</span>}
+                          {guest.children_count > 0 && <span className="ml-2">{guest.children_count} יל'</span>}
                         </td>
                         <td className="px-4 py-4">
                           {guest.dietary_preferences
