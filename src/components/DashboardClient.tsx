@@ -1,9 +1,9 @@
 'use client'
 // ============================================================
-//  GrandInvite â Dashboard Client Component
-//  ××× 1: × ×××× ×××¨××× (×××¤××© / ×¤×××××¨ / ×××¡×¤× / ××××§× / CSV)
-//  ××× 2: ×¢×¨×××ª ×××× × (×¤×¨××× + ××"× + ××¨×× ×¥')
-//  ××× 3: ×ª×¦××× ××§××××
+//  GrandInvite – Dashboard Client Component
+//  טאב 1: ניהול אורחים (חיפוש / פילטור / הוספה / מחיקה / CSV)
+//  טאב 2: עריכת הזמנה (פרטים + לו"ז + בראנץ')
+//  טאב 3: תצוגה מקדימה
 //  src/components/DashboardClient.tsx
 // ============================================================
 
@@ -38,9 +38,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('guests')
 
-  // ââââââââââââââââââââââââââââââââââââââââ
-  // TAB 1 â ×××¨×××
-  // ââââââââââââââââââââââââââââââââââââââââ
+  // ════════════════════════════════════════
+  // TAB 1 — אורחים
+  // ════════════════════════════════════════
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<RSVPStatus>('all')
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
@@ -50,9 +50,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const [guestModalError, setGuestModalError] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  // ââââââââââââââââââââââââââââââââââââââââ
+  // ════════════════════════════════════════
   // TAB: SEATING
-  // ââââââââââââââââââââââââââââââââââââââââ
+  // ════════════════════════════════════════
   const [tableInputs, setTableInputs] = useState<Record<string, string>>(() => {
     const m: Record<string, string> = {}
     guests.forEach(g => { if (g.table_number != null) m[g.id] = String(g.table_number) })
@@ -92,7 +92,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
   const handleAddGuest = async () => {
     if (!newGuest.name.trim()) {
-      setGuestModalError(locale==='he'?'×©× ××× ×©×× ××××':locale==='fr'?'Le nom est requis':'Name is required')
+      setGuestModalError(locale==='he'?'שם הוא שדה חובה':locale==='fr'?'Le nom est requis':'Name is required')
       return
     }
     setGuestModalError('')
@@ -112,7 +112,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       setNewGuest({ ...emptyNewGuest })
       router.refresh()
     } catch {
-      setGuestModalError(locale==='he'?'×©×××× ××©×××¨×':'Save error')
+      setGuestModalError(locale==='he'?'שגיאה בשמירה':'Save error')
     } finally {
       setSavingGuest(false)
     }
@@ -136,7 +136,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   }
 
   const handleDeleteGuest = async (guestId: string) => {
-    const msg = locale==='he'?'×××××§ ×××¨× ××?':locale==='fr'?'Supprimer cet invitÃ© ?':'Delete this guest?'
+    const msg = locale==='he'?'למחוק אורח זה?':locale==='fr'?'Supprimer cet invité ?':'Delete this guest?'
     if (!confirm(msg)) return
     setDeletingId(guestId)
     try {
@@ -149,15 +149,15 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed': return <span className="badge-confirmed">â {t.confirmed}</span>
-      case 'declined':  return <span className="badge-declined">â {t.declined}</span>
-      default:          return <span className="badge-pending">â¦ {t.pending}</span>
+      case 'confirmed': return <span className="badge-confirmed">✓ {t.confirmed}</span>
+      case 'declined':  return <span className="badge-declined">✗ {t.declined}</span>
+      default:          return <span className="badge-pending">… {t.pending}</span>
     }
   }
 
-  // ââââââââââââââââââââââââââââââââââââââââ
-  // TAB 2 â ×¢×¨×××ª ×××× ×
-  // ââââââââââââââââââââââââââââââââââââââââ
+  // ════════════════════════════════════════
+  // TAB 2 — עריכת הזמנה
+  // ════════════════════════════════════════
   const [editForm, setEditForm] = useState({
     bride_name: wedding.bride_name,
     groom_name: wedding.groom_name,
@@ -180,7 +180,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const [editError, setEditError] = useState('')
   const [editSuccess, setEditSuccess] = useState(false)
 
-  // ââ ××××§×ª ××©××× ââ
+  // ── מחיקת חשבון ──
   const [deleteState, setDeleteState] = useState<'idle' | 'confirm' | 'sending' | 'sent' | 'error'>('idle')
   const [deleteError, setDeleteError] = useState('')
 
@@ -197,12 +197,12 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       }
       setDeleteState('sent')
     } catch {
-      setDeleteError(locale === 'he' ? '×©××××. ×× × × ×¡× ×©××.' : locale === 'fr' ? 'Erreur. Veuillez rÃ©essayer.' : 'Error. Please try again.')
+      setDeleteError(locale === 'he' ? 'שגיאה. אנא נסה שוב.' : locale === 'fr' ? 'Erreur. Veuillez réessayer.' : 'Error. Please try again.')
       setDeleteState('error')
     }
   }
 
-  // ââ ××¢×××ª ×ª××× ×ª ×××¡×× ââ
+  // ── העלאת תמונת כיסוי ──
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -221,13 +221,13 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       const { url } = await res.json()
       setEditForm(p => ({ ...p, cover_image_url: url }))
     } catch {
-      setCoverUploadError(locale === 'he' ? '×©××××ª ××¢×××' : locale === 'fr' = "Erreur d'upload" : 'Upload error')
+      setCoverUploadError(locale === 'he' ? 'שגיאת העלאה' : locale === 'fr' ? "Erreur d'upload" : 'Upload error')
     } finally {
       setUploadingCover(false)
     }
   }
 
-  // ââ × ×××× ××"× â ×××¨××¢×× ×××ª×××× ââ
+  // ── ניהול לו"ז — אירועים מותאמים ──
   const emptyEventForm = {
     event_name: '',
     event_date: wedding.wedding_date ?? '',
@@ -247,7 +247,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
   const handleAddEvent = async () => {
     if (!eventForm.event_name || !eventForm.event_date || !eventForm.start_time) {
-      setEventModalError(locale === 'he' ? '×©×, ×ª××¨×× ××©×¢× × ××¨×©××' : locale === 'fr' ? 'Nom, date et heure sont requis' : 'Name, date and start time are required')
+      setEventModalError(locale === 'he' ? 'שם, תאריך ושעה נדרשים' : locale === 'fr' ? 'Nom, date et heure sont requis' : 'Name, date and start time are required')
       return
     }
     setSavingEvent(true)
@@ -279,7 +279,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       setEventForm({ ...emptyEventForm })
       router.refresh()
     } catch {
-      setEventModalError(locale === 'he' ? '×©××××' : 'Error')
+      setEventModalError(locale === 'he' ? 'שגיאה' : 'Error')
     } finally {
       setSavingEvent(false)
     }
@@ -295,18 +295,18 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     }
   }
 
-  // ââ ××"× / ××¨×× ×¥' ââ
+  // ── לו"ז / בראנץ' ──
   const schedule = (wedding.event_schedule ?? []) as EventSchedule[]
   const brunchEvent = schedule.find(e =>
     e.event_name?.toLowerCase().includes('brunch') ||
-    e.event_name?.toLowerCase().includes('××¨×× ×¥')
+    e.event_name?.toLowerCase().includes('בראנץ')
   )
-  // State × ×¤×¨× ××-brunchEvent ××× ×××¤×©×¨ toggle ××××× (××× ×ª×××ª ×-router.refresh)
+  // State נפרד מה-brunchEvent כדי לאפשר toggle מיידי (ללא תלות ב-router.refresh)
   const [brunchEnabled, setBrunchEnabled] = useState<boolean>(!!brunchEvent)
   const [brunchEventId, setBrunchEventId] = useState<string | undefined>(brunchEvent?.id)
   const [togglingBrunch, setTogglingBrunch] = useState(false)
 
-  // ×¡×× ××¨×× ××©×××£ ××ª×¨×¢× ×
+  // סינכרון כשהדף מתרענן
   useEffect(() => {
     setBrunchEnabled(!!brunchEvent)
     setBrunchEventId(brunchEvent?.id)
@@ -332,28 +332,28 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       router.refresh()
       setTimeout(() => setEditSuccess(false), 3000)
     } catch {
-      setEditError(locale==='he'?'×©×××× ××©×××¨×':'Save error')
+      setEditError(locale==='he'?'שגיאה בשמירה':'Save error')
     } finally {
       setSavingEdit(false)
     }
   }
 
-  // ââ Toggle ××¨×× ×¥' (××ª××§×: state ×××¤×××××¡×× + ××× double-click) ââ
+  // ── Toggle בראנץ' (מתוקן: state אופטימיסטי + בלי double-click) ──
   const handleToggleBrunch = async () => {
-    if (togglingBrunch) return  // ×× ××¢×ª double-click
+    if (togglingBrunch) return  // מניעת double-click
 
     const nextEnabled = !brunchEnabled
-    setBrunchEnabled(nextEnabled)   // ×¢×××× ××××× ×-UI
+    setBrunchEnabled(nextEnabled)   // עדכון מיידי ב-UI
     setTogglingBrunch(true)
 
     try {
       if (nextEnabled) {
-        // ×××¡×¤×ª ×××¨××¢ ××¨×× ×¥'
+        // הוספת אירוע בראנץ'
         // Parse date parts directly to avoid UTC/local timezone offset bugs
         const [by, bm, bd] = wedding.wedding_date.split('-').map(Number)
         const brunchDate = new Date(by, bm - 1, bd + 1)  // local time constructor
         const dateStr = `${brunchDate.getFullYear()}-${String(brunchDate.getMonth()+1).padStart(2,'0')}-${String(brunchDate.getDate()).padStart(2,'0')}`
-        const name = locale==='he'?"××¨×× ×¥' ××××¨×ª":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
+        const name = locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
 
         const res = await fetch('/api/weddings', {
           method: 'POST',
@@ -375,7 +375,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           setBrunchEnabled(false)  // rollback
         }
       } else {
-        // ××××§×ª ×××¨××¢ ××¨×× ×¥'
+        // מחיקת אירוע בראנץ'
         if (!brunchEventId) { setBrunchEnabled(false); return }
         const res = await fetch(
           `/api/weddings?event_id=${brunchEventId}&wedding_id=${wedding.id}`,
@@ -401,13 +401,13 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
   return (
     <div>
-      {/* ââ Tab Bar ââ */}
+      {/* ── Tab Bar ── */}
       <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
         {([
-          { key:'guests',  label: locale==='he'?'×××¨×××':locale==='fr'?'InvitÃ©s':'Guests' },
-          { key:'seating', label: locale==='he'?'××©×××':locale==='fr'?'Tables':'Seating' },
-          { key:'edit',    label: locale==='he'?'×¢×¨×××':locale==='fr'?'Modifier':'Edit' },
-          { key:'preview', label: locale==='he'?'×ª×¦×××':locale==='fr'?'AperÃ§u':'Preview' },
+          { key:'guests',  label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
+          { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
+          { key:'edit',    label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
+          { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
         ] as const).map(tab => (
           <button
             key={tab.key}
@@ -423,9 +423,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         ))}
       </div>
 
-      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
+      {/* ══════════════════════════════════════════════
           TAB: GUESTS
-      ââââââââââââââââââââââââââââââââââââââââââââââ */}
+      ══════════════════════════════════════════════ */}
       {activeTab === 'guests' && (
         <div>
           {/* Toolbar */}
@@ -484,7 +484,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   {filteredGuests.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="text-center py-16 text-stone-300">
-                        <div className="font-cormorant text-3xl mb-2">â¦</div>
+                        <div className="font-cormorant text-3xl mb-2">✦</div>
                         <p>No guests found</p>
                       </td>
                     </tr>
@@ -505,24 +505,25 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                         </td>
                         <td className="px-4 py-4">{statusBadge(guest.rsvp_status)}</td>
                         <td className="px-4 py-4 text-stone-500">
-                          {guest.adults_count > 0 && <span>{guest.adults_count} ð¤</span>}
-                          {guest.children_count > 0 && <span className="ml-2">{guest.children_count} ð¶</span>}
+                          {guest.adults_count > 0 && <span>{guest.adults_count} 👤</span>}
+                          {guest.children_count > 0 && <span className="ml-2">{guest.children_count} 👶</span>}
                         </td>
                         <td className="px-4 py-4">
                           {guest.dietary_preferences
                             ? <span className="text-xs bg-stone-100 text-stone-600 px-2 py-1">{guest.dietary_preferences}</span>
-                            : <span className="text-stone-200">â</span>}
+                            : <span className="text-stone-200">—</span>}
                         </td>
                         <td className="px-4 py-4 max-w-[200px]">
                           {guest.notes
                             ? <p className="text-xs text-stone-500 truncate" title={guest.notes}>{guest.notes}</p>
-                            : <span className="text-stone-200">â</span>}
+                            : <span className="text-stone-200">—</span>}
                         </td>
+                        <td className="px-4 py-4 text-xs text-stone-400">              </td>
                         <td className="px-4 py-4 text-xs text-stone-400">
                           {guest.rsvp_submitted_at
                             ? new Date(guest.rsvp_submitted_at).toLocaleDateString(
                                 locale==='he'?'he-IL':locale==='fr'?'fr-FR':'en-GB')
-                            : 'â'}
+                            : '—'}
                         </td>
                         <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
                           <button onClick={() => handleDeleteGuest(guest.id)}
@@ -559,40 +560,40 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         </div>
       )}
 
-      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
+      {/* ══════════════════════════════════════════════
           TAB: SEATING
-      ââââââââââââââââââââââââââââââââââââââââââââââ */}
+      ══════════════════════════════════════════════ */}
       {activeTab === 'seating' && (
         <div dir={isRTL?'rtl':'ltr'}>
           {/* Header */}
           <div className="mb-6">
             <h3 className="font-cormorant text-2xl text-stone-700">
-              {locale==='he'?'×¡××××¨× ××©×××':locale==='fr'?'Plan de table':'Seating Chart'}
+              {locale==='he'?'סידורי ישיבה':locale==='fr'?'Plan de table':'Seating Chart'}
             </h3>
             <p className="text-sm text-stone-400 mt-1">
-              {locale==='he'?'××§×¦× ××¡×¤×¨ ×©×××× ××× ×××¨× ×©×××©×¨ ×××¢×'
-                :locale==='fr'?"Attribuez un numÃ©ro de table Ã  chaque invitÃ© confirmÃ©"
+              {locale==='he'?'הקצה מספר שולחן לכל אורח שאישר הגעה'
+                :locale==='fr'?"Attribuez un numéro de table à chaque invité confirmé"
                 :'Assign a table number to each confirmed guest'}
             </p>
           </div>
 
-          {/* Assignment table â confirmed guests */}
+          {/* Assignment table — confirmed guests */}
           <div className="bg-white border border-stone-100 rounded-2xl overflow-hidden shadow-sm mb-8">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-stone-100 bg-stone-50">
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'×©×':locale==='fr'?'Nom':'Name'}
+                      {locale==='he'?'שם':locale==='fr'?'Nom':'Name'}
                     </th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'×¡××××¡':locale==='fr'?'Statut':'Status'}
+                      {locale==='he'?'סטטוס':locale==='fr'?'Statut':'Status'}
                     </th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'×¡××´×':locale==='fr'?'Total':'Total'}
+                      {locale==='he'?'סה״כ':locale==='fr'?'Total':'Total'}
                     </th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left w-36">
-                      {locale==='he'?'××¡×¤×¨ ×©××××':locale==='fr'?'NÂ° de table':'Table #'}
+                      {locale==='he'?'מספר שולחן':locale==='fr'?'N° de table':'Table #'}
                     </th>
                   </tr>
                 </thead>
@@ -609,7 +610,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                           <input
                             type="number"
                             min={1}
-                            placeholder="â"
+                            placeholder="—"
                             value={tableInputs[g.id] ?? (g.table_number != null ? String(g.table_number) : '')}
                             onChange={e => setTableInputs(prev => ({ ...prev, [g.id]: e.target.value }))}
                             onBlur={e => handleAssignTable(g.id, e.target.value)}
@@ -634,8 +635,8 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             </div>
             {guests.filter(g => g.rsvp_status === 'confirmed').length === 0 && (
               <div className="px-5 py-12 text-center text-stone-400 text-sm">
-                {locale==='he'?'××× ×××¨××× ×©×××©×¨× ×××¢× ×¢××××'
-                  :locale==='fr'?"Aucun invitÃ© confirmÃ© pour l'instant"
+                {locale==='he'?'אין אורחים שאישרו הגעה עדיין'
+                  :locale==='fr'?"Aucun invité confirmé pour l'instant"
                   :'No confirmed guests yet'}
               </div>
             )}
@@ -644,7 +645,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               {' / '}
               {guests.filter(g => g.rsvp_status === 'confirmed').length}
               {' '}
-              {locale==='he'?'×××§×¦× ××©×××× ××ª':locale==='fr'?'assignÃ©s Ã  une table':'assigned to tables'}
+              {locale==='he'?'הוקצו לשולחנות':locale==='fr'?'assignés à une table':'assigned to tables'}
             </div>
           </div>
 
@@ -662,7 +663,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             return (
               <div>
                 <h3 className="font-cormorant text-xl text-stone-700 mb-4">
-                  {locale==='he'?'×ª×¦××× ××¤× ×©××××':locale==='fr'?'Vue par table':'View by Table'}
+                  {locale==='he'?'תצוגה לפי שולחן':locale==='fr'?'Vue par table':'View by Table'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tableNumbers.map(tableNum => {
@@ -672,10 +673,10 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       <div key={tableNum} className="bg-white border border-stone-100 rounded-xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-3">
                           <span className="font-cormorant text-lg text-stone-700">
-                            {locale==='he'?'×©××××':locale==='fr'?'Table':'Table'} {tableNum}
+                            {locale==='he'?'שולחן':locale==='fr'?'Table':'Table'} {tableNum}
                           </span>
                           <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-full">
-                            {total} {locale==='he'?'×××¨×××':locale==='fr'?'invitÃ©s':'guests'}
+                            {total} {locale==='he'?'אורחים':locale==='fr'?'invités':'guests'}
                           </span>
                         </div>
                         <ul className="space-y-1.5">
@@ -685,7 +686,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                               <span className="truncate">{g.name}</span>
                               {(g.adults_count + g.children_count) > 1 && (
                                 <span className="text-xs text-stone-400 flex-shrink-0">
-                                  Ã{g.adults_count + g.children_count}
+                                  ×{g.adults_count + g.children_count}
                                 </span>
                               )}
                             </li>
@@ -701,9 +702,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         </div>
       )}
 
-      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
+      {/* ══════════════════════════════════════════════
           TAB: EDIT
-      ââââââââââââââââââââââââââââââââââââââââââââââ */}
+      ══════════════════════════════════════════════ */}
       {activeTab === 'edit' && (
         <div dir={isRTL?'rtl':'ltr'} className="max-w-2xl space-y-8">
 
@@ -713,48 +714,48 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
               </svg>
-              {locale==='he'?'× ×©××¨ ×××¦×××!':locale==='fr'?'EnregistrÃ© avec succÃ¨s !':'Saved successfully!'}
+              {locale==='he'?'נשמר בהצלחה!':locale==='fr'?'Enregistré avec succès !':'Saved successfully!'}
             </div>
           )}
 
-          {/* ââ ×××× ââ */}
+          {/* ── הזוג ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'××××':locale==='fr'?'Les mariÃ©s':'The Couple'}
+              {locale==='he'?'הזוג':locale==='fr'?'Les mariés':'The Couple'}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>{locale==='he'?'×©× ××××':locale==='fr'?"PrÃ©nom de la mariÃ©e":"Bride's name"}</label>
+                <label className={labelCls}>{locale==='he'?'שם הכלה':locale==='fr'?"Prénom de la mariée":"Bride's name"}</label>
                 <input value={editForm.bride_name} onChange={e=>setEditForm(p=>({...p,bride_name:e.target.value}))} className={inputCls}/>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'×©× ×××ª×':locale==='fr'?"PrÃ©nom du mariÃ©":"Groom's name"}</label>
+                <label className={labelCls}>{locale==='he'?'שם החתן':locale==='fr'?"Prénom du marié":"Groom's name"}</label>
                 <input value={editForm.groom_name} onChange={e=>setEditForm(p=>({...p,groom_name:e.target.value}))} className={inputCls}/>
               </div>
             </div>
             <div className="mt-4">
-              <label className={labelCls}>{locale==='he'?'×ª××¨×× ×××ª×× ×':locale==='fr'?'Date du mariage':'Wedding date'}</label>
+              <label className={labelCls}>{locale==='he'?'תאריך החתונה':locale==='fr'?'Date du mariage':'Wedding date'}</label>
               <input type="date" value={editForm.wedding_date} onChange={e=>setEditForm(p=>({...p,wedding_date:e.target.value}))} dir="ltr" className={inputCls}/>
             </div>
           </div>
 
-          {/* ââ ××§×× ââ */}
+          {/* ── מקום ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'××§×× ××××¨××¢':locale==='fr'?'Le lieu':'Venue'}
+              {locale==='he'?'מקום האירוע':locale==='fr'?'Le lieu':'Venue'}
             </h3>
             <div className="space-y-3">
               <div>
-                <label className={labelCls}>{locale==='he'?'×©× ×××××':locale==='fr'?'Nom du lieu':'Venue name'}</label>
-                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'×××× ×××¨××¢××':'hÃ¢teau de...'}/>
+                <label className={labelCls}>{locale==='he'?'שם האולם':locale==='fr'?'Nom du lieu':'Venue name'}</label>
+                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Château de...'}/>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{locale==='he'?'×¢××¨':locale==='fr'?'Ville':'City'}</label>
+                  <label className={labelCls}>{locale==='he'?'עיר':locale==='fr'?'Ville':'City'}</label>
                   <input value={editForm.venue_city} onChange={e=>setEditForm(p=>({...p,venue_city:e.target.value}))} className={inputCls}/>
                 </div>
                 <div>
-                  <label className={labelCls}>{locale==='he'?'××ª×××ª':locale==='fr'?'Adresse':'Address'}</label>
+                  <label className={labelCls}>{locale==='he'?'כתובת':locale==='fr'?'Adresse':'Address'}</label>
                   <input value={editForm.venue_address} onChange={e=>setEditForm(p=>({...p,venue_address:e.target.value}))} className={inputCls}/>
                 </div>
               </div>
@@ -763,22 +764,22 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <label className={labelCls}>Google Maps URL</label>
                   <input value={editForm.google_maps_url} onChange={e=>setEditForm(p=>({...p,google_maps_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://maps.google.com/..."/>
                 </div>
-                <div>
+                        <div>
                   <label className={labelCls}>Waze URL</label>
-                  <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://waze.com/..."/>
+                  <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://wazu.com/..."/>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ââ ××××¢× ××ª××¨×× RSVP ââ */}
+          {/* ── הודעת פתיחה RSVP ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'×ª××× ××××× ×':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
+              {locale==='he'?'תוכן ההזמנה':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
             </h3>
             <div className="space-y-3">
               <div>
-                <label className={labelCls}>{locale==='he'?'×©×¤× ×¨××©××ª':locale==='fr'?'Langue principale':'Main language'}</label>
+                <label className={labelCls}>{locale==='he'?'שפה ראשית':locale==='fr'?'Langue principale':'Main language'}</label>
                 <div className="flex gap-2">
                   {(['fr','he','en'] as const).map(lang=>(
                     <button key={lang} type="button"
@@ -789,37 +790,37 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                         color:editForm.locale===lang?'#fff':'#78716c',
                         borderColor:editForm.locale===lang?'#c9a84c':'#e7e5e4',
                       }}>
-                      {lang==='fr'?'FranÃ§ais':lang==='he'?'×¢××¨××ª':'English'}
+                      {lang==='fr'?'Français':lang==='he'?'עברית':'English'}
                     </button>
                   ))}
                 </div>
                 <p className="text-xs text-stone-400 mt-1.5">
-                  ð {locale==='he'?'××××¨××× ××¨×× ××ª ××××× × ××©×¤× ×©××× ××××××××ª':locale==='fr'?"Les invitÃ©s verront l'invitation dans leur propre langue automatiquement":'Guests will see the invitation in their own language automatically'}
+                  🌐 {locale==='he'?'האורחים יראו את ההזמנה בשפה שלהם אוטומטית':locale==='fr'?"Les invités verront l'invitation dans leur propre langue automatiquement":'Guests will see the invitation in their own language automatically'}
                 </p>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'××××¢×ª ×¤×ª×××':locale==='fr'?'Message de bienvenue':'Welcome message'}</label>
+                <label className={labelCls}>{locale==='he'?'הודעת פתיחה':locale==='fr'?'Message de bienvenue':'Welcome message'}</label>
                 <textarea value={editForm.welcome_message} onChange={e=>setEditForm(p=>({...p,welcome_message:e.target.value}))}
                   rows={4} dir="auto" className={inputCls+' resize-none'}/>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'×ª××¨×× ×××¨×× ××××©××¨':locale==='fr'?'Date limite RSVP':'RSVP deadline'}</label>
+                <label className={labelCls}>{locale==='he'?'תאריך אחרון לאישור':locale==='fr'?'Date limite RSVP':'RSVP deadline'}</label>
                 <input type="date" value={editForm.rsvp_deadline} onChange={e=>setEditForm(p=>({...p,rsvp_deadline:e.target.value}))} dir="ltr" className={inputCls}/>
               </div>
             </div>
           </div>
 
-          {/* ââ ×¢××¦×× ââ */}
+          {/* ── עיצוב ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'×¢××¦×× ×××¨××':locale==='fr'?'Design & Apparence':'Design & Appearance'}
+              {locale==='he'?'עיצוב ומראה':locale==='fr'?'Design & Apparence':'Design & Appearance'}
             </h3>
             <div className="space-y-5">
 
-              {/* ââ Cover image ââ */}
+              {/* ── Cover image ── */}
               <div>
                 <label className={labelCls}>
-                  {locale==='he'?'×ª××× ×ª ×××¡××':locale==='fr'?"Photo de couverture":'Cover photo'}
+                  {locale==='he'?'תמונת כיסוי':locale==='fr'?"Photo de couverture":'Cover photo'}
                 </label>
                 {editForm.cover_image_url && (
                   <div className="relative h-28 rounded-xl overflow-hidden mb-2 border border-stone-100">
@@ -828,18 +829,18 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       type="button"
                       onClick={() => setEditForm(p => ({ ...p, cover_image_url: '' }))}
                       className="absolute top-2 right-2 bg-black/50 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center hover:bg-black/70"
-                    >Ã</button>
+                    >×</button>
                   </div>
                 )}
                 <label className="flex items-center gap-2 cursor-pointer px-4 py-2.5 border border-dashed border-stone-200 rounded-xl text-sm text-stone-500 hover:bg-stone-50 transition-colors">
                   {uploadingCover ? (
-                    <span className="animate-pulse">{locale==='he'?'××¢××...':locale==='fr'?'TÃ©lÃ©chargement...':'Uploading...'}</span>
+                    <span className="animate-pulse">{locale==='he'?'מעלה...':locale==='fr'?'Téléchargement...':'Uploading...'}</span>
                   ) : (
                     <>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                       </svg>
-                      <span>{locale==='he'?'××¢×× ×ª××× × (JPEG/PNG/WebP)':locale==='fr'?'TÃ©lÃ©charger une photo (JPEG/PNG/WebP)':'Upload photo (JPEG/PNG/WebP)'}</span>
+                      <span>{locale==='he'?'העלה תמונה (JPEG/PNG/WebP)':locale==='fr'?'Télécharger une photo (JPEG/PNG/WebP)':'Upload photo (JPEG/PNG/WebP)'}</span>
                     </>
                   )}
                   <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleCoverUpload} disabled={uploadingCover}/>
@@ -847,10 +848,10 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 {coverUploadError && <p className="text-red-500 text-xs mt-1">{coverUploadError}</p>}
               </div>
 
-              {/* ââ Font style ââ */}
+              {/* ── Font style ── */}
               <div>
                 <label className={labelCls}>
-                  {locale==='he'?'×¡×× ×× ×××¤×':locale==='fr'?'Style de police':'Font style'}
+                  {locale==='he'?'סגנון גופן':locale==='fr'?'Style de police':'Font style'}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {([
@@ -885,17 +886,17 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 </div>
               </div>
 
-              {/* ââ Color palette ââ */}
+              {/* ── Color palette ── */}
               <div>
                 <label className={labelCls}>
-                  {locale==='he'?'×¤×××ª ×¦××¢××':locale==='fr'?'Palette de couleurs':'Color palette'}
+                  {locale==='he'?'פלטת צבעים':locale==='fr'?'Palette de couleurs':'Color palette'}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {([
-                    { key: 'ivory',    label: locale==='he'?'×©× ××':locale==='fr'?'Ivoire':'Ivory',     bg: '#faf8f5', accent: '#c9a84c', text: '#1c1917' },
-                    { key: 'blush',    label: locale==='he'?'××¨××':locale==='fr'?'Blush':'Blush',       bg: '#fff5f5', accent: '#d4a0a0', text: '#3d1515' },
-                    { key: 'sage',     label: locale==='he'?'××¨××§ ×¢×××':locale==='fr'?'Sauge':'Sage',   bg: '#f4f7f2', accent: '#7a9e7e', text: '#1a2e1c' },
-                    { key: 'midnight', label: locale==='he'?'××××':locale==='fr'?'Minuit':'Midnight',   bg: '#0f172a', accent: '#c9a84c', text: '#f8f5ee' },
+                    { key: 'ivory',    label: locale==='he'?'שנהב':locale==='fr'?'Ivoire':'Ivory',     bg: '#faf8f5', accent: '#c9a84c', text: '#1c1917' },
+                    { key: 'blush',    label: locale==='he'?'ורוד':locale==='fr'?'Blush':'Blush',       bg: '#fff5f5', accent: '#d4a0a0', text: '#3d1515' },
+                    { key: 'sage',     label: locale==='he'?'ירוק עדין':locale==='fr'?'Sauge':'Sage',   bg: '#f4f7f2', accent: '#7a9e7e', text: '#1a2e1c' },
+                    { key: 'midnight', label: locale==='he'?'לילה':locale==='fr'?'Minuit':'Midnight',   bg: '#0f172a', accent: '#c9a84c', text: '#f8f5ee' },
                   ] as const).map(p => (
                     <button
                       key={p.key}
@@ -914,7 +915,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       </div>
                       <span className="text-xs font-medium" style={{ color: p.text === '#f8f5ee' ? '#1c1917' : p.text }}>{p.label}</span>
                       {editForm.layout_style === p.key && (
-                        <span className="ml-auto text-[#c9a84c] text-xs">â</span>
+                        <span className="ml-auto text-[#c9a84c] text-xs">✓</span>
                       )}
                     </button>
                   ))}
@@ -924,11 +925,11 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             </div>
           </div>
 
-          {/* ââ ××"× ××××¨××¢ ââ */}
+          {/* ── לו"W� האירוע ── */}
           <div>
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-stone-100">
               <h3 className="font-cormorant text-xl text-stone-700">
-                {locale==='he'?"××\"× ××××¨××¢":locale==='fr'?"Programme de l'Ã©vÃ©nement":'Event Schedule'}
+                {locale==='he'?"לו\"ז האירוע":locale==='fr'?"Programme de l'événement":'Event Schedule'}
               </h3>
               <button
                 type="button"
@@ -938,7 +939,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
                 </svg>
-                {locale==='he'?'×××¡×£ ×××¨××¢':locale==='fr'?'Ajouter':'Add event'}
+                {locale==='he'?'הוסף אירוע':locale==='fr'?'Ajouter':'Add event'}
               </button>
             </div>
 
@@ -946,12 +947,12 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100 mb-3">
               <div>
                 <p className="text-sm font-medium text-stone-700">
-                  {locale==='he'?"××¨×× ×¥' ××××¨×ª":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
+                  {locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
                 </p>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  {locale==='he'?"×××¡×¤× ××××¨× ×©× ××¨×× ×¥' (11:00â14:00)"
-                    :locale==='fr'?"Ajout rapide d'un brunch (11hâ14h)"
-                    :'Quick-add a brunch event (11amâ2pm)'}
+                  {locale==='he'?"הוספה מהירה של בראנץ' (11:00–14:00)"
+                    :locale==='fr'?"Ajout rapide d'un brunch (11h–14h)"
+                    :'Quick-add a brunch event (11am–2pm)'}
                 </p>
               </div>
               <button
@@ -969,7 +970,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </button>
             </div>
 
-            {/* ×¨×©×××ª ×××¨××¢×× */}
+            {/* רשימת אירועים */}
             {schedule.length > 0 && (
               <div className="space-y-2">
                 {schedule.map(ev => (
@@ -977,7 +978,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                     <div className="w-2 h-2 rounded-full bg-[#c9a84c] flex-shrink-0"/>
                     <div className="flex-1 min-w-0">
                       <span className="text-stone-700 font-medium">{ev.event_name}</span>
-                      {ev.location_name && <span className="text-stone-400 text-xs ml-2">Â· {ev.location_name}</span>}
+                      {ev.location_name && <span className="text-stone-400 text-xs ml-2">· {ev.location_name}</span>}
                     </div>
                     <span className="text-xs text-stone-400 flex-shrink-0">{ev.start_time?.slice(0,5)}</span>
                     <button
@@ -985,10 +986,10 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       onClick={() => handleDeleteEvent(ev.id)}
                       disabled={deletingEventId === ev.id}
                       className="text-stone-300 hover:text-red-400 transition-colors flex-shrink-0 disabled:opacity-40"
-                      title={locale==='he'?'×××§':locale==='fr'?'Supprimer':'Delete'}
+                      title={locale==='he'?'מחק':locale==='fr'?'Supprimer':'Delete'}
                     >
                       {deletingEventId === ev.id ? (
-                        <span className="text-xs animate-pulse">â¦</span>
+                        <span className="text-xs animate-pulse">…</span>
                       ) : (
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -1002,32 +1003,32 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
             {schedule.length === 0 && (
               <p className="text-xs text-stone-400 text-center py-4">
-                {locale==='he'?'××× ×××¨××¢×× ×¢××××. ×××¡××¤× ××ª ×××§×¡, ××§×××ª ×¤× ×× ××¢××.':locale==='fr'?'Pas encore d\'Ã©vÃ©nements. Ajoutez la cÃ©rÃ©monie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
+                {locale==='he'?'אין אירועים עדיין. הוסיפו את הטקס, הקבלת פנים ועוד.':locale==='fr'?'Pas encore d\'événements. Ajoutez la cérémonie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
               </p>
             )}
           </div>
 
-          {/* ââ ××¤×ª××¨ ×©×××¨× ââ */}
+          {/* ── כפתור שמירה ── */}
           <div className="pt-2">
             <button onClick={handleSaveEdit} disabled={savingEdit}
               className="px-8 py-3.5 text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all disabled:opacity-60"
               style={{ background: savingEdit?'#a8a29e':'#c9a84c', boxShadow: savingEdit?'none':'0 4px 14px rgba(201,168,76,0.25)' }}>
               {savingEdit
-                ? (locale==='he'?'×©×××¨...':locale==='fr'?'Enregistrement...':'Saving...')
-                : (locale==='he'?'×©×××¨ ×©×× ××××':locale==='fr'?'Enregistrer les modifications':'Save changes')}
+                ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...')
+                : (locale==='he'?'שמור שינויים':locale==='fr'?'Enregistrer les modifications':'Save changes')}
             </button>
           </div>
 
-          {/* ââ ××××§×ª ××©××× ââ */}
+          {/* ── מחיקת חשבון ── */}
           <div className="pt-8 mt-4 border-t border-stone-100">
             <h3 className="font-cormorant text-xl text-red-700 mb-2">
-              {locale==='he'?'××××§×ª ××©×××':locale==='fr'?'Supprimer le compte':'Delete account'}
+              {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
             </h3>
             <p className="text-xs text-stone-400 mb-4 leading-relaxed">
               {locale==='he'
-                ? '××××§×ª ×××©××× ×ª×¡××¨ ××¦×××ª××ª ××ª ×× × ×ª×× × ×××ª×× ×, ××××¨××× ×××××¨××. ×¤×¢××× ×××ª× ××¤×××.'
+                ? 'מחיקת החשבון תסיר לצמיתות את כל נתוני החתונה, האורחים והגלריה. פעולה בלתי הפיכה.'
                 : locale==='fr'
-                ? 'La suppression du compte supprimera dÃ©finitivement toutes les donnÃ©es du mariage, des invitÃ©s et de la galerie. Cette action est irrÃ©versible.'
+                ? 'La suppression du compte supprimera définitivement toutes les données du mariage, des invités et de la galerie. Cette action est irréversible.'
                 : 'Deleting the account will permanently remove all wedding, guest and gallery data. This action is irreversible.'}
             </p>
 
@@ -1036,27 +1037,27 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 onClick={() => setDeleteState('confirm')}
                 className="px-6 py-2.5 border border-red-200 text-red-600 text-sm font-medium rounded-xl hover:bg-red-50 transition-colors"
               >
-                {locale==='he'?'×××§ ××©×××':locale==='fr'?'Supprimer mon compte':'Delete my account'}
+                {locale==='he'?'מחק חשבון':locale==='fr'?'Supprimer mon compte':'Delete my account'}
               </button>
             )}
 
             {deleteState === 'confirm' && (
               <div className="bg-red-50 border border-red-100 rounded-xl p-4">
                 <p className="text-sm text-red-700 font-medium mb-3">
-                  {locale==='he'?'××× ××ª× ××××××?':locale==='fr'?'Ãtes-vous sÃ»r(e) ?':'Are you sure?'}
+                  {locale==='he'?'האם אתם בטוחים?':locale==='fr'?'Êtes-vous sûr(e) ?':'Are you sure?'}
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setDeleteState('idle')}
                     className="flex-1 py-2.5 border border-stone-200 text-stone-600 text-sm font-medium rounded-xl hover:bg-stone-50 transition-colors"
                   >
-                    {locale==='he'?'×××××':locale==='fr'?'Annuler':'Cancel'}
+                    {locale==='he'?'ביטול':locale==='fr'?'Annuler':'Cancel'}
                   </button>
                   <button
                     onClick={handleDeleteRequest}
                     className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-colors"
                   >
-                    {locale==='he'?'××, ×××§':locale==='fr'?'Oui, supprimer':'Yes, delete'}
+                    {locale==='he'?'כמ, מחק':locale==='fr'?'Oui, supprimer':'Yes, delete'}
                   </button>
                 </div>
               </div>
@@ -1064,16 +1065,16 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
             {deleteState === 'sending' && (
               <p className="text-sm text-stone-400 animate-pulse">
-                {locale==='he'?'×©××× ×××××× ×××©××¨...':locale==='fr'?'Envoi de l\'e-mail de confirmation...':'Sending confirmation email...'}
+                {locale==='he'?'שולח אימייל אישור...':locale==='fr'?'Envoi de l\'e-mail de confirmation...':'Sending confirmation email...'}
               </p>
             )}
 
             {deleteState === 'sent' && (
               <div className="bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-700">
                 {locale==='he'
-                  ? '× ×©×× ×××××× ×¢× ×§××©××¨ ××××©××¨ ×××××§×. ×××§× ××ª ×ª×××ª ×××××¨ ×©×××.'
+                  ? 'נשלח אימייל עם קישור לאישור המחיקה. בדקו את תיבת הדואר שלכם.'
                   : locale==='fr'
-                  ? 'Un e-mail de confirmation a Ã©tÃ© envoyÃ©. VÃ©rifiez votre boÃ®te mail.'
+                  ? 'Un e-mail de confirmation a été envoyé. Vérifiez votre boîte mail.'
                   : 'A confirmation email has been sent. Check your inbox.'}
               </div>
             )}
@@ -1082,7 +1083,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-sm text-red-600">
                 {deleteError}
                 <button onClick={() => setDeleteState('idle')} className="block mt-2 text-xs underline">
-                  {locale==='he'?'× ×¡× ×©××':locale==='fr'?'RÃ©essayer':'Try again'}
+                  {locale==='he'?'נסה שוב':locale==='fr'?'Réessayer':'Try again'}
                 </button>
               </div>
             )}
@@ -1090,13 +1091,13 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         </div>
       )}
 
-      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
+      {/* ══════════════════════════════════════════════
           TAB: PREVIEW
-      ââââââââââââââââââââââââââââââââââââââââââââââ */}
+      ══════════════════════════════════════════════ */}
       {activeTab === 'preview' && (
         <div className="text-center py-12">
           <p className="text-stone-400 text-sm mb-6">
-            {locale==='he'?'××¦×¤××× ××××× × ××¤× ×©××××¨××× ×¨×××× ×××ª×':locale==='fr'?"Voir l'invitation telle que les invitÃ©s la voient":'See the invitation as guests see it'}
+            {locale==='he'?'לצפייה בהזמנה כפי שהאורחים רואים אותה':locale==='fr'?"Voir l'invitation telle que les invités la voient":'See the invitation as guests see it'}
           </p>
           <a
             href={wedding.slug ? `/${locale}/${wedding.slug}` : '#'}
@@ -1108,15 +1109,15 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
             </svg>
-            {locale==='he'?'×¤×ª× ×××× ×':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} â
+            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↗
           </a>
           <div className="mt-6">
             <p className="text-xs text-stone-400 mb-2">
-              {locale==='he'?'×§××©××¨ ××××× ×':locale==='fr'?"Lien de l'invitation":'Invitation link'}
+              {locale==='he'?'קישור ההזמנה':locale==='fr'?"Lien de l'invitation":'Invitation link'}
             </p>
             <div className="flex items-center gap-2 max-w-sm mx-auto">
               <code className="flex-1 text-xs bg-stone-100 px-3 py-2 rounded-lg text-stone-600 truncate dir-ltr" dir="ltr">
-                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug ?? 'â¦'}
+                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug ?? '…'}
               </code>
               <button
                 onClick={() => wedding.slug && navigator.clipboard?.writeText(`${window.location.origin}/${locale}/${wedding.slug}`)}
@@ -1132,9 +1133,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         </div>
       )}
 
-      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
-          ××××× ×××¡×¤×ª ×××¨××¢ ×××"×
-      ââââââââââââââââââââââââââââââââââââââââââââââ */}
+      {/* ══════════════════════════════════════════════
+          מודאל הוספת אירוע ללו"ז
+      ══════════════════════════════════════════════ */}
       {showEventModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.4)' }}
@@ -1143,19 +1144,19 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
               <h2 className="font-cormorant text-xl text-stone-800">
-                {locale==='he'?'×××¡×¤×ª ×××¨××¢ ×××"×':locale==='fr'?"Ajouter un Ã©vÃ©nement":'Add event to schedule'}
+                {locale==='he'?'הוספת אירוע ללו"ז':locale==='fr'?"Ajouter un événement":'Add event to schedule'}
               </h2>
-              <button onClick={() => setShowEventModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">Ã</button>
+              <button onClick={() => setShowEventModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               {eventModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{eventModalError}</div>}
 
               <div>
-                <label className={labelCls}>{locale==='he'?'×©× ××××¨××¢ *':locale==='fr'?'Nom de l\'Ã©vÃ©nement *':'Event name *'}</label>
+                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *'}</label>
                 <input
                   value={eventForm.event_name}
                   onChange={e => setEventForm(p => ({ ...p, event_name: e.target.value }))}
-                  placeholder={locale==='he'?'×§×××ª ×¤× ××':locale==='fr'?'CÃ©rÃ©monie':'Ceremony'}
+                  placeholder={locale==='he'?'קבלת פנים':locale==='fr'?'Cérémonie':'Ceremony'}
                   dir="auto"
                   className={inputCls}
                 />
@@ -1163,23 +1164,23 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{locale==='he'?'×ª××¨×× *':locale==='fr'?'Date *':'Date *'}</label>
+                  <label className={labelCls}>{locale==='he'?'תאריך *':locale==='fr'?'Date *'}</label>
                   <input type="date" value={eventForm.event_date} onChange={e => setEventForm(p => ({ ...p, event_date: e.target.value }))} dir="ltr" className={inputCls}/>
                 </div>
                 <div>
-                  <label className={labelCls}>{locale==='he'?'×©×¢×ª ××ª××× *':locale==='fr'?'Heure de dÃ©but *':'Start time *'}</label>
+                  <label className={labelCls}>{locale==='he'?'שעת התחלה *':locale==='fr'?'Heure de début *':'Start time *'}</label>
                   <input type="time" value={eventForm.start_time} onChange={e => setEventForm(p => ({ ...p, start_time: e.target.value }))} dir="ltr" className={inputCls}/>
                 </div>
               </div>
 
               <div>
-                <label className={labelCls}>{locale==='he'?'×©×¢×ª ×¡×××':locale==='fr'?'Heure de fin':'End time'}</label>
+                <label className={labelCls}>{locale==='he'?'שעת סיום':locale==='fr'?'Heure de fin':'End time'}</label>
                 <input type="time" value={eventForm.end_time} onChange={e => setEventForm(p => ({ ...p, end_time: e.target.value }))} dir="ltr" className={inputCls}/>
               </div>
 
               <div>
-                <label className={labelCls}>{locale==='he'?'×××§××':locale==='fr'?'Lieu':'Location'}</label>
-                <input value={eventForm.location_name} onChange={e => setEventForm(p => ({ ...p, location_name: e.target.value }))} dir="auto" className={inputCls} placeholder={locale==='he'?'×××× ×××¨××¢××':'Domaine des...'}/>
+                <label className={labelCls}>{locale==='he'?'מיקום':locale==='fr'?'Lieu':'Location'}</label>
+                <input value={eventForm.location_name} onChange={e => setEventForm(p => ({ ...p, location_name: e.target.value }))} dir="auto" className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Domaine des...'}/>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1194,28 +1195,28 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </div>
 
               <div>
-                <label className={labelCls}>{locale==='he'?'×ª××××¨':locale==='fr'?'Description':'Description'}</label>
+                <label className={labelCls}>{locale==='he'?'תיאור':locale==='fr'?'Description':'Description'}</label>
                 <textarea value={eventForm.description} onChange={e => setEventForm(p => ({ ...p, description: e.target.value }))} rows={2} dir="auto" className={inputCls + ' resize-none'}/>
               </div>
             </div>
             <div className="flex gap-3 px-6 py-4 border-t border-stone-100 bg-stone-50 rounded-b-2xl">
               <button onClick={() => setShowEventModal(false)}
                 className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors rounded-xl">
-                {locale==='he'?'×××××':locale==='fr'?'Annuler':'Cancel'}
+                {locale==='he'?'ביטול':locale==='fr'?'Annuler':'Cancel'}
               </button>
               <button onClick={handleAddEvent} disabled={savingEvent}
                 className="flex-1 py-3 text-white text-sm font-medium tracking-wide transition-colors disabled:opacity-60 rounded-xl"
                 style={{ background: savingEvent ? '#a8a29e' : '#c9a84c' }}>
-                {savingEvent ? (locale==='he'?'×©×××¨...':locale==='fr'?'Enregistrement...':'Saving...') : (locale==='he'?'×××¡×£':locale==='fr'?'Ajouter':'Add')}
+                {savingEvent ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...') : (locale==='he'?'הוסף':locale==='fr'?'Ajouter':'Add')}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
-          ××××× ×××¡×¤×ª ×××¨×
-      ââââââââââââââââââââââââââââââââââââââââââââââ */}
+      {/* ══════════════════════════════════════════════
+          מודאל הוספת אורח
+      ══════════════════════════════════════════════ */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background:'rgba(0,0,0,0.4)' }}
@@ -1224,14 +1225,14 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
               <h2 className="font-cormorant text-xl text-stone-800">{t.addGuestTitle}</h2>
-              <button onClick={()=>setShowAddModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">Ã</button>
+              <button onClick={()=>setShowAddModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               {guestModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{guestModalError}</div>}
               <div>
                 <label className={labelCls}>{t.name} *</label>
                 <input value={newGuest.name} onChange={e=>setNewGuest(p=>({...p,name:e.target.value}))}
-                  placeholder={locale==='he'?'××©×¨×× ××©×¨×××':'Marie Dupont'}
+                  placeholder={locale==='he'?'ישראל ישראלי':'Marie Dupont'}
                   dir="auto"
                   className={inputCls}/>
               </div>
@@ -1274,12 +1275,12 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               <div>
                 <label className={labelCls}>{t.dietary}</label>
                 <input value={newGuest.dietary_preferences} onChange={e=>setNewGuest(p=>({...p,dietary_preferences:e.target.value}))}
-                  placeholder={locale==='he'?'×¦×××× ×, ××©×¨...':'VÃ©gÃ©tarien, Casher...'} className={inputCls}/>
+                  placeholder={locale==='he'?'צמחוני, כשר...':'Végétarien, Casher...'} className={inputCls}/>
               </div>
               <div>
                 <label className={labelCls}>{t.allergies}</label>
                 <input value={newGuest.allergies} onChange={e=>setNewGuest(p=>({...p,allergies:e.target.value}))}
-                  placeholder={locale==='he'?'××××××, ×××××...':'Noix, gluten...'} className={inputCls}/>
+                  placeholder={locale==='he'?'אגוזים, גלוטן...':'Noix, gluten...'} className={inputCls}/>
               </div>
               <div>
                 <label className={labelCls}>{t.notes}</label>
