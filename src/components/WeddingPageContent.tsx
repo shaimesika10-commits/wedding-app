@@ -58,6 +58,7 @@ export default function WeddingPageContent({
   const [pinUnlocked, setPinUnlocked] = useState(!requiresPin)
   const [pinInput, setPinInput] = useState('')
   const [pinError, setPinError] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const isRTL = locale === 'he'
   const tr = t(locale)
@@ -159,7 +160,25 @@ export default function WeddingPageContent({
     })
   }
 
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handlePinSubmit = (e: React.FormEvent) =
+  const handleShare = async () => {
+    const url = window.location.href
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: wedding.bride_name + ' & ' + wedding.groom_name,
+          url,
+        })
+      } catch { /* cancelled */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch { /* fallback */ }
+    }
+  }
+> {
     e.preventDefault()
     if (pinInput === wedding.guest_pin) {
       setPinUnlocked(true)
@@ -202,7 +221,22 @@ export default function WeddingPageContent({
               type="password"
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLength={4}
+              maxLe
+            {/* Share Invitation Button */}
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleShare}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#b8965a] text-[#b8965a] text-sm tracking-widest uppercase font-light hover:bg-[#b8965a] hover:text-white transition-all duration-300"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                {copied
+                  ? (locale === 'fr' ? 'Copié !' : locale === 'he' ? 'הועתק!' : 'Copied!')
+                  : (locale === 'fr' ? "Partager l'invitation" : locale === 'he' ? 'שתף הזמנה' : 'Share Invitation')}
+              </button>
+            </div>ngth={4}
               value={pinInput}
               onChange={e => { setPinInput(e.target.value); setPinError(false) }}
               placeholder="• • • •"
