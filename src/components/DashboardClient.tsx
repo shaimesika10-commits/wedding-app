@@ -439,21 +439,31 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   return (
     <div>
       {/* ── Tab Bar ── */}
-      <div className="flex items-center justify-between mb-4">
-        <p className="font-cormorant text-lg text-stone-600 tracking-wide">
-          {wedding.bride_name} {'&'} {wedding.groom_name}
-        </p>
+      <div className="flex items-start justify-between mb-6 pb-5 border-b border-[#e8e0d5]">
+        <div>
+          <h1 className="font-cormorant text-2xl md:text-3xl font-light text-[#3d3427] tracking-widest mb-1">
+            {wedding.bride_name} {'&'} {wedding.groom_name}
+          </h1>
+          {mounted && wedding.wedding_date && (
+            <p className="text-xs text-[#9d8b72] tracking-widest uppercase">
+              {new Date(wedding.wedding_date + 'T12:00:00').toLocaleDateString(
+                locale === 'he' ? 'he-IL' : locale === 'fr' ? 'fr-FR' : 'en-US',
+                {year:'numeric',month:'long',day:'numeric'}
+              )}
+            </p>
+          )}
+        </div>
         <button
           onClick={handleDashboardShare}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#c9a84c] text-[#c9a84c] text-xs tracking-widest uppercase font-light hover:bg-[#c9a84c] hover:text-white transition-all duration-300"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium text-[#b8965a] border border-[#d4c4a8] hover:bg-[#faf8f5] transition-colors"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/>
             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
           </svg>
           {copiedDashboard
             ? (locale === 'fr' ? 'Copié !' : locale === 'he' ? 'הועתק!' : 'Copied!')
-            : (locale === 'fr' ? "Partager" : locale === 'he' ? 'שתף' : 'Share')}
+            : (locale === 'fr' ? 'Partager' : locale === 'he' ? 'שתף' : 'Share')}
         </button>
       </div>
       <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
@@ -480,6 +490,24 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           ══════════════════════════════════════════════ */}
       {activeTab === 'guests' && (
         <div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div className="bg-white border border-[#e8e0d5] rounded-xl p-4 text-center">
+              <div className="text-3xl font-light text-[#3d3427] mb-1">{guests.length}</div>
+              <div className="text-xs tracking-widest uppercase text-[#9d8b72]">{locale === 'he' ? 'סה״כ' : 'Total'}</div>
+            </div>
+            <div className="bg-white border border-[#e8e0d5] rounded-xl p-4 text-center">
+              <div className="text-3xl font-light text-emerald-600 mb-1">{guests.filter(g => g.rsvp_status === 'confirmed').length}</div>
+              <div className="text-xs tracking-widest uppercase text-[#9d8b72]">{locale === 'he' ? 'אישרו' : locale === 'fr' ? 'Confirmés' : 'Confirmed'}</div>
+            </div>
+            <div className="bg-white border border-[#e8e0d5] rounded-xl p-4 text-center">
+              <div className="text-3xl font-light text-red-400 mb-1">{guests.filter(g => g.rsvp_status === 'declined').length}</div>
+              <div className="text-xs tracking-widest uppercase text-[#9d8b72]">{locale === 'he' ? 'סירבו' : locale === 'fr' ? 'Déclinés' : 'Declined'}</div>
+            </div>
+            <div className="bg-white border border-[#e8e0d5] rounded-xl p-4 text-center">
+              <div className="text-3xl font-light text-[#b8965a] mb-1">{guests.filter(g => g.rsvp_status === 'pending').length}</div>
+              <div className="text-xs tracking-widest uppercase text-[#9d8b72]">{locale === 'he' ? 'ממתינים' : locale === 'fr' ? 'En attente' : 'Pending'}</div>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-3 md:gap-4 items-center justify-between mb-6">
             <div className="relative w-full md:flex-1 md:min-w-[200px] md:max-w-sm">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -590,8 +618,22 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 </tbody>
               </table>
             </div>
-            <div className="px-4 py-3 bg-stone-50 border-t border-stone-100 text-xs text-stone-400 text-right">
-              {filteredGuests.length} / {guests.length} guests
+            <div className="px-6 py-4 border-t border-[#e8e0d5] bg-[#faf8f5] flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-6 flex-wrap">
+                <span className="flex items-center gap-1.5 text-xs text-[#9d8b72]">
+                  <span className="text-xl font-light text-emerald-600">{guests.filter(g => g.rsvp_status === 'confirmed').length}</span>
+                  {locale === 'he' ? 'אישרו' : locale === 'fr' ? 'Confirmés' : 'Confirmed'}
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-[#9d8b72]">
+                  <span className="text-xl font-light text-red-400">{guests.filter(g => g.rsvp_status === 'declined').length}</span>
+                  {locale === 'he' ? 'סירבו' : locale === 'fr' ? 'Déclinés' : 'Declined'}
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-[#9d8b72]">
+                  <span className="text-xl font-light text-[#b8965a]">{guests.filter(g => g.rsvp_status === 'pending').length}</span>
+                  {locale === 'he' ? 'ממתינים' : locale === 'fr' ? 'En attente' : 'Pending'}
+                </span>
+              </div>
+              <span className="text-xs text-[#9d8b72]">{filteredGuests.length} / {guests.length} {locale === 'he' ? 'אורחים' : locale === 'fr' ? 'invités' : 'guests'}</span>
             </div>
           </div>
         </div>
