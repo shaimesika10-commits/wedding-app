@@ -220,22 +220,7 @@ export default function WeddingPageContent({
               type="password"
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLe
-            {/* Share Invitation Button */}
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={handleShare}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#b8965a] text-[#b8965a] text-sm tracking-widest uppercase font-light hover:bg-[#b8965a] hover:text-white transition-all duration-300"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                </svg>
-                {copied
-                  ? (locale === 'fr' ? 'Copié !' : locale === 'he' ? 'הועתק!' : 'Copied!')
-                  : (locale === 'fr' ? "Partager l'invitation" : locale === 'he' ? 'שתף הזמנה' : 'Share Invitation')}
-              </button>
-            </div>ngth={4}
+               maxLength={4}
               value={pinInput}
               onChange={e => { setPinInput(e.target.value); setPinError(false) }}
               placeholder="• • • •"
@@ -256,6 +241,21 @@ export default function WeddingPageContent({
               {locale === 'fr' ? 'Acc\u00e9der' : locale === 'he' ? 'כניסה' : 'Enter'}
             </button>
           </form>
+          {/* Share Invitation Button */}
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#b8965a] text-[#b8965a] text-sm tracking-widest uppercase font-light hover:bg-[#b8965a] hover:text-white transition-all duration-300"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              {copied
+                ? (locale === 'fr' ? 'Copie\u0301 !' : locale === 'he' ? '\u05D4\u05D5\u05E2\u05EA\u05E7!' : 'Copied!')
+                : (locale === 'fr' ? "Partager l'invitation" : locale === 'he' ? '\u05E9\u05EA\u05E3 \u05D4\u05D6\u05DE\u05E0\u05D4' : 'Share Invitation')}
+            </button>
+          </div>
         </div>
       </main>
     )
