@@ -37,7 +37,7 @@ const content = {
     login: 'Se connecter',
     stats: [
       { n: '500+', label: 'Mariages célébrés' },
-      { n: '23',   label: 'Pays' },
+      { n: '23',    label: 'Pays' },
       { n: '50k+', label: 'Invités gérés' },
       { n: '98%',  label: 'Taux de satisfaction' },
     ],
@@ -94,7 +94,7 @@ const content = {
     login: 'כניסה',
     stats: [
       { n: '500+', label: 'חתונות' },
-      { n: '23',   label: 'מדינות' },
+      { n: '23',    label: 'מדינות' },
       { n: '50k+', label: 'אורחים' },
       { n: '98%',  label: 'שביעות רצון' },
     ],
@@ -105,7 +105,7 @@ const content = {
       { icon: '📊', title: 'לוח ניהול',         desc: 'עקבו אחרי האישורים בזמן אמת, ייצאו לאקסל.' },
       { icon: '🌐', title: 'רב לשוני',          desc: 'עברית, צרפתית ואנגלית — כל אורח קורא בשפתו.' },
       { icon: '🖼️', title: 'גלריית תמונות',   desc: 'שתפו תמונות ושמרו זיכרונות בלתי נשכחים.' },
-      { icon: '🥂', title: 'בראנץ׳ למחרת',     desc: 'נהלו בראנץ׳ ביום שאחרי עם אישור הגעה נפרד.' },
+      { icon: '🥂', title: 'בראנץ\' למחרת',     desc: 'נהלו בראנץ\' ביום שאחרי עם אישור הגעה נפרד.' },
     ],
     howTitle: 'בשלושה שלבים בלבד',
     steps: [
@@ -127,7 +127,7 @@ const content = {
         name: 'פרמיום',
         price: '₪99',
         period: 'גישה לצמיתות',
-        features: ['מוזמנים ללא הגבלה', 'גלריה ללא הגבלה', 'בראנץ׳ למחרת', 'הסרת לוגו GrandInvite', 'תמיכה מועדפת'],
+        features: ['מוזמנים ללא הגבלה', 'גלריה ללא הגבלה', 'בראנץ\' למחרת', 'הסרת לוגו GrandInvite', 'תמיכה מועדפת'],
         cta: 'שדרגו לפרמיום',
         highlighted: true,
       },
@@ -136,7 +136,7 @@ const content = {
     testimonials: [
       { name: 'מאיה & ליאור',     location: 'תל אביב',       quote: 'GrandInvite ניהל בצורה מושלמת את האורחים בעברית ובצרפתית. הכל עבד בצורה קסומה!' },
       { name: 'נועה & עמית',      location: 'ירושלים',        quote: 'ב-48 שעות קיבלנו 150 אישורים. לא האמנו כמה זה פשוט ויפה.' },
-      { name: 'ספיר & אביב',      location: 'חיפה',           quote: 'הבראנץ׳ למחרת היה ניהול נפרד מושלם. כל המשפחה הייתה מרוצה!' },
+      { name: 'ספיר & אביב',      location: 'חיפה',           quote: 'הבראנץ\' למחרת היה ניהול נפרד מושלם. כל המשפחה הייתה מרוצה!' },
     ],
     footer: '© 2026 GrandInvite — הזמנות חתונה יוקרתיות · צור קשר',
   },
@@ -151,7 +151,7 @@ const content = {
     login: 'Sign in',
     stats: [
       { n: '500+', label: 'Weddings celebrated' },
-      { n: '23',   label: 'Countries' },
+      { n: '23',    label: 'Countries' },
       { n: '50k+', label: 'Guests managed' },
       { n: '98%',  label: 'Satisfaction rate' },
     ],
@@ -243,19 +243,6 @@ export default async function HomePage({
       </nav>
 
       {/* ── HERO ── */}
-      
-      <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        .hero-sub { animation: fadeSlideUp 1.2s ease 0.3s forwards; opacity: 0; }
-        .hero-cta { animation: fadeSlideUp 1.2s ease 0.6s forwards; opacity: 0; }
-      `}</style>
       <section style={{ textAlign: 'center', padding: '5rem 2rem 4rem', maxWidth: '800px', margin: '0 auto' }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fff',
@@ -267,16 +254,16 @@ export default async function HomePage({
           <span style={{ color: gold }}>✦</span>
         </div>
 
-        <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', fontWeight: 300, lineHeight: 1.2, marginBottom: '1.5rem', letterSpacing: '-0.01em', whiteSpace: 'pre-line', animation: 'fadeSlideUp 1s ease forwards', opacity: 0 }}>
+        <h1 style={{ fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', fontWeight: 300, lineHeight: 1.2, marginBottom: '1.5rem', letterSpacing: '-0.01em', whiteSpace: 'pre-line' }}>
           {c.hero}
         </h1>
 
-        <p className="hero-sub" style={{ fontSize: '1.05rem', color: '#78716c', lineHeight: 1.75, marginBottom: '2.5rem', fontFamily: 'system-ui, sans-serif', fontWeight: 300, maxWidth: '620px', margin: '0 auto 2.5rem' }}>
+        <p style={{ fontSize: '1.05rem', color: '#78716c', lineHeight: 1.75, marginBottom: '2.5rem', fontFamily: 'system-ui, sans-serif', fontWeight: 300, maxWidth: '620px', margin: '0 auto 2.5rem' }}>
           {c.heroSub}
         </p>
 
-        <div className="hero-cta" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
-          <Link href={`/${locale}/login`} style={{
+        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <Link href={`/${locale}/login?tab=register`} style={{
             padding: '0.9rem 2.5rem', background: gold, color: '#fff', borderRadius: '10px',
             textDecoration: 'none', fontSize: '0.9rem', fontFamily: 'system-ui, sans-serif',
             fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -290,9 +277,7 @@ export default async function HomePage({
 
       {/* ── STATS BAR ── */}
       <section style={{ background: '#fff', borderTop: '1px solid #e7e5e4', borderBottom: '1px solid #e7e5e4', padding: '2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1.5rem', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <LandingPageStats stats={c.stats} gold={gold} />
-        </div>
+        <LandingPageStats stats={c.stats} gold={gold} />
       </section>
 
       {/* ── FEATURES ── */}
@@ -362,7 +347,7 @@ export default async function HomePage({
                   </li>
                 ))}
               </ul>
-              <Link href={`/${locale}/login`} style={{
+              <Link href={`/${locale}/login?tab=register`} style={{
                 display: 'block', padding: '0.85rem 1.5rem',
                 background: plan.highlighted ? '#fff' : gold,
                 color: plan.highlighted ? gold : '#fff',
@@ -407,7 +392,7 @@ export default async function HomePage({
         <p style={{ fontSize: '1rem', color: '#78716c', marginBottom: '2.5rem', fontFamily: 'system-ui, sans-serif', fontWeight: 300 }}>
           {c.ctaSub}
         </p>
-        <Link href={`/${locale}/login`} style={{
+        <Link href={`/${locale}/login?tab=register`} style={{
           display: 'inline-block', padding: '1rem 3.5rem', background: gold, color: '#fff',
           borderRadius: '10px', textDecoration: 'none', fontSize: '0.9rem',
           fontFamily: 'system-ui, sans-serif', fontWeight: 500,
