@@ -5,7 +5,7 @@
 //  src/components/WeddingPageContent.tsx
 // ============================================================
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import RSVPForm from './RSVPForm'
 import EventScheduleSection from './EventScheduleSection'
 import GallerySection from './GallerySection'
@@ -30,6 +30,7 @@ interface Wedding {
   slug: string
   guest_pin?: string | null
   is_hidden?: boolean
+  content_locale?: string | null
 }
 
 interface WeddingPageContentProps {
@@ -51,6 +52,7 @@ export default function WeddingPageContent({
   const [locale, setLocale] = useState<Locale>(originalLocale)
   const [welcomeMsg, setWelcomeMsg] = useState(wedding.welcome_message)
   const [isPending, startTransition] = useTransition()
+  const contentLocale = (wedding.content_locale ?? 'fr') as Locale
 
   // ── PIN Gate ──
   const requiresPin = !!wedding.guest_pin
@@ -60,6 +62,28 @@ export default function WeddingPageContent({
 
   const isRTL = locale === 'he'
   const tr = t(locale)
+
+  // Auto-translate on mount when viewer locale differs from content locale
+  useEffect(() => {
+    if (!wedding.welcome_message || originalLocale === contentLocale) return
+    const cacheKey = wedding.id + '-' + originalLocale
+    if (translationCache[cacheKey]) { setWelcomeMsg(translationCache[cacheKey]); return }
+    fetch('/api/ai/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: wedding.welcome_message,
+        targetLanguage: originalLocale,
+        context: 'Wedding of ' + wedding.bride_name + ' and ' + wedding.groom_name +
+          ' at ' + (wedding.venue_name ?? '') + ' on ' + wedding.wedding_date,
+      }),
+    }).then(r => r.json()).then(data => {
+      const translated = data.translatedText ?? wedding.welcome_message
+      translationCache[cacheKey] = translated
+      setWelcomeMsg(translated)
+    }).catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const formatDate = (loc: Locale) =>
     new Date(wedding.wedding_date).toLocaleDateString(
@@ -72,7 +96,7 @@ export default function WeddingPageContent({
     if (newLocale === locale) return
     setLocale(newLocale)
     setWeddingDateFormatted(formatDate(newLocale))
-    if (newLocale === originalLocale) {
+    if (newLocale === contentLocale) {
       setWelcomeMsg(wedding.welcome_message)
       return
     }
