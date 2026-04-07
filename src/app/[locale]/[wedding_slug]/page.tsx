@@ -145,6 +145,7 @@ export default async function WeddingPage({
     <WeddingPageContent
       wedding={wedding}
       schedule={schedule}
+      galleryPhotos={[]}
       originalLocale={locale}
     />
   )
