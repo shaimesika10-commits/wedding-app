@@ -14,7 +14,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, targetLanguage, context } = await request.json()
+    const { text, targetLanguage, context, sourceLanguage } = await request.json()
 
     if (!text || !targetLanguage) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -39,8 +39,21 @@ Return ONLY the translated text with zero additional commentary.`
     const apiKey = process.env.ANTHROPIC_API_KEY
 
     if (!apiKey) {
-      // Fallback: return original text if no API key
-      return NextResponse.json({ translatedText: text, fallback: true })
+      // Fallback: use MyMemory free translation API (no key needed)
+      try {
+        const srcLang = sourceLanguage ?? 'fr'
+        const mmRes = await fetch(
+          'https://api.mymemory.translated.net/get?q=' +
+          encodeURIComponent(text) + '&langpair=' + srcLang + '|' + targetLanguage
+        )
+        const mmData = await mmRes.json()
+        const translated: string = mmData?.responseData?.translatedText ?? text
+        // MyMemory sometimes returns HTML entities – decode them
+        const decoded = translated.replace(/&#([0-9]+);/g, (_, n) => String.fromCharCode(Number(n)))
+        return NextResponse.json({ translatedText: decoded })
+      } catch {
+        return NextResponse.json({ translatedText: text, fallback: true })
+      }
     }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
