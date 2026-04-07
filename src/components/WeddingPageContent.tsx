@@ -1,15 +1,15 @@
 'use client'
 // ============================================================
 //  GrandInvite – Wedding Page Content (Client Component)
-//  Handles language switching, PIN gate, AI translation
+//  Full smart translation: welcome msg + schedule event names/descriptions
+//  Location names, addresses, venue names left untranslated
+//  Gallery removed (Task 7)
 //  src/components/WeddingPageContent.tsx
 // ============================================================
-
 import { useState, useTransition, useEffect } from 'react'
 import RSVPForm from './RSVPForm'
 import EventScheduleSection from './EventScheduleSection'
-import GallerySection from './GallerySection'
-import type { GalleryPhoto, EventSchedule } from '@/types'
+import type { EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
 import { t } from '@/lib/i18n'
 
@@ -36,21 +36,20 @@ interface Wedding {
 interface WeddingPageContentProps {
   wedding: Wedding
   schedule: EventSchedule[]
-  galleryPhotos: GalleryPhoto[]
   originalLocale: Locale
 }
 
-// Translation cache to avoid re-calling the API
+// Module-level translation cache (persists across re-renders)
 const translationCache: Record<string, string> = {}
 
 export default function WeddingPageContent({
   wedding,
   schedule,
-  galleryPhotos,
   originalLocale,
 }: WeddingPageContentProps) {
   const [locale, setLocale] = useState<Locale>(originalLocale)
   const [welcomeMsg, setWelcomeMsg] = useState(wedding.welcome_message)
+  const [translatedSchedule, setTranslatedSchedule] = useState<EventSchedule[]>(schedule)
   const [isPending, startTransition] = useTransition()
   const contentLocale = (wedding.content_locale ?? 'fr') as Locale
 
@@ -63,26 +62,83 @@ export default function WeddingPageContent({
   const isRTL = locale === 'he'
   const tr = t(locale)
 
-  // Auto-translate on mount when viewer locale differs from content locale
+  // ── Helper: translate single text via API ──
+  const translateText = async (text: string, targetLang: Locale): Promise<string> => {
+    if (!text || !text.trim()) return text
+    try {
+      const res = await fetch('/api/ai/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          targetLanguage: targetLang,
+          sourceLanguage: contentLocale,
+          context: `Wedding of ${wedding.bride_name} and ${wedding.groom_name} at ${wedding.venue_name ?? ''} on ${wedding.wedding_date}`,
+        }),
+      })
+      const data = await res.json()
+      return data.translatedText ?? text
+    } catch {
+      return text
+    }
+  }
+
+  // ── Translate all content fields to targetLang ──
+  // Translates: welcome_message, schedule event_name, schedule description
+  // Does NOT translate: venue_name, venue_address, location_name, address (in schedule)
+  const translateAllContent = (targetLang: Locale) => {
+    if (targetLang === contentLocale) {
+      // Restore originals when switching back to owner's language
+      setWelcomeMsg(wedding.welcome_message)
+      setTranslatedSchedule(schedule)
+      return
+    }
+
+    // ─ Welcome message ─
+    if (wedding.welcome_message) {
+      const msgKey = `msg-${wedding.id}-${targetLang}`
+      if (translationCache[msgKey]) {
+        setWelcomeMsg(translationCache[msgKey])
+      } else {
+        translateText(wedding.welcome_message, targetLang).then(translated => {
+          translationCache[msgKey] = translated
+          setWelcomeMsg(translated)
+        })
+      }
+    }
+
+    // ─ Schedule: translate event_name + description only ─
+    if (schedule.length > 0) {
+      const schedKey = `sched-${wedding.id}-${targetLang}`
+      if (translationCache[schedKey]) {
+        try { setTranslatedSchedule(JSON.parse(translationCache[schedKey])) } catch { /* noop */ }
+      } else {
+        Promise.all(
+          schedule.map(async ev => {
+            const [name, desc] = await Promise.all([
+              ev.event_name ? translateText(ev.event_name, targetLang) : Promise.resolve(ev.event_name),
+              ev.description ? translateText(ev.description, targetLang) : Promise.resolve(ev.description ?? ''),
+            ])
+            return {
+              ...ev,
+              event_name: name || ev.event_name,
+              description: desc || ev.description,
+              // location_name, address: intentionally left as-is
+            }
+          })
+        ).then(updated => {
+          translationCache[schedKey] = JSON.stringify(updated)
+          setTranslatedSchedule(updated as EventSchedule[])
+        }).catch(() => { /* keep originals on error */ })
+      }
+    }
+  }
+
+  // Auto-translate on mount if viewer's locale differs from content locale
   useEffect(() => {
-    if (!wedding.welcome_message || originalLocale === contentLocale) return
-    const cacheKey = wedding.id + '-' + originalLocale
-    if (translationCache[cacheKey]) { setWelcomeMsg(translationCache[cacheKey]); return }
-    fetch('/api/ai/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: wedding.welcome_message,
-        targetLanguage: originalLocale,
-        sourceLanguage: contentLocale,
-        context: 'Wedding of ' + wedding.bride_name + ' and ' + wedding.groom_name +
-          ' at ' + (wedding.venue_name ?? '') + ' on ' + wedding.wedding_date,
-      }),
-    }).then(r => r.json()).then(data => {
-      const translated = data.translatedText ?? wedding.welcome_message
-      translationCache[cacheKey] = translated
-      setWelcomeMsg(translated)
-    }).catch(() => {})
+    if (originalLocale !== contentLocale) {
+      translateAllContent(originalLocale)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -91,41 +147,15 @@ export default function WeddingPageContent({
       loc === 'he' ? 'he-IL' : loc === 'fr' ? 'fr-FR' : 'en-GB',
       { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
     )
+
   const [weddingDateFormatted, setWeddingDateFormatted] = useState(formatDate(originalLocale))
 
-  const switchLanguage = async (newLocale: Locale) => {
+  const switchLanguage = (newLocale: Locale) => {
     if (newLocale === locale) return
     setLocale(newLocale)
     setWeddingDateFormatted(formatDate(newLocale))
-    if (newLocale === contentLocale) {
-      setWelcomeMsg(wedding.welcome_message)
-      return
-    }
-    if (!wedding.welcome_message) return
-    startTransition(async () => {
-      const cacheKey = `${wedding.id}-${newLocale}`
-      if (translationCache[cacheKey]) {
-        setWelcomeMsg(translationCache[cacheKey])
-        return
-      }
-      try {
-        const res = await fetch('/api/ai/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: wedding.welcome_message,
-            targetLanguage: newLocale,
-            sourceLanguage: contentLocale,
-            context: `Wedding of ${wedding.bride_name} and ${wedding.groom_name} at ${wedding.venue_name ?? ''} on ${wedding.wedding_date}`,
-          }),
-        })
-        const data = await res.json()
-        const translated = data.translatedText ?? wedding.welcome_message
-        translationCache[cacheKey] = translated
-        setWelcomeMsg(translated)
-      } catch {
-        // keep original on error
-      }
+    startTransition(() => {
+      translateAllContent(newLocale)
     })
   }
 
@@ -140,20 +170,15 @@ export default function WeddingPageContent({
     }
   }
 
-  // ── Promo / dashboard button labels per locale ──
   const promoLabel =
-    locale === 'fr'
-      ? 'Vous voulez une invitation comme celle-ci ? Cliquez ici'
-      : locale === 'he'
-      ? 'רוצה הזמנה כזו לאירוע הבא שלך? לחץ כאן'
-      : 'Want an invitation like this for your event? Click here'
+    locale === 'fr' ? "Vous voulez une invitation comme celle-ci\u00a0? Cliquez ici"
+    : locale === 'he' ? 'רוצה הזמנה כזו לאירוע הבא שלך? לחץ כאן'
+    : 'Want an invitation like this for your event? Click here'
 
   const manageLabel =
-    locale === 'fr'
-      ? 'Organisateur ? Gérer mon invitation'
-      : locale === 'he'
-      ? 'בעל האירוע? כניסה לניהול ההזמנה'
-      : 'Event host? Manage your invitation'
+    locale === 'fr' ? 'Organisateur\u00a0? G\u00e9rer mon invitation'
+    : locale === 'he' ? 'בעל האירוע? כניסה לניהול ההזמנה'
+    : 'Event host? Manage your invitation'
 
   // ── PIN Gate Screen ──
   if (!pinUnlocked) {
@@ -166,10 +191,8 @@ export default function WeddingPageContent({
               {wedding.bride_name} &amp; {wedding.groom_name}
             </h1>
             <p className="text-stone-400 text-sm tracking-widest uppercase mt-4">
-              {locale === 'fr'
-                ? 'Entrez le code d\'accès'
-                : locale === 'he'
-                ? 'הזינו את קוד הגישה'
+              {locale === 'fr' ? "Entrez le code d'acc\u00e8s"
+                : locale === 'he' ? 'הזינו את קוד הגישה'
                 : 'Enter access code'}
             </p>
             <div className="h-px w-16 bg-[#c9a84c] mx-auto mt-6" />
@@ -188,14 +211,16 @@ export default function WeddingPageContent({
             />
             {pinError && (
               <p className="text-red-400 text-sm">
-                {locale === 'fr' ? 'Code incorrect' : locale === 'he' ? 'קוד שגוי, נסה שוב' : 'Incorrect code, try again'}
+                {locale === 'fr' ? 'Code incorrect'
+                  : locale === 'he' ? 'קוד שגוי, נסה שוב'
+                  : 'Incorrect code, try again'}
               </p>
             )}
             <button
               type="submit"
               className="w-full py-3 bg-[#c9a84c] hover:bg-[#9a7d35] text-white text-sm tracking-widest uppercase transition-colors"
             >
-              {locale === 'fr' ? 'Accéder' : locale === 'he' ? 'כניסה' : 'Enter'}
+              {locale === 'fr' ? 'Acc\u00e9der' : locale === 'he' ? 'כניסה' : 'Enter'}
             </button>
           </form>
         </div>
@@ -209,14 +234,14 @@ export default function WeddingPageContent({
       <div className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
         {isPending && (
           <span className="text-xs text-stone-400 animate-pulse mx-1">
-            {locale === 'he' ? 'מתרגם...' : locale === 'fr' ? '...' : '...'}
+            {locale === 'he' ? 'מתרגם...' : '...'}
           </span>
         )}
         {(['fr', 'he', 'en'] as const).map(lang => (
           <button
             key={lang}
             onClick={() => switchLanguage(lang)}
-            title={lang === 'fr' ? 'Français' : lang === 'he' ? 'עברית' : 'English'}
+            title={lang === 'fr' ? 'Fran\u00e7ais' : lang === 'he' ? 'עברית' : 'English'}
             className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
             style={{
               background: locale === lang ? '#c9a84c' : 'transparent',
@@ -285,11 +310,11 @@ export default function WeddingPageContent({
       )}
 
       {/* ── Schedule ── */}
-      {schedule.length > 0 && (
+      {translatedSchedule.length > 0 && (
         <section className="bg-white py-20">
           <div className="max-w-4xl mx-auto px-6">
             <h2 className="section-title text-center mb-12">{tr.wedding.schedule}</h2>
-            <EventScheduleSection schedule={schedule} locale={locale} t={tr.wedding} />
+            <EventScheduleSection schedule={translatedSchedule} locale={locale} t={tr.wedding} />
           </div>
         </section>
       )}
@@ -322,11 +347,6 @@ export default function WeddingPageContent({
           </div>
         </section>
       )}
-
-      {/* ── Gallery ── */}
-      <section className="bg-[#faf8f5]">
-        <GallerySection weddingId={wedding.id} locale={locale} initialPhotos={galleryPhotos} />
-      </section>
 
       {/* ── RSVP ── */}
       <section id="rsvp" className="py-24 px-6 bg-white">
@@ -362,18 +382,13 @@ export default function WeddingPageContent({
           {wedding.bride_name} &amp; {wedding.groom_name}
         </p>
         <p className="text-xs tracking-widest uppercase text-[#c9a84c]">{weddingDateFormatted}</p>
-
-        {/* ── CTA buttons ── */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 px-6">
-          {/* Promo — link to home */}
           <a
             href={`/${locale}`}
             className="inline-block px-6 py-3 bg-[#c9a84c] hover:bg-[#9a7d35] text-white text-xs tracking-widest uppercase transition-colors font-medium"
           >
             {promoLabel}
           </a>
-
-          {/* Dashboard — link to login/dashboard for the event owner */}
           <a
             href={`/${locale}/login`}
             className="inline-block px-6 py-3 border border-stone-600 hover:border-[#c9a84c] text-stone-400 hover:text-[#c9a84c] text-xs tracking-widest uppercase transition-colors"
@@ -381,7 +396,6 @@ export default function WeddingPageContent({
             {manageLabel}
           </a>
         </div>
-
         <p className="text-xs mt-8 text-stone-600">
           Powered by <span className="text-[#c9a84c]">GrandInvite</span>
         </p>
