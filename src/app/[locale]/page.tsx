@@ -7,6 +7,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { Locale } from '@/lib/i18n'
+import LandingPageStats from '@/components/LandingPageStats'
 
 // ── Static metadata ──────────────────────────────────────────
 export const metadata: Metadata = {
@@ -36,7 +37,7 @@ const content = {
     login: 'Se connecter',
     stats: [
       { n: '500+', label: 'Mariages célébrés' },
-      { n: '3',    label: 'Pays (FR · IL · CA)' },
+      { n: '23',   label: 'Pays' },
       { n: '50k+', label: 'Invités gérés' },
       { n: '98%',  label: 'Taux de satisfaction' },
     ],
@@ -93,7 +94,7 @@ const content = {
     login: 'כניסה',
     stats: [
       { n: '500+', label: 'חתונות' },
-      { n: '3',    label: 'מדינות' },
+      { n: '23',   label: 'מדינות' },
       { n: '50k+', label: 'אורחים' },
       { n: '98%',  label: 'שביעות רצון' },
     ],
@@ -150,7 +151,7 @@ const content = {
     login: 'Sign in',
     stats: [
       { n: '500+', label: 'Weddings celebrated' },
-      { n: '3',    label: 'Countries (FR · IL · CA)' },
+      { n: '23',   label: 'Countries' },
       { n: '50k+', label: 'Guests managed' },
       { n: '98%',  label: 'Satisfaction rate' },
     ],
@@ -290,12 +291,7 @@ export default async function HomePage({
       {/* ── STATS BAR ── */}
       <section style={{ background: '#fff', borderTop: '1px solid #e7e5e4', borderBottom: '1px solid #e7e5e4', padding: '2rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1.5rem', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          {c.stats.map(s => (
-            <div key={s.label}>
-              <div style={{ fontSize: '2rem', fontWeight: 300, color: gold, letterSpacing: '-0.02em' }}>{s.n}</div>
-              <div style={{ fontSize: '0.78rem', color: '#78716c', fontFamily: 'system-ui, sans-serif', marginTop: '0.25rem' }}>{s.label}</div>
-            </div>
-          ))}
+          <LandingPageStats stats={c.stats} gold={gold} />
         </div>
       </section>
 
