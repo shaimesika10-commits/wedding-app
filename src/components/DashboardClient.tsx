@@ -925,7 +925,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             </div>
           </div>
 
-          {/* ── לו"W� האירוע ── */}
+          {/* ── לו"ז האירוע ── */}
           <div>
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-stone-100">
               <h3 className="font-cormorant text-xl text-stone-700">
