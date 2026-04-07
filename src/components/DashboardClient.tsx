@@ -42,9 +42,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     const url = typeof window !== 'undefined'
       ? `${window.location.origin}/${locale}/${wedding.slug ?? ''}`
       : `/${locale}/${wedding.slug ?? ''}`
-    if (typeof navigator !== 'undefined' && navigator.share) {
+    if (typeof navigator !== 'undefined' && (navigator as any).share) {
       try {
-        await navigator.share({
+        await (navigator as any).share({
           title: wedding.bride_name + ' & ' + wedding.groom_name,
           url,
         })
