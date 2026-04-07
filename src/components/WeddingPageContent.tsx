@@ -74,6 +74,7 @@ export default function WeddingPageContent({
       body: JSON.stringify({
         text: wedding.welcome_message,
         targetLanguage: originalLocale,
+        sourceLanguage: contentLocale,
         context: 'Wedding of ' + wedding.bride_name + ' and ' + wedding.groom_name +
           ' at ' + (wedding.venue_name ?? '') + ' on ' + wedding.wedding_date,
       }),
@@ -114,6 +115,7 @@ export default function WeddingPageContent({
           body: JSON.stringify({
             text: wedding.welcome_message,
             targetLanguage: newLocale,
+            sourceLanguage: contentLocale,
             context: `Wedding of ${wedding.bride_name} and ${wedding.groom_name} at ${wedding.venue_name ?? ''} on ${wedding.wedding_date}`,
           }),
         })
