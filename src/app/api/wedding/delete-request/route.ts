@@ -1,119 +1,152 @@
 // ============================================================
-// API: Request account deletion (sends confirmation email via Resend)
-// POST /api/wedding/delete-request
-// Task 4: Actually sends the confirmation email to the account owner
+//  GrandInvite – Delete Account Request API
+//  Sends a confirmation email with a deletion link via Resend
+//  src/app/api/wedding/delete-request/route.ts
 // ============================================================
-import { NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import crypto from 'crypto'
 
-export async function POST() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll() },
-        setAll(toSet) { toSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) },
-      },
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+
+const deleteEmailHtml = (names: string, confirmUrl: string, locale: string) => {
+  const isHe = locale === 'he'
+  const isFr = locale === 'fr'
+
+  const subject = isHe
+    ? 'אישור מחיקת חשבון GrandInvite'
+    : isFr
+    ? 'Confirmation de suppression de compte GrandInvite'
+    : 'Confirm GrandInvite account deletion'
+
+  const heading = isHe ? `שלום ${names}` : isFr ? `Bonjour ${names}` : `Hello ${names}`
+  const body = isHe
+    ? 'קיבלנו בקשה למחיקת חשבון GrandInvite שלכם, כולל כל נתוני החתונה והאורחים. פעולה זו היא <strong>בלתי הפיכה</strong>.'
+    : isFr
+    ? 'Nous avons reçu une demande de suppression de votre compte GrandInvite, y compris toutes les données de votre mariage et de vos invités. Cette action est <strong>irréversible</strong>.'
+    : 'We received a request to delete your GrandInvite account, including all wedding and guest data. This action is <strong>irreversible</strong>.'
+
+  const btnLabel = isHe
+    ? 'אישור מחיקה'
+    : isFr
+    ? 'Confirmer la suppression'
+    : 'Confirm deletion'
+
+  const ignoreNote = isHe
+    ? 'אם לא ביקשת זאת, התעלמו מאימייל זה — החשבון שלכם בטוח.'
+    : isFr
+    ? "Si vous n'avez pas fait cette demande, ignorez cet e-mail — votre compte est en sécurité."
+    : "If you didn't request this, ignore this email — your account is safe."
+
+  return { subject, html: `<!DOCTYPE html>
+<html dir="${isHe ? 'rtl' : 'ltr'}" lang="${locale}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#faf8f5;font-family:Georgia,serif;color:#1c1917">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf8f5;padding:48px 16px">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e7e5e4;border-radius:16px;overflow:hidden">
+        <!-- Header -->
+        <tr>
+          <td style="background:#1c1917;padding:28px 40px;text-align:center">
+            <span style="font-size:22px;font-weight:300;letter-spacing:0.1em;color:#fff">
+              Grand<span style="color:#c9a84c">Invite</span>
+            </span>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding:40px;text-align:${isHe ? 'right' : 'left'}">
+            <p style="font-size:18px;font-weight:300;margin:0 0 16px">${heading}</p>
+            <p style="font-size:14px;line-height:1.7;color:#44403c;font-family:system-ui,sans-serif;margin:0 0 32px">${body}</p>
+            <table cellpadding="0" cellspacing="0" style="margin:0 auto">
+              <tr>
+                <td style="background:#c9084c;border-radius:10px;padding:0">
+                  <a href="${confirmUrl}"
+                     style="display:inline-block;padding:14px 36px;background:#b91c1c;color:#fff;font-family:system-ui,sans-serif;font-size:14px;font-weight:500;letter-spacing:0.06em;text-decoration:none;border-radius:10px">
+                    ${btnLabel}
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p style="font-size:12px;color:#a8a29e;font-family:system-ui,sans-serif;margin:32px 0 0;line-height:1.6">${ignoreNote}</p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 40px;border-top:1px solid #e7e5e4;text-align:center">
+            <p style="font-size:11px;color:#a8a29e;font-family:system-ui,sans-serif;margin:0">
+              © ${new Date().getFullYear()} GrandInvite
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>` }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user || !user.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  )
 
-  const { data: { user }, error: authErr } = await supabase.auth.getUser()
-  if (authErr || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+    // Get the wedding for this user
+    const { data: wedding } = await supabase
+      .from('weddings')
+      .select('id, bride_name, groom_name, locale')
+      .eq('user_id', user.id)
+      .single()
 
-  // Generate a secure token valid for 1 hour
-  const token = crypto.randomBytes(32).toString('hex')
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    if (!wedding) {
+      return NextResponse.json({ error: 'Wedding not found' }, { status: 404 })
+    }
 
-  const { error: updateErr } = await supabase
-    .from('weddings')
-    .update({ delete_token: token, delete_token_expires_at: expiresAt })
-    .eq('user_id', user.id)
+    // Generate a deletion token (base64 of wedding_id:timestamp)
+    const token = Buffer.from(`${wedding.id}:${Date.now()}`).toString('base64')
+    const confirmUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/wedding/delete-confirm?token=${token}`
 
-  if (updateErr) {
-    return NextResponse.json({ error: updateErr.message }, { status: 500 })
-  }
+    const names = `${wedding.bride_name} & ${wedding.groom_name}`
+    const locale = (wedding.locale as string) ?? 'fr'
+    const { subject, html } = deleteEmailHtml(names, confirmUrl, locale)
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wedding-app-pearl-alpha.vercel.app'
-  const confirmUrl = `${baseUrl}/api/wedding/delete-confirm?token=${token}`
-  const userEmail = user.email
-
-  // ── Send confirmation email via Resend ──
-  const resendApiKey = process.env.RESEND_API_KEY
-  if (resendApiKey && userEmail) {
-    try {
-      const emailBody = {
-        from: 'GrandInvite <noreply@grandinvite.app>',
-        to: [userEmail],
-        subject: '⚠️ Confirmation de suppression de compte GrandInvite',
-        html: `
-          <div style="font-family: Georgia, serif; max-width: 520px; margin: 0 auto; color: #1c1917; background: #faf8f5; padding: 40px 32px; border-radius: 12px;">
-            <div style="text-align: center; margin-bottom: 32px;">
-              <h2 style="font-size: 1.5rem; font-weight: 300; letter-spacing: 3px; color: #1c1917; margin: 0;">
-                Grand<span style="color: #c9a84c;">Invite</span>
-              </h2>
-              <div style="height: 1px; background: #c9a84c; width: 48px; margin: 16px auto;"></div>
-            </div>
-
-            <h3 style="font-size: 1.2rem; font-weight: 300; color: #44403c; margin-bottom: 16px;">
-              Demande de suppression de compte
-            </h3>
-
-            <p style="color: #78716c; line-height: 1.7; font-size: 0.95rem; margin-bottom: 24px;">
-              Nous avons reçu une demande de suppression de votre compte GrandInvite
-              (<strong>${userEmail}</strong>).<br/><br/>
-              Si vous avez bien fait cette demande, cliquez sur le bouton ci-dessous pour confirmer.
-              <strong>Cette action est irréversible</strong> — toutes vos données, invités et réponses seront supprimés.
-            </p>
-
-            <div style="text-align: center; margin: 32px 0;">
-              <a href="${confirmUrl}"
-                 style="display: inline-block; padding: 14px 36px; background: #dc2626; color: #fff;
-                        text-decoration: none; font-family: system-ui, sans-serif; font-size: 0.85rem;
-                        font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 8px;">
-                Confirmer la suppression
-              </a>
-            </div>
-
-            <p style="color: #a8a29e; font-size: 0.8rem; text-align: center; line-height: 1.6; margin-top: 32px;">
-              Ce lien expire dans <strong>1 heure</strong>.<br/>
-              Si vous n’avez pas fait cette demande, ignorez cet email — votre compte reste intact.
-            </p>
-
-            <div style="height: 1px; background: #e7e5e4; margin: 32px 0;"></div>
-            <p style="color: #d4d4d4; font-size: 0.75rem; text-align: center; font-family: system-ui, sans-serif;">
-              © 2026 GrandInvite — Invitations de mariage de luxe
-            </p>
-          </div>
-        `,
-      }
-
-      const resendRes = await fetch('https://api.resend.com/emails', {
+    // Send email via Resend REST API
+    const resendApiKey = process.env.RESEND_API_KEY
+    if (resendApiKey) {
+      const emailRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${resendApiKey}`,
+          'Authorization': `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(emailBody),
+        body: JSON.stringify({
+          from: 'GrandInvite <noreply@grandinvite.com>',
+          to: [user.email],
+          subject,
+          html,
+        }),
       })
 
-      if (!resendRes.ok) {
-        const errText = await resendRes.text()
-        console.error('[delete-request] Resend error:', errText)
+      if (!emailRes.ok) {
+        const errBody = await emailRes.text()
+        console.error('Resend email error:', errBody)
+        return NextResponse.json({ error: 'Failed to send confirmation email' }, { status: 500 })
       }
-    } catch (err) {
-      console.error('[delete-request] email error:', err)
-      // Don’t fail the request — token was saved, user can request again
+    } else {
+      // Dev fallback: log the link (RESEND_API_KEY not set)
+      console.log(`[DEV] Delete confirmation link for ${user.email}: ${confirmUrl}`)
     }
-  } else {
-    // Dev fallback: log the URL
-    console.log('[delete-request] confirm URL (no Resend key):', confirmUrl)
-  }
 
-  return NextResponse.json({ success: true, confirmUrl })
+    return NextResponse.json({
+      success: true,
+      message: 'Confirmation email sent',
+      // confirmUrl intentionally omitted from production response
+      ...(process.env.NODE_ENV === 'development' ? { confirmUrl } : {}),
+    })
+  } catch (error) {
+    console.error('Delete request error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
