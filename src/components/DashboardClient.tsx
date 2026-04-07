@@ -90,6 +90,10 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const [brunchEnabled, setBrunchEnabled] = useState<boolean>(!!brunchEvent)
   const [brunchEventId, setBrunchEventId] = useState<string | undefined>(brunchEvent?.id)
   const [togglingBrunch, setTogglingBrunch] = useState(false)
+  const [newEventName, setNewEventName] = useState('')
+  const [newEventDate, setNewEventDate] = useState('')
+  const [newEventTime, setNewEventTime] = useState('')
+  const [addingEvent, setAddingEvent] = useState(false)
 
   useEffect(() => {
     setBrunchEnabled(!!brunchEvent)
@@ -350,6 +354,41 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       setBrunchEnabled(!nextEnabled)
     } finally {
       setTogglingBrunch(false)
+    }
+  }
+
+  const handleAddScheduleEvent = async () => {
+    if (!newEventName || !newEventDate || !newEventTime) return
+    setAddingEvent(true)
+    try {
+      const res = await fetch('/api/weddings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wedding_id: wedding.id,
+          event_name: newEventName,
+          event_date: newEventDate,
+          start_time: newEventTime,
+          sort_order: schedule.length + 1
+        })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSchedule(prev => [...prev, data.event])
+        setNewEventName('')
+        setNewEventDate('')
+        setNewEventTime('')
+      }
+    } finally {
+      setAddingEvent(false)
+    }
+  }
+
+  const handleDeleteScheduleEvent = async (eventId: string) => {
+    const url = `/api/weddings?` + 'event_id=' + eventId + '&' + 'wedding_id=' + wedding.id
+    const res = await fetch(url, { method: 'DELETE' })
+    if (res.ok) {
+      setSchedule(prev => prev.filter(e => e.id !== eventId))
     }
   }
 
@@ -754,11 +793,24 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 {schedule.map(ev => (
                   <div key={ev.id} className="flex items-center justify-between py-2 px-3 bg-white border border-stone-100 rounded-lg text-sm">
                     <span className="text-stone-700">{ev.event_name}</span>
-                    <span className="text-xs text-stone-400">{ev.start_time?.slice(0,5)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-stone-400">{ev.start_time?.slice(0,5)}</span>
+                      <button onClick={() => handleDeleteScheduleEvent(ev.id)} className="text-red-300 hover:text-red-500 text-xs leading-none px-1 py-0.5 rounded hover:bg-red-50">✕</button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
+            <div className="mt-3 space-y-2">
+              <div className="flex gap-2 flex-wrap">
+                <input value={newEventName} onChange={e => setNewEventName(e.target.value)} placeholder={locale === 'he' ? 'שם אירוע' : locale === 'fr' ? 'Nom' : 'Event name'} className="flex-1 min-w-0 text-sm border border-stone-200 rounded-lg px-3 py-2 focus:outline-none focus:border-stone-400 bg-stone-50" />
+                <input type="date" value={newEventDate} onChange={e => setNewEventDate(e.target.value)} className="text-sm border border-stone-200 rounded-lg px-3 py-2 focus:outline-none focus:border-stone-400 bg-stone-50" />
+                <input type="time" value={newEventTime} onChange={e => setNewEventTime(e.target.value)} className="text-sm border border-stone-200 rounded-lg px-3 py-2 focus:outline-none focus:border-stone-400 bg-stone-50" />
+              </div>
+              <button onClick={handleAddScheduleEvent} disabled={addingEvent || !newEventName || !newEventDate || !newEventTime} className="w-full py-2 text-sm border border-dashed border-stone-300 rounded-lg text-stone-500 hover:border-stone-400 hover:text-stone-700 disabled:opacity-40 transition-colors">
+                {addingEvent ? '…' : (locale === 'he' ? '+ הוסף אירוע' : locale === 'fr' ? '+ Ajouter un événement' : '+ Add event')}
+              </button>
+            </div>
           </div>
           <div className="pt-2">
             <button onClick={handleSaveEdit} disabled={savingEdit}
