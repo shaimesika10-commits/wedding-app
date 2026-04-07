@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite â Event Schedule Section
+//  GrandInvite – Event Schedule Section
 //  src/components/EventScheduleSection.tsx
 // ============================================================
 
@@ -39,7 +39,7 @@ export default function EventScheduleSection({ schedule, locale, t }: Props) {
           key={event.id}
           className="flex gap-6 items-start group"
         >
-          {/* ×¢××× ×¦××¨ ×××× */}
+          {/* עמוד ציר הזמן */}
           <div className="flex flex-col items-center">
             <div className="w-3 h-3 rounded-full bg-[#c9a84c] mt-1.5 group-hover:scale-125 transition-transform" />
             {idx < schedule.length - 1 && (
@@ -47,7 +47,7 @@ export default function EventScheduleSection({ schedule, locale, t }: Props) {
             )}
           </div>
 
-          {/* ×ª××× */}
+          {/* תוכן */}
           <div className="flex-1 pb-8">
             <div className="flex flex-wrap items-baseline gap-3 mb-1">
               <h3 className="font-cormorant text-xl text-stone-800 font-medium">
@@ -55,7 +55,7 @@ export default function EventScheduleSection({ schedule, locale, t }: Props) {
               </h3>
               <span className="text-[#c9a84c] text-sm font-light">
                 {timeFormat(event.start_time)}
-                {event.end_time && ` â ${timeFormat(event.end_time)}`}
+                {event.end_time && ` – ${timeFormat(event.end_time)}`}
               </span>
             </div>
 
@@ -74,7 +74,7 @@ export default function EventScheduleSection({ schedule, locale, t }: Props) {
               <p className="text-stone-500 text-sm italic">{event.description}</p>
             )}
 
-            {/* × ×××× */}
+            {/* ניווט */}
             {(event.google_maps_url || event.waze_url) && (
               <div className="flex gap-3 mt-3">
                 {event.google_maps_url && (
@@ -84,7 +84,7 @@ export default function EventScheduleSection({ schedule, locale, t }: Props) {
                     rel="noopener noreferrer"
                     className="text-xs text-[#c9a84c] hover:underline tracking-wide"
                   >
-                    {labels.googleMaps} â
+                    {labels.googleMaps} ↗
                   </a>
                 )}
                 {event.waze_url && (
@@ -94,7 +94,7 @@ export default function EventScheduleSection({ schedule, locale, t }: Props) {
                     rel="noopener noreferrer"
                     className="text-xs text-stone-500 hover:text-stone-700 tracking-wide"
                   >
-                    {labels.waze} â
+                    {labels.waze} ↗
                   </a>
                 )}
               </div>
