@@ -124,7 +124,7 @@ export default function WeddingPageContent({
 
   const manageLabel =
     locale === 'fr'
-      ? 'Organisateur ? GÃ©rer mon invitation'
+      ? 'Organisateur ? Gérer mon invitation'
       : locale === 'he'
       ? 'בעל האירוע? כניסה לניהול ההזמנה'
       : 'Event host? Manage your invitation'
@@ -141,7 +141,7 @@ export default function WeddingPageContent({
             </h1>
             <p className="text-stone-400 text-sm tracking-widest uppercase mt-4">
               {locale === 'fr'
-                ? 'Entrez le code d\'accÃ¨s'
+                ? 'Entrez le code d\'accès'
                 : locale === 'he'
                 ? 'הזינו את קוד הגישה'
                 : 'Enter access code'}
@@ -169,7 +169,7 @@ export default function WeddingPageContent({
               type="submit"
               className="w-full py-3 bg-[#c9a84c] hover:bg-[#9a7d35] text-white text-sm tracking-widest uppercase transition-colors"
             >
-              {locale === 'fr' ? 'AccÃ©der' : locale === 'he' ? 'כניסה' : 'Enter'}
+              {locale === 'fr' ? 'Accéder' : locale === 'he' ? 'כניסה' : 'Enter'}
             </button>
           </form>
         </div>
@@ -190,7 +190,7 @@ export default function WeddingPageContent({
           <button
             key={lang}
             onClick={() => switchLanguage(lang)}
-            title={lang === 'fr' ? 'FranÃ§ais' : lang === 'he' ? 'עברית' : 'English'}
+            title={lang === 'fr' ? 'Français' : lang === 'he' ? 'עברית' : 'English'}
             className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
             style={{
               background: locale === lang ? '#c9a84c' : 'transparent',
@@ -233,7 +233,7 @@ export default function WeddingPageContent({
           </p>
           {wedding.venue_name && (
             <p className="fade-in-slow text-stone-300 text-base mt-2 font-light">
-              {wedding.venue_name}{wedding.venue_city ? ` Â· ${wedding.venue_city}` : ''}
+              {wedding.venue_name}{wedding.venue_city ? ` · ${wedding.venue_city}` : ''}
             </p>
           )}
           <div className="mt-12 scroll-pulse">
