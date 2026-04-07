@@ -160,7 +160,6 @@ export default function WeddingPageContent({
     })
   }
 
-  const handlePinSubmit = (e: React.FormEvent) =
   const handleShare = async () => {
     const url = window.location.href
     if (typeof navigator !== 'undefined' && (navigator as any).share) {
