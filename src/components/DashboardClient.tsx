@@ -300,7 +300,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       const res = await fetch('/api/weddings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: wedding.id, ...editForm }),
+        body: JSON.stringify({ id: wedding.id, ...editForm, content_locale: locale }),
       })
       if (!res.ok) {
         const d = await res.json()
