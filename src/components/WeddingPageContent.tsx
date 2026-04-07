@@ -178,7 +178,7 @@ export default function WeddingPageContent({
       } catch { /* fallback */ }
     }
   }
-> {
+  const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (pinInput === wedding.guest_pin) {
       setPinUnlocked(true)
