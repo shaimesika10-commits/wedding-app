@@ -35,9 +35,30 @@ const emptyNewGuest = {
 export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('guests')
+  const [copiedDashboard, setCopiedDashboard] = useState(false)
 
   // ════════════════════════════════════════
-  // TAB 1 — אורחים
+const handleDashboardShare = async () => {
+    const url = typeof window !== 'undefined'
+      ? `${window.location.origin}/${locale}/${wedding.slug ?? ''}`
+      : `/${locale}/${wedding.slug ?? ''}`
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: wedding.bride_name + ' & ' + wedding.groom_name,
+          url,
+        })
+      } catch { /* cancelled */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url)
+        setCopiedDashboard(true)
+        setTimeout(() => setCopiedDashboard(false), 2000)
+      } catch { /* fallback */ }
+    }
+  }
+
+    // TAB 1 — אורחים
   // ════════════════════════════════════════
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<RSVPStatus>('all')
@@ -423,7 +444,25 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
           { key:'settings', label: locale==='he'?'הגדרות':locale==='fr'?'Paramètres':'Settings' },
         ] as const).map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+          <button key={tab.key}{/* ── Dashboard Header ── */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="font-cormorant text-lg text-stone-600 tracking-wide">
+          {wedding.bride_name} {'&'} {wedding.groom_name}
+        </p>
+        <button
+          onClick={handleDashboardShare}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#c9a84c] text-[#c9a84c] text-xs tracking-widest uppercase font-light hover:bg-[#c9a84c] hover:text-white transition-all duration-300"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          {copiedDashboard
+            ? (locale === 'fr' ? 'Copié !' : locale === 'he' ? 'הועתק!' : 'Copied!')
+            : (locale === 'fr' ? "Partager" : locale === 'he' ? 'שתף' : 'Share')}
+        </button>
+      </div>
+       onClick={() => setActiveTab(tab.key)}
             className="flex-shrink-0 px-4 md:px-6 py-3 text-sm font-medium tracking-wide transition-all relative whitespace-nowrap"
             style={{ color: activeTab===tab.key ? '#c9a84c' : '#a8a29e' }}
           >
