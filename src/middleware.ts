@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite â Next.js Middleware
+//  GrandInvite – Next.js Middleware
 //  (i18n routing + Supabase auth session refresh)
 //  src/middleware.ts
 // ============================================================
@@ -10,7 +10,7 @@ import { createServerClient } from '@supabase/ssr'
 const SUPPORTED_LOCALES = ['fr', 'he', 'en']
 const DEFAULT_LOCALE = 'fr'
 
-// ××××× ×©×¤× ××-Accept-Language header
+// זיהוי שפה מה-Accept-Language header
 function getLocaleFromRequest(request: NextRequest): string {
   const acceptLanguage = request.headers.get('accept-language') ?? ''
 
@@ -25,8 +25,8 @@ function getLocaleFromRequest(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // ââ 1. i18n Redirect ââ
-  // ×× ×× ×ª×× ×× ××ª××× ××©×¤× ×ª×§×× ×, ××¤× × ××©×¤× ×××ª××××
+  // ── 1. i18n Redirect ──
+  // אם הנתיב לא מתחיל בשפה תקינה, הפנה לשפה המתאימה
   const pathnameHasLocale = SUPPORTED_LOCALES.some(
     locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   )
@@ -38,7 +38,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(newUrl)
   }
 
-  // ââ 2. Supabase Auth Session Refresh ââ
+  // ── 2. Supabase Auth Session Refresh ──
   let response = NextResponse.next({
     request: { headers: request.headers },
   })
@@ -64,10 +64,10 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // ×¨×¢× ×× session (××©××!)
+  // רענון session (חשוב!)
   await supabase.auth.getUser()
 
-  // ââ 3. ××× × ×¢× Dashboard ââ
+  // ── 3. הגנה על Dashboard ──
   const locale = SUPPORTED_LOCALES.find(l => pathname.startsWith(`/${l}/`))
   if (locale && pathname.includes('/dashboard')) {
     const { data: { user } } = await supabase.auth.getUser()
