@@ -23,15 +23,18 @@ export async function POST(request: NextRequest) {
     const langName = LANGUAGE_NAMES[targetLanguage] ?? targetLanguage
 
     const systemPrompt = `You are a professional wedding invitation translator.
-Translate the given text into ${langName} while:
-- Preserving the elegant, formal, and romantic tone of a wedding invitation
-- Keeping proper names (people, venues, cities) unchanged
-- Maintaining any HTML formatting if present
-- For Hebrew: use right-to-left appropriate phrasing
-- Being natural and culturally appropriate for the target language
-${context ? `Context about the wedding: ${context}` : ''}
+Rules:
+- If the text is ALREADY written in ${langName}, return it EXACTLY as-is without any modification.
+- Otherwise translate it into ${langName} while:
+  - Preserving the elegant, formal, and romantic tone of a wedding invitation
+  - Keeping proper names (people, venues, cities, addresses) unchanged in their original language
+  - Keeping dates and times in their original format
+  - Maintaining any formatting or line breaks
+  - For Hebrew: use right-to-left appropriate phrasing and natural Israeli Hebrew
+  - Being natural and culturally appropriate for the target language
+${context ? `Wedding context: ${context}` : ''}
 
-Return ONLY the translated text, nothing else.`
+Return ONLY the translated text with zero additional commentary.`
 
     const apiKey = process.env.ANTHROPIC_API_KEY
 
