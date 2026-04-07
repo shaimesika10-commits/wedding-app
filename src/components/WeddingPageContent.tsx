@@ -1,17 +1,44 @@
 'use client'
 // ============================================================
 //  GrandInvite – Wedding Page Content (Client Component)
-//  Full smart translation: welcome msg + schedule event names/descriptions
-//  Location names, addresses, venue names left untranslated
-//  Gallery removed (Task 7)
+//  Handles language switching + AI translation for guests
 //  src/components/WeddingPageContent.tsx
 // ============================================================
-import { useState, useTransition, useEffect } from 'react'
+
+import { useState, useTransition } from 'react'
 import RSVPForm from './RSVPForm'
 import EventScheduleSection from './EventScheduleSection'
-import type { EventSchedule } from '@/types'
+import GallerySection from './GallerySection'
+import type { GalleryPhoto, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
 import { t } from '@/lib/i18n'
+
+// Color palette tokens per layout_style
+const PALETTES: Record<string, { bg: string; surface: string; accent: string; text: string; subtext: string; border: string; hero: string; footer: string }> = {
+  ivory: {
+    bg: '#faf8f5', surface: '#ffffff', accent: '#c9a84c', text: '#1c1917', subtext: '#78716c',
+    border: '#e7e5e4', hero: 'linear-gradient(to bottom, #292524, #1c1917)', footer: '#1c1917',
+  },
+  blush: {
+    bg: '#fff5f5', surface: '#fffafa', accent: '#d4a0a0', text: '#3d1515', subtext: '#7d5a5a',
+    border: '#f0d8d8', hero: 'linear-gradient(to bottom, #3d1515, #5a2020)', footer: '#3d1515',
+  },
+  sage: {
+    bg: '#f4f7f2', surface: '#f9fbf8', accent: '#7a9e7e', text: '#1a2e1c', subtext: '#4a6e4d',
+    border: '#c8dcc9', hero: 'linear-gradient(to bottom, #1a2e1c, #253c28)', footer: '#1a2e1c',
+  },
+  midnight: {
+    bg: '#0f172a', surface: '#1e293b', accent: '#c9a84c', text: '#f8f5ee', subtext: '#94a3b8',
+    border: '#334155', hero: 'linear-gradient(to bottom, #020617, #0f172a)', footer: '#020617',
+  },
+}
+
+// Font family per font_style
+const FONTS: Record<string, string> = {
+  cormorant: 'Georgia, "Times New Roman", serif',
+  playfair: '"Playfair Display", Georgia, serif',
+  modern: '"Helvetica Neue", Arial, sans-serif',
+}
 
 interface Wedding {
   id: string
@@ -27,121 +54,38 @@ interface Wedding {
   waze_url: string | null
   rsvp_deadline: string | null
   max_guests: number
+  font_style: string | null
+  layout_style: string | null
   slug: string
-  guest_pin?: string | null
-  is_hidden?: boolean
-  content_locale?: string | null
 }
 
 interface WeddingPageContentProps {
   wedding: Wedding
   schedule: EventSchedule[]
+  galleryPhotos: GalleryPhoto[]
   originalLocale: Locale
 }
 
-// Module-level translation cache (persists across re-renders)
+// Translation cache to avoid re-calling the API
 const translationCache: Record<string, string> = {}
 
 export default function WeddingPageContent({
   wedding,
   schedule,
+  galleryPhotos,
   originalLocale,
 }: WeddingPageContentProps) {
   const [locale, setLocale] = useState<Locale>(originalLocale)
   const [welcomeMsg, setWelcomeMsg] = useState(wedding.welcome_message)
-  const [translatedSchedule, setTranslatedSchedule] = useState<EventSchedule[]>(schedule)
+  const [translatedSchedule, setTranslatedSchedule] = useState(schedule)
   const [isPending, startTransition] = useTransition()
-  const contentLocale = (wedding.content_locale ?? 'fr') as Locale
-
-  // ── PIN Gate ──
-  const requiresPin = !!wedding.guest_pin
-  const [pinUnlocked, setPinUnlocked] = useState(!requiresPin)
-  const [pinInput, setPinInput] = useState('')
-  const [pinError, setPinError] = useState(false)
-  const [copied, setCopied] = useState(false)
 
   const isRTL = locale === 'he'
   const tr = t(locale)
 
-  // ── Helper: translate single text via API ──
-  const translateText = async (text: string, targetLang: Locale): Promise<string> => {
-    if (!text || !text.trim()) return text
-    try {
-      const res = await fetch('/api/ai/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          targetLanguage: targetLang,
-          sourceLanguage: contentLocale,
-          context: `Wedding of ${wedding.bride_name} and ${wedding.groom_name} at ${wedding.venue_name ?? ''} on ${wedding.wedding_date}`,
-        }),
-      })
-      const data = await res.json()
-      return data.translatedText ?? text
-    } catch {
-      return text
-    }
-  }
-
-  // ── Translate all content fields to targetLang ──
-  // Translates: welcome_message, schedule event_name, schedule description
-  // Does NOT translate: venue_name, venue_address, location_name, address (in schedule)
-  const translateAllContent = (targetLang: Locale) => {
-    if (targetLang === contentLocale) {
-      // Restore originals when switching back to owner's language
-      setWelcomeMsg(wedding.welcome_message)
-      setTranslatedSchedule(schedule)
-      return
-    }
-
-    // ─ Welcome message ─
-    if (wedding.welcome_message) {
-      const msgKey = `msg-${wedding.id}-${targetLang}`
-      if (translationCache[msgKey]) {
-        setWelcomeMsg(translationCache[msgKey])
-      } else {
-        translateText(wedding.welcome_message, targetLang).then(translated => {
-          translationCache[msgKey] = translated
-          setWelcomeMsg(translated)
-        })
-      }
-    }
-
-    // ─ Schedule: translate event_name + description only ─
-    if (schedule.length > 0) {
-      const schedKey = `sched-${wedding.id}-${targetLang}`
-      if (translationCache[schedKey]) {
-        try { setTranslatedSchedule(JSON.parse(translationCache[schedKey])) } catch { /* noop */ }
-      } else {
-        Promise.all(
-          schedule.map(async ev => {
-            const [name, desc] = await Promise.all([
-              ev.event_name ? translateText(ev.event_name, targetLang) : Promise.resolve(ev.event_name),
-              ev.description ? translateText(ev.description, targetLang) : Promise.resolve(ev.description ?? ''),
-            ])
-            return {
-              ...ev,
-              event_name: name || ev.event_name,
-              description: desc || ev.description,
-              // location_name, address: intentionally left as-is
-            }
-          })
-        ).then(updated => {
-          translationCache[schedKey] = JSON.stringify(updated)
-          setTranslatedSchedule(updated as EventSchedule[])
-        }).catch(() => { /* keep originals on error */ })
-      }
-    }
-  }
-
-  // Auto-translate on mount if viewer's locale differs from content locale
-  useEffect(() => {
-    if (originalLocale !== contentLocale) {
-      translateAllContent(originalLocale)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Design tokens
+  const palette = PALETTES[wedding.layout_style ?? 'ivory'] ?? PALETTES.ivory
+  const fontFamily = FONTS[wedding.font_style ?? 'cormorant'] ?? FONTS.cormorant
 
   const formatDate = (loc: Locale) =>
     new Date(wedding.wedding_date).toLocaleDateString(
@@ -151,133 +95,101 @@ export default function WeddingPageContent({
 
   const [weddingDateFormatted, setWeddingDateFormatted] = useState(formatDate(originalLocale))
 
-  const switchLanguage = (newLocale: Locale) => {
+  const switchLanguage = async (newLocale: Locale) => {
     if (newLocale === locale) return
     setLocale(newLocale)
     setWeddingDateFormatted(formatDate(newLocale))
-    startTransition(() => {
-      translateAllContent(newLocale)
+
+    if (newLocale === originalLocale) {
+      setWelcomeMsg(wedding.welcome_message)
+      setTranslatedSchedule(schedule)
+      return
+    }
+
+    startTransition(async () => {
+      // Translate welcome message
+      if (wedding.welcome_message) {
+        const cacheKey = `${wedding.id}-welcome-${newLocale}`
+        if (translationCache[cacheKey]) {
+          setWelcomeMsg(translationCache[cacheKey])
+        } else {
+          try {
+            const res = await fetch('/api/ai/translate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: wedding.welcome_message,
+                targetLanguage: newLocale,
+                context: `Wedding of ${wedding.bride_name} and ${wedding.groom_name} at ${wedding.venue_name ?? ''} on ${wedding.wedding_date}`,
+              }),
+            })
+            const data = await res.json()
+            const translated = data.translatedText ?? wedding.welcome_message
+            translationCache[cacheKey] = translated
+            setWelcomeMsg(translated)
+          } catch {
+            // keep original on error
+          }
+        }
+      }
+
+      // Translate schedule events (description only, not location names)
+      if (schedule.length > 0) {
+        const cacheKey = `${wedding.id}-schedule-${newLocale}`
+        if (translationCache[cacheKey]) {
+          setTranslatedSchedule(JSON.parse(translationCache[cacheKey]))
+        } else {
+          try {
+            const textsToTranslate = schedule
+              .filter(e => e.description)
+              .map(e => e.description!)
+
+            if (textsToTranslate.length > 0) {
+              const res = await fetch('/api/ai/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  text: textsToTranslate.join('\n---\n'),
+                  targetLanguage: newLocale,
+                  context: `Wedding schedule descriptions for ${wedding.bride_name} and ${wedding.groom_name}`,
+                }),
+              })
+              const data = await res.json()
+              const translatedTexts = (data.translatedText ?? '').split('\n---\n')
+
+              const translated = schedule.map((event, idx) => ({
+                ...event,
+                description: translatedTexts[idx] ?? event.description,
+              }))
+              translationCache[cacheKey] = JSON.stringify(translated)
+              setTranslatedSchedule(translated)
+            }
+          } catch {
+            // keep original on error
+          }
+        }
+      }
     })
   }
 
-  const handleShare = async () => {
-    const url = window.location.href
-    if (typeof navigator !== 'undefined' && (navigator as any).share) {
-      try {
-        await (navigator as any).share({
-          title: wedding.bride_name + ' & ' + wedding.groom_name,
-          url,
-        })
-      } catch { /* cancelled */ }
-    } else {
-      try {
-        await navigator.clipboard.writeText(url)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      } catch { /* fallback */ }
-    }
-  }
-  const handlePinSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (pinInput === wedding.guest_pin) {
-      setPinUnlocked(true)
-      setPinError(false)
-    } else {
-      setPinError(true)
-      setPinInput('')
-    }
-  }
-
-  const promoLabel =
-    locale === 'fr' ? "Vous voulez une invitation comme celle-ci\u00a0? Cliquez ici"
-    : locale === 'he' ? 'רוצה הזמנה כזו לאירוע הבא שלך? לחץ כאן'
-    : 'Want an invitation like this for your event? Click here'
-
-  const manageLabel =
-    locale === 'fr' ? 'Organisateur\u00a0? G\u00e9rer mon invitation'
-    : locale === 'he' ? 'בעל האירוע? כניסה לניהול ההזמנה'
-    : 'Event host? Manage your invitation'
-
-  // ── PIN Gate Screen ──
-  if (!pinUnlocked) {
-    return (
-      <main className="min-h-screen bg-[#faf8f5] flex items-center justify-center px-6">
-        <div className="w-full max-w-sm text-center">
-          <div className="mb-8">
-            <div className="h-px w-16 bg-[#c9a84c] mx-auto mb-6" />
-            <h1 className="font-cormorant text-3xl text-stone-800 font-light mb-2">
-              {wedding.bride_name} &amp; {wedding.groom_name}
-            </h1>
-            <p className="text-stone-400 text-sm tracking-widest uppercase mt-4">
-              {locale === 'fr' ? "Entrez le code d'acc\u00e8s"
-                : locale === 'he' ? 'הזינו את קוד הגישה'
-                : 'Enter access code'}
-            </p>
-            <div className="h-px w-16 bg-[#c9a84c] mx-auto mt-6" />
-          </div>
-          <form onSubmit={handlePinSubmit} className="space-y-4">
-            <input
-              type="password"
-              inputMode="numeric"
-              pattern="[0-9]*"
-               maxLength={4}
-              value={pinInput}
-              onChange={e => { setPinInput(e.target.value); setPinError(false) }}
-              placeholder="• • • •"
-              className="w-full text-center text-2xl tracking-[1em] py-4 bg-white border border-stone-200 focus:border-[#c9a84c] focus:outline-none text-stone-800 placeholder-stone-300 transition-colors"
-              autoFocus
-            />
-            {pinError && (
-              <p className="text-red-400 text-sm">
-                {locale === 'fr' ? 'Code incorrect'
-                  : locale === 'he' ? 'קוד שגוי, נסה שוב'
-                  : 'Incorrect code, try again'}
-              </p>
-            )}
-            <button
-              type="submit"
-              className="w-full py-3 bg-[#c9a84c] hover:bg-[#9a7d35] text-white text-sm tracking-widest uppercase transition-colors"
-            >
-              {locale === 'fr' ? 'Acc\u00e9der' : locale === 'he' ? 'כניסה' : 'Enter'}
-            </button>
-          </form>
-          {/* Share Invitation Button */}
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={handleShare}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#b8965a] text-[#b8965a] text-sm tracking-widest uppercase font-light hover:bg-[#b8965a] hover:text-white transition-all duration-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-              </svg>
-              {copied
-                ? (locale === 'fr' ? 'Copie\u0301 !' : locale === 'he' ? '\u05D4\u05D5\u05E2\u05EA\u05E7!' : 'Copied!')
-                : (locale === 'fr' ? "Partager l'invitation" : locale === 'he' ? '\u05E9\u05EA\u05E3 \u05D4\u05D6\u05DE\u05E0\u05D4' : 'Share Invitation')}
-            </button>
-          </div>
-        </div>
-      </main>
-    )
-  }
-
   return (
-    <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#faf8f5]">
+    <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen" style={{ background: palette.bg, fontFamily, color: palette.text }}>
+
       {/* ── Floating Language Switcher ── */}
       <div className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1.5 shadow-lg border border-stone-100">
         {isPending && (
           <span className="text-xs text-stone-400 animate-pulse mx-1">
-            {locale === 'he' ? 'מתרגם...' : '...'}
+            {locale === 'he' ? 'מתרגם...' : locale === 'fr' ? '...' : '...'}
           </span>
         )}
         {(['fr', 'he', 'en'] as const).map(lang => (
           <button
             key={lang}
             onClick={() => switchLanguage(lang)}
-            title={lang === 'fr' ? 'Fran\u00e7ais' : lang === 'he' ? 'עברית' : 'English'}
+            title={lang === 'fr' ? 'Français' : lang === 'he' ? 'עברית' : 'English'}
             className="w-9 h-9 rounded-full text-xs font-semibold tracking-wide transition-all"
             style={{
-              background: locale === lang ? '#c9a84c' : 'transparent',
+              background: locale === lang ? palette.accent : 'transparent',
               color: locale === lang ? '#fff' : '#a8a29e',
               transform: locale === lang ? 'scale(1.05)' : 'scale(1)',
             }}
@@ -297,31 +209,37 @@ export default function WeddingPageContent({
             <div className="absolute inset-0 bg-black/40" />
           </div>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-b from-stone-800 to-stone-900" />
+          <div className="absolute inset-0" style={{ background: palette.hero }} />
         )}
+
         <div className="relative z-10 text-center text-white px-6">
           <div className="fade-in flex items-center justify-center gap-4 mb-8">
-            <div className="h-px w-16 bg-[#c9a84c] shimmer" />
-            <span className="text-[#c9a84c] text-xs tracking-[0.4em] uppercase font-light">
+            <div className="h-px w-16 shimmer" style={{ background: palette.accent }} />
+            <span className="text-xs tracking-[0.4em] uppercase font-light" style={{ color: palette.accent }}>
               {tr.wedding.saveDate}
             </span>
-            <div className="h-px w-16 bg-[#c9a84c] shimmer" />
+            <div className="h-px w-16 shimmer" style={{ background: palette.accent }} />
           </div>
-          <h1 className="font-cormorant font-light leading-none mb-6">
+
+          <h1 className="font-light leading-none mb-6" style={{ fontFamily }}>
             <span className="hero-name block text-5xl md:text-7xl lg:text-8xl">{wedding.bride_name}</span>
-            <span className="fade-in-delay block text-[#c9a84c] text-2xl md:text-3xl my-4 font-light tracking-widest">&amp;</span>
+            <span className="fade-in-delay block text-2xl md:text-3xl my-4 font-light tracking-widest" style={{ color: palette.accent }}>&amp;</span>
             <span className="hero-name-delayed block text-5xl md:text-7xl lg:text-8xl">{wedding.groom_name}</span>
           </h1>
-          <p className="fade-in-slow text-stone-200 text-lg md:text-xl font-light tracking-widest uppercase mt-6">
+
+          <p className="fade-in-slow text-lg md:text-xl font-light tracking-widest uppercase mt-6 text-white/80">
             {weddingDateFormatted}
           </p>
+
           {wedding.venue_name && (
-            <p className="fade-in-slow text-stone-300 text-base mt-2 font-light">
-              {wedding.venue_name}{wedding.venue_city ? ` · ${wedding.venue_city}` : ''}
+            <p className="fade-in-slow text-base mt-2 font-light text-white/70">
+              {wedding.venue_name}
+              {wedding.venue_city ? ` · ${wedding.venue_city}` : ''}
             </p>
           )}
+
           <div className="mt-12 scroll-pulse">
-            <svg className="w-6 h-6 mx-auto text-[#c9a84c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-6 h-6 mx-auto" style={{ color: palette.accent }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
@@ -331,22 +249,22 @@ export default function WeddingPageContent({
       {/* ── Welcome Message ── */}
       {welcomeMsg && (
         <section className="max-w-2xl mx-auto px-6 py-20 text-center">
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+          <div className="ornament-line"><span className="text-lg" style={{ color: palette.accent }}>✦</span></div>
           <p
-            className="font-cormorant text-xl md:text-2xl text-stone-600 font-light leading-relaxed italic transition-opacity duration-500"
-            style={{ opacity: isPending ? 0.4 : 1 }}
+            className="text-xl md:text-2xl font-light leading-relaxed italic transition-opacity duration-500"
+            style={{ fontFamily, color: palette.subtext, opacity: isPending ? 0.4 : 1 }}
           >
             {welcomeMsg}
           </p>
-          <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+          <div className="ornament-line"><span className="text-lg" style={{ color: palette.accent }}>✦</span></div>
         </section>
       )}
 
       {/* ── Schedule ── */}
       {translatedSchedule.length > 0 && (
-        <section className="bg-white py-20">
+        <section className="py-20" style={{ background: palette.surface }}>
           <div className="max-w-4xl mx-auto px-6">
-            <h2 className="section-title text-center mb-12">{tr.wedding.schedule}</h2>
+            <h2 className="section-title text-center mb-12" style={{ fontFamily }}>{tr.wedding.schedule}</h2>
             <EventScheduleSection schedule={translatedSchedule} locale={locale} t={tr.wedding} />
           </div>
         </section>
@@ -354,14 +272,16 @@ export default function WeddingPageContent({
 
       {/* ── Venue ── */}
       {(wedding.venue_name || wedding.google_maps_url || wedding.waze_url) && (
-        <section className="py-20 px-6 bg-stone-50">
+        <section className="py-20 px-6" style={{ background: palette.bg }}>
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="section-title mb-4">{tr.wedding.venue}</h2>
-            {wedding.venue_name && <p className="text-stone-600 text-lg mb-2">{wedding.venue_name}</p>}
-            {wedding.venue_address && <p className="text-stone-400 text-sm mb-8">{wedding.venue_address}</p>}
+            <h2 className="section-title mb-4" style={{ fontFamily }}>{tr.wedding.venue}</h2>
+            {wedding.venue_name && <p className="text-lg mb-2" style={{ color: palette.subtext }}>{wedding.venue_name}</p>}
+            {wedding.venue_address && <p className="text-sm mb-8" style={{ color: palette.subtext, opacity: 0.7 }}>{wedding.venue_address}</p>}
             <div className="flex flex-wrap justify-center gap-4">
               {wedding.google_maps_url && (
-                <a href={wedding.google_maps_url} target="_blank" rel="noopener noreferrer" className="btn-gold flex items-center gap-2">
+                <a href={wedding.google_maps_url} target="_blank" rel="noopener noreferrer"
+                  className="btn-gold flex items-center gap-2"
+                  style={{ background: palette.accent, color: '#fff', padding: '0.6rem 1.5rem', borderRadius: '8px', textDecoration: 'none', fontSize: '0.85rem' }}>
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                   </svg>
@@ -369,7 +289,9 @@ export default function WeddingPageContent({
                 </a>
               )}
               {wedding.waze_url && (
-                <a href={wedding.waze_url} target="_blank" rel="noopener noreferrer" className="btn-outline flex items-center gap-2">
+                <a href={wedding.waze_url} target="_blank" rel="noopener noreferrer"
+                  className="btn-outline flex items-center gap-2"
+                  style={{ border: `1px solid ${palette.border}`, color: palette.text, padding: '0.6rem 1.5rem', borderRadius: '8px', textDecoration: 'none', fontSize: '0.85rem' }}>
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20.54 6.63C19.38 4.1 17.12 2.24 14.36 1.6c-4.61-1.06-9.28 1.88-10.34 6.49-.37 1.6-.22 3.22.38 4.67L2.5 18.5l6-1.73c.96.38 1.99.62 3.06.67 4.72.18 8.74-3.5 8.92-8.22.05-1.02-.1-2.03-.44-2.99l.5-.5zM12 17c-.78 0-1.55-.1-2.3-.31l-2.14.62.62-2.07C7.07 14.06 6.5 12.56 6.5 11c0-3.03 2.47-5.5 5.5-5.5S17.5 7.97 17.5 11 15.03 17 12 17z" />
                   </svg>
@@ -381,15 +303,20 @@ export default function WeddingPageContent({
         </section>
       )}
 
+      {/* ── Gallery ── */}
+      <section style={{ background: palette.bg }}>
+        <GallerySection weddingId={wedding.id} locale={locale} initialPhotos={galleryPhotos} />
+      </section>
+
       {/* ── RSVP ── */}
-      <section id="rsvp" className="py-24 px-6 bg-white">
+      <section id="rsvp" className="py-24 px-6" style={{ background: palette.surface }}>
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-12">
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
-            <h2 className="section-title mb-3">{tr.rsvp.title}</h2>
-            <p className="text-stone-500 font-light">{tr.rsvp.subtitle}</p>
+            <div className="ornament-line"><span className="text-lg" style={{ color: palette.accent }}>✦</span></div>
+            <h2 className="section-title mb-3" style={{ fontFamily }}>{tr.rsvp.title}</h2>
+            <p className="font-light" style={{ color: palette.subtext }}>{tr.rsvp.subtitle}</p>
             {wedding.rsvp_deadline && (
-              <p className="text-sm text-[#c9a84c] mt-3 tracking-wide">
+              <p className="text-sm mt-3 tracking-wide" style={{ color: palette.accent }}>
                 {tr.rsvp.deadline}{' '}
                 {new Date(wedding.rsvp_deadline).toLocaleDateString(
                   locale === 'he' ? 'he-IL' : locale === 'fr' ? 'fr-FR' : 'en-GB',
@@ -397,54 +324,37 @@ export default function WeddingPageContent({
                 )}
               </p>
             )}
-            <div className="ornament-line"><span className="text-[#c9a84c] text-lg">✦</span></div>
+            <div className="ornament-line"><span className="text-lg" style={{ color: palette.accent }}>✦</span></div>
           </div>
-          <RSVPForm
-            weddingId={wedding.id}
-            weddingSlug={wedding.slug}
-            locale={locale}
-            t={tr.rsvp}
-            maxGuests={wedding.max_guests}
-          />
+          <RSVPForm weddingId={wedding.id} locale={locale} t={tr.rsvp} maxGuests={wedding.max_guests} />
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-10 text-center bg-stone-900 text-stone-400">
-        <p className="font-cormorant text-2xl text-white mb-2">
+      <footer className="py-16 text-center" style={{ background: palette.footer, color: palette.subtext }}>
+        <p className="text-2xl text-white mb-2" style={{ fontFamily, fontWeight: 300 }}>
           {wedding.bride_name} &amp; {wedding.groom_name}
         </p>
-        <p className="text-xs tracking-widest uppercase text-[#c9a84c]">{weddingDateFormatted}</p>
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 px-6">
+        <p className="text-xs tracking-widest uppercase" style={{ color: palette.accent }}>{weddingDateFormatted}</p>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 mb-8">
           <a
-            href={`/${locale}`}
-            className="inline-block px-6 py-3 bg-[#c9a84c] hover:bg-[#9a7d35] text-white text-xs tracking-widest uppercase transition-colors font-medium"
+            href={`/${locale}/login?tab=register`}
+            style={{ padding: '0.75rem 1.5rem', border: `1px solid ${palette.accent}`, color: palette.accent, fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 300, borderRadius: '6px', textDecoration: 'none', transition: 'all 0.2s' }}
           >
-            {promoLabel}
+            {locale === 'he' ? 'רוצה הזמנה כמו זו?' : locale === 'fr' ? 'Créer votre invitation' : 'Create your invitation'}
           </a>
           <a
             href={`/${locale}/login`}
-            className="inline-block px-6 py-3 border border-stone-600 hover:border-[#c9a84c] text-stone-400 hover:text-[#c9a84c] text-xs tracking-widest uppercase transition-colors"
+            style={{ padding: '0.75rem 1.5rem', border: `1px solid ${palette.accent}`, color: palette.accent, fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 300, borderRadius: '6px', textDecoration: 'none', transition: 'all 0.2s' }}
           >
-            {manageLabel}
+            {locale === 'he' ? 'ניהול ההזמנה' : locale === 'fr' ? 'Gérer mon invitation' : 'Manage invitation'}
           </a>
         </div>
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={handleShare}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#c9a84c] text-[#c9a84c] text-sm tracking-widest uppercase font-light hover:bg-[#c9a84c] hover:text-stone-900 transition-all duration-300"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-              </svg>
-              {copied
-                ? (locale === 'fr' ? 'Copie\u0301 !' : locale === 'he' ? '\u05D4\u05D5\u05E2\u05EA\u05E7!' : 'Copied!')
-                : (locale === 'fr' ? "Partager l'invitation" : locale === 'he' ? '\u05E9\u05EA\u05E3 \u05D4\u05D6\u05DE\u05E0\u05D4' : 'Share Invitation')}
-            </button>
-          </div>
-        <p className="text-xs mt-8 text-stone-600">
-          Powered by <span className="text-[#c9a84c]">GrandInvite</span>
+
+        <p className="text-xs mt-6" style={{ color: palette.subtext, opacity: 0.6 }}>
+          Powered by <span style={{ color: palette.accent }}>GrandInvite</span>
         </p>
       </footer>
     </main>
