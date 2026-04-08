@@ -33,9 +33,13 @@ export interface Database {
           rsvp_deadline: string | null
           max_guests: number
           locale: string
-          invitation_locale: string | null
           is_active: boolean
           plan: string
+          font_style: string | null
+          layout_style: string | null
+          image_position: string | null
+          cover_frame: string | null
+          page_layout: string | null
           created_at: string
           updated_at: string
         }
@@ -57,9 +61,13 @@ export interface Database {
           rsvp_deadline?: string | null
           max_guests?: number
           locale?: string
-          invitation_locale?: string | null
           is_active?: boolean
           plan?: string
+          font_style?: string | null
+          layout_style?: string | null
+          image_position?: string | null
+          cover_frame?: string | null
+          page_layout?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -80,8 +88,12 @@ export interface Database {
           welcome_message?: string | null
           rsvp_deadline?: string | null
           max_guests?: number
+          font_style?: string | null
+          layout_style?: string | null
+          image_position?: string | null
+          cover_frame?: string | null
+          page_layout?: string | null
           locale?: string
-          invitation_locale?: string | null
           is_active?: boolean
           plan?: string
           updated_at?: string
