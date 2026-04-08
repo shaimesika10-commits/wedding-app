@@ -1,4 +1,4 @@
-// ============================================================
+// ===========================================================
 //  GrandInvite – TypeScript Types
 // ============================================================
 
@@ -25,6 +25,9 @@ export interface Wedding {
   max_guests: number
   font_style: string | null
   layout_style: string | null
+  image_position: string | null
+  cover_frame: string | null
+  page_layout: string | null
   locale: Locale
   is_active: boolean
   plan: 'free' | 'premium'
@@ -58,7 +61,7 @@ export interface Guest {
   children_count: number
   dietary_preferences: string | null
   allergies: string | null
-  notes: string | null
+  notes: string | null            // שדה 'אמר / הערות נוסהוך'
   rsvp_status: RSVPStatus
   rsvp_submitted_at: string | null
   invitation_sent_at: string | null
@@ -75,7 +78,7 @@ export interface RSVPFormData {
   children_count: number
   dietary_preferences?: string
   allergies?: string
-  notes?: string
+  notes?: string                  // שדה 'אמר / הערות נוסהוך'
   rsvp_status: 'confirmed' | 'declined'
 }
 
