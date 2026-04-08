@@ -518,7 +518,6 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                             ? <p className="text-xs text-stone-500 truncate" title={guest.notes}>{guest.notes}</p>
                             : <span className="text-stone-200">—</span>}
                         </td>
-                        <td className="px-4 py-4 text-xs text-stone-400">              </td>
                         <td className="px-4 py-4 text-xs text-stone-400">
                           {guest.rsvp_submitted_at
                             ? new Date(guest.rsvp_submitted_at).toLocaleDateString(
