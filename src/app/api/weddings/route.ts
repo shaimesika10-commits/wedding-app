@@ -39,6 +39,9 @@ export async function PATCH(req: NextRequest) {
       'is_active',
       'font_style',
       'layout_style',
+      'image_position',
+      'cover_frame',
+      'page_layout',
     ]
     const dateFields = ['wedding_date', 'rsvp_deadline']
     const nullableStringFields = ['cover_image_url', 'google_maps_url', 'waze_url', 'venue_name', 'venue_address', 'venue_city', 'welcome_message']
@@ -46,6 +49,7 @@ export async function PATCH(req: NextRequest) {
     for (const key of allowed) {
       if (key in updates) {
         const val = updates[key]
+        // Convert empty strings to null for date and nullable fields
         if (dateFields.includes(key) && val === '') safeUpdates[key] = null
         else if (nullableStringFields.includes(key) && val === '') safeUpdates[key] = null
         else safeUpdates[key] = val
@@ -88,6 +92,7 @@ export async function POST(req: NextRequest) {
       .single()
     if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+    // Use admin client to bypass RLS for the insert (ownership already verified above)
     const admin = createAdminSupabaseClient()
     const { data, error } = await admin
       .from('event_schedule')
@@ -99,6 +104,55 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ event: data }, { status: 201 })
   } catch (err) {
     console.error('Weddings POST error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// ── PUT – עדכון אירוע בלו"ז ──────────────────────────────────
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { event_id, wedding_id, ...eventData } = body
+
+    if (!event_id || !wedding_id) {
+      return NextResponse.json({ error: 'Missing event_id or wedding_id' }, { status: 400 })
+    }
+
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { data: wedding } = await supabase
+      .from('weddings')
+      .select('id')
+      .eq('id', wedding_id)
+      .eq('user_id', user.id)
+      .single()
+    if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    const allowedEventFields = [
+      'event_name', 'event_date', 'start_time', 'end_time',
+      'location_name', 'address', 'google_maps_url', 'waze_url',
+      'description', 'sort_order',
+    ]
+    const safeEventUpdates: Record<string, unknown> = {}
+    for (const key of allowedEventFields) {
+      if (key in eventData) safeEventUpdates[key] = eventData[key] === '' ? null : eventData[key]
+    }
+
+    const admin = createAdminSupabaseClient()
+    const { data, error } = await admin
+      .from('event_schedule')
+      .update(safeEventUpdates)
+      .eq('id', event_id)
+      .eq('wedding_id', wedding_id)
+      .select()
+      .single()
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ event: data })
+  } catch (err) {
+    console.error('Weddings PUT error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -126,6 +180,7 @@ export async function DELETE(req: NextRequest) {
       .single()
     if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+    // Use admin client to bypass RLS for the delete (ownership already verified above)
     const admin = createAdminSupabaseClient()
     const { error } = await admin
       .from('event_schedule')
