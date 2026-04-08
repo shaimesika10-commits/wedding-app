@@ -763,7 +763,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <label className={labelCls}>Google Maps URL</label>
                   <input value={editForm.google_maps_url} onChange={e=>setEditForm(p=>({...p,google_maps_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://maps.google.com/..."/>
                 </div>
-                        <div>
+                <div>
                   <label className={labelCls}>Waze URL</label>
                   <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://wazu.com/..."/>
                 </div>
@@ -1151,7 +1151,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               {eventModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{eventModalError}</div>}
 
               <div>
-                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *'}</label>
+                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
                 <input
                   value={eventForm.event_name}
                   onChange={e => setEventForm(p => ({ ...p, event_name: e.target.value }))}
@@ -1163,7 +1163,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{locale==='he'?'תאריך *':locale==='fr'?'Date *'}</label>
+                  <label className={labelCls}>{locale==='he'?'תאריך *':locale==='fr'?'Date *':'Date *'}</label>
                   <input type="date" value={eventForm.event_date} onChange={e => setEventForm(p => ({ ...p, event_date: e.target.value }))} dir="ltr" className={inputCls}/>
                 </div>
                 <div>
