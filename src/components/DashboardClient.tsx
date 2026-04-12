@@ -824,11 +824,11 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <div className="space-y-3">
               <div>
                 <label className={labelCls}>{locale==='he'?'שם האולם':locale==='fr'?'Nom du lieu':'Venue name'}</label>
-                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'hâteau de...'}/>
+                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Château de...'}/>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{locale==='he'?'עמק':locale==='fr'?'Ville':'City'}</label>
+                  <label className={labelCls}>{locale==='he'?'עיר':locale==='fr'?'Ville':'City'}</label>
                   <input value={editForm.venue_city} onChange={e=>setEditForm(p=>({...p,venue_city:e.target.value}))} className={inputCls}/>
                 </div>
                 <div>
@@ -1369,20 +1369,56 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             style={{ background:'#c9a84c', boxShadow:'0 4px 14px rgba(201,168,76,0.25)' }}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M144h6m0 0v6m0-6L10 14"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
             </svg>
-            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↶
+            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↗
           </a>
           <div className="mt-6">
             <p className="text-xs text-stone-400 mb-2">
-              {locale==='he'?'קישור ההזק^��P�鱽���������Ȝ��1�����������٥хѥ����%�٥хѥ���������(���������������(�������������؁�����9���􉙱����ѕ�̵���ѕȁ����ȁ���ܵʹ��൅�Ѽ��(��������������񍽑�������9���􉙱��āѕ�е�́����ѽ���������́��ȁɽչ�������ѕ�е�ѽ���������չ��є���ȵ��Ȉ������Ȉ�(������������������������ݥ���܄���չ���������ݥ���ܹ����ѥ����ɥ���蜝��������������ݕ������ͱ՜���������(��������������𽍽���(�����������������ѽ�(������������������
-�����젤����ݕ������ͱ՜������٥��ѽȹ�������ɐ���ɥѕQ��С���ݥ���ܹ����ѥ����ɥ�����������������ݕ������ͱ՝����(���������������������9������ȁ����ѽ���������ٕ�鉜��ѽ�������ɽչ��������Ʌ�ͥѥ��������̈(����������������ѥѱ��
-���(���������������(������������������ٜ������9����ܴЁ��Ёѕ�е�ѽ������������􉹽����٥��	��������Ѐ�Ј���ɽ�����ɕ��
-���Ȉ�(���������������������Ѡ���ɽ��1�������ɽչ�����ɽ��1��������ɽչ�����ɽ��]��Ѡ�����4��� لȀȀ�����Ȁ���ɄȀȀ����Ȁɠ���ȀȀ����ȴ�ش�4��ՄȀȀ����ȀɠɄȀȀ����ȴ�4��ՄȀȀ����ȴɠɄȀȀ����ȀȈ��(������������������ٜ�(�����������������ѽ��(������������𽑥��(����������𽑥��(��������𽑥��(��������((������켨��VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�V@(����������^{^W^O^C^p�^S^W^�^�^��^C^g^�^W^��^s^s^T�^X(�������VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�V@����(�������͡��ٕ��5���������(���������؁�����9���􉙥ᕐ���͕д������������ѕ�̵���ѕȁ���ѥ�䵍��ѕȁ��Ј(������������屔��쁉����ɽչ�耝ɝ�����������Ф����(������������
-�����픀���쁥�����хɝ�Ѐ��􁔹���ɕ��Q�ɝ�Ф�͕�M���ٕ��5��������͔�����(�����������؁�������IQ0�����Ѱ��耝��ȝ�(�����������������9���􉉜�ݡ�є�ܵ�ձ�����ܵ�����ൠ�l��١t��ٕə��ܵ䵅�Ѽ�͡���ܴ�ᰁɽչ�����ᰈ�(�������������؁�����9���􉙱����ѕ�̵���ѕȁ���ѥ�䵉��ݕ�����؁��Ё��ɑ�ȵ����ɑ�ȵ�ѽ��������(���������������ȁ�����9���􉙽�е��ɵ�Ʌ�Ёѕ�еᰁѕ�е�ѽ��������(��������������������������������^S^W^�^�^��^C^g^�^W^��^s^s^T�^X�鱽���������Ȝ�����ѕȁո���������Ј�����ٕ�ЁѼ�͍���ձ���(�����������������(�����������������ѽ����
-�����젤����͕�M���ٕ��5��������͔�􁍱���9����ѕ�е�ѽ���������ٕ��ѕ�е�ѽ��������Ʌ�ͥѥ��������́ѕ�д�ᰁ��������������\���ѽ��(������������𽑥��(�������������؁�����9������؁��ԁ�������Ј�(���������������ٕ��5�����ɽȀ����؁�����9���􉉜�ɕ�������ɑ�ȁ��ɑ�ȵɕ������ѕ�еɕ������ѕ�еʹ���Ё��́ɽչ���������ٕ��5�����ɽ��𽑥���((�����������������(����������������񱅉��������9����������
-��������������������^�^t�^S^C^g^�^W^����鱽���������Ȝ��9�������p���������Ѐ���ٕ�Ё��������𽱅����(��������������������(������������������م�Ք��ٕ���ɴ��ٕ��}�����(��������������������
-������픀���͕�ٕ���ɴ�������쀸������ٕ��}����联�хɝ�йم�Ք�����(����������������������������������������������^�^G^s^��^�^�^g^t�鱽���������Ȝ��érémonie':'Ceremony'}
+              {locale==='he'?'קישור ההזמנה':locale==='fr'?"Lien de l'invitation":'Invitation link'}
+            </p>
+            <div className="flex items-center gap-2 max-w-sm mx-auto">
+              <code className="flex-1 text-xs bg-stone-100 px-3 py-2 rounded-lg text-stone-600 truncate dir-ltr" dir="ltr">
+                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug ?? '…'}
+              </code>
+              <button
+                onClick={() => wedding.slug && navigator.clipboard?.writeText(`${window.location.origin}/${locale}/${wedding.slug}`)}
+                className="p-2 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
+                title="Copy"
+              >
+                <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════
+          מודאל הוספת אירוע ללו"ז
+      ══════════════════════════════════════════════ */}
+      {showEventModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowEventModal(false) }}>
+          <div dir={isRTL ? 'rtl' : 'ltr'}
+            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+              <h2 className="font-cormorant text-xl text-stone-800">
+                {locale==='he'?'הוספת אירוע ללו"ז':locale==='fr'?"Ajouter un événement":'Add event to schedule'}
+              </h2>
+              <button onClick={() => setShowEventModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              {eventModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{eventModalError}</div>}
+
+              <div>
+                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
+                <input
+                  value={eventForm.event_name}
+                  onChange={e => setEventForm(p => ({ ...p, event_name: e.target.value }))}
+                  placeholder={locale==='he'?'קבלת פנים':locale==='fr'?'Cérémonie':'Ceremony'}
                   dir="auto"
                   className={inputCls}
                 />
@@ -1459,7 +1495,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               {editEventError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{editEventError}</div>}
 
               <div>
-                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
+                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'אירוע *':'Event name *'}</label>
                 <input
                   value={editEventForm.event_name}
                   onChange={e => setEditEventForm(p => ({ ...p, event_name: e.target.value }))}
