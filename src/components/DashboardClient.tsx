@@ -172,6 +172,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     locale: wedding.locale,
     font_style: wedding.font_style ?? 'cormorant',
     layout_style: wedding.layout_style ?? 'ivory',
+    image_position: wedding.image_position ?? 'center',
+    cover_frame: wedding.cover_frame ?? 'fullscreen',
+    page_layout: wedding.page_layout ?? 'classic',
     cover_image_url: wedding.cover_image_url ?? '',
   })
   const [uploadingCover, setUploadingCover] = useState(false)
@@ -179,6 +182,71 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState('')
   const [editSuccess, setEditSuccess] = useState(false)
+
+  // ── עריכת אירוע קיים ──
+  const [editingEventId, setEditingEventId] = useState<string | null>(null)
+  const [editEventForm, setEditEventForm] = useState<{
+    event_name: string; event_date: string; start_time: string; end_time: string
+    location_name: string; address: string; google_maps_url: string; waze_url: string; description: string
+  }>({
+    event_name: '', event_date: '', start_time: '18:00', end_time: '',
+    location_name: '', address: '', google_maps_url: '', waze_url: '', description: '',
+  })
+  const [savingEditEvent, setSavingEditEvent] = useState(false)
+  const [editEventError, setEditEventError] = useState('')
+
+  const openEditEvent = (ev: EventSchedule) => {
+    setEditingEventId(ev.id)
+    setEditEventForm({
+      event_name: ev.event_name,
+      event_date: ev.event_date,
+      start_time: ev.start_time,
+      end_time: ev.end_time ?? '',
+      location_name: ev.location_name ?? '',
+      address: ev.address ?? '',
+      google_maps_url: ev.google_maps_url ?? '',
+      waze_url: ev.waze_url ?? '',
+      description: ev.description ?? '',
+    })
+    setEditEventError('')
+  }
+
+  const handleUpdateEvent = async () => {
+    if (!editingEventId || !editEventForm.event_name || !editEventForm.event_date || !editEventForm.start_time) {
+      setEditEventError(locale === 'he' ? 'שם, תאריך ושעה נדרשים' : 'Name, date and time required')
+      return
+    }
+    setSavingEditEvent(true)
+    setEditEventError('')
+    try {
+      const res = await fetch('/api/weddings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: editingEventId,
+          wedding_id: wedding.id,
+          ...editEventForm,
+          end_time: editEventForm.end_time || null,
+          location_name: editEventForm.location_name || null,
+          address: editEventForm.address || null,
+          google_maps_url: editEventForm.google_maps_url || null,
+          waze_url: editEventForm.waze_url || null,
+          description: editEventForm.description || null,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        setEditEventError(d.error || 'Error')
+        return
+      }
+      setEditingEventId(null)
+      router.refresh()
+    } catch {
+      setEditEventError(locale === 'he' ? 'שגיאה בשמירה' : 'Save error')
+    } finally {
+      setSavingEditEvent(false)
+    }
+  }
 
   // ── מחיקת חשבון ──
   const [deleteState, setDeleteState] = useState<'idle' | 'confirm' | 'sending' | 'sent' | 'error'>('idle')
@@ -720,11 +788,11 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           {/* ── הזוג ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'הזוג':locale==='fr'?'Les mariés':'The Couple'}
+              {locale==='he'?'הזוג":locale==='fr'?'Les mariés':'The Couple'}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>{locale==='he'?'שם הכלה':locale==='fr'?"Prénom de la mariée":"Bride's name"}</label>
+                <label className={labelCls}>{locale==='he'?'שם הכלה':locale==='fr'?"Prènom de la mariée":"Bride's name"}</label>
                 <input value={editForm.bride_name} onChange={e=>setEditForm(p=>({...p,bride_name:e.target.value}))} className={inputCls}/>
               </div>
               <div>
@@ -765,13 +833,13 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 </div>
                 <div>
                   <label className={labelCls}>Waze URL</label>
-                  <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://wazu.com/..."/>
+                  <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://waze.com/..."/>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── הודעת פתיחה RSVP ── */}
+          {/* ── הודעה ותאריך RSVP ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
               {locale==='he'?'תוכן ההזמנה':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
@@ -823,7 +891,14 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 </label>
                 {editForm.cover_image_url && (
                   <div className="relative h-28 rounded-xl overflow-hidden mb-2 border border-stone-100">
-                    <img src={editForm.cover_image_url} alt="cover" className="w-full h-full object-cover"/>
+                    <img src={editForm.cover_image_url} alt="cover" className="w-full h-full object-cover" style={{
+                      objectPosition:
+                        editForm.image_position === 'top' ? '50% 20%' :
+                        editForm.image_position === 'bottom' ? '50% 80%' :
+                        editForm.image_position === 'left' ? '20% 50%' :
+                        editForm.image_position === 'right' ? '80% 50%' :
+                        '50% 50%',
+                    }}/>
                     <button
                       type="button"
                       onClick={() => setEditForm(p => ({ ...p, cover_image_url: '' }))}
@@ -921,6 +996,153 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 </div>
               </div>
 
+              {/* ── מסגרת תמונה ── */}
+              {editForm.cover_image_url && (
+                <div>
+                  <label className={labelCls}>
+                    {locale==='he'?'מסגרת תמונה':locale==='fr'?"Cadre de la photo":'Photo frame'}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { key: 'fullscreen', label: locale==='he'?'מסך מלא':locale==='fr'?'Plein écran':'Fullscreen', icon: '⬛' },
+                      { key: 'arch',       label: locale==='he'?'קשת':locale==='fr'?'Arche':'Arch',                icon: '🔼' },
+                      { key: 'oval',       label: locale==='he'?'אובלי':locale==='fr'?'Ovale':'Oval',              icon: '⬭' },
+                      { key: 'contained',  label: locale==='he'?'ממוסגר':locale==='fr'?'Encadré':'Contained',      icon: '▢' },
+                    ] as const).map(f => (
+                      <button
+                        key={f.key}
+                        type="button"
+                        onClick={() => setEditForm(p => ({ ...p, cover_frame: f.key }))}
+                        className="border rounded-xl py-2.5 px-3 text-center transition-all flex items-center gap-2"
+                        style={{
+                          borderColor: editForm.cover_frame === f.key ? '#c9a84c' : '#e7e5e4',
+                          background: editForm.cover_frame === f.key ? '#fdf6e3' : '#faf8f5',
+                        }}
+                      >
+                        <span className="text-base">{f.icon}</span>
+                        <span className="text-xs font-medium text-stone-600">{f.label}</span>
+                        {editForm.cover_frame === f.key && <span className="ml-auto text-[#c9a84c] text-xs">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── מיקום תמונה ── */}
+              {editForm.cover_image_url && (
+                <div>
+                  <label className={labelCls}>
+                    {locale==='he'?'מיקום מוקד התמונה':locale==='fr'?"Point de focus de la photo":'Image focal point'}
+                  </label>
+                  {/* 3×3 grid focal point selector */}
+                  <div className="relative w-full rounded-xl overflow-hidden border border-stone-200 mb-2" style={{ maxHeight: '140px', aspectRatio: '16/7' }}>
+                    <img src={editForm.cover_image_url} alt="cover" className="w-full h-full object-cover" style={{
+                      objectPosition:
+                        editForm.image_position === 'top' ? '50% 20%' :
+                        editForm.image_position === 'bottom' ? '50% 80%' :
+                        editForm.image_position === 'left' ? '20% 50%' :
+                        editForm.image_position === 'right' ? '80% 50%' :
+                        '50% 50%',
+                    }}/>
+                    <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
+                      {([
+                        ['left','top','right'],
+                        ['left','center','right'],
+                        ['left','bottom','right'],
+                      ] as const).map((row, ri) => row.map((pos, ci) => {
+                        const isSelected = editForm.image_position === pos || (pos === 'center' && (!editForm.image_position || editForm.image_position === 'center'))
+                        return (
+                          <button
+                            key={`${ri}-${ci}`}
+                            type="button"
+                            onClick={() => setEditForm(p => ({ ...p, image_position: pos }))}
+                            className="transition-all"
+                            style={{
+                              background: isSelected ? 'rgba(201,168,76,0.5)' : 'transparent',
+                              border: isSelected ? '2px solid #c9a84c' : '1px solid rgba(255,255,255,0.2)',
+                            }}
+                            title={pos}
+                          />
+                        )
+                      }))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-stone-400">
+                    {locale==='he'?'לחץ על החלק בתמונה שברצונך לראות בהזמנה':locale==='fr'?'Cliquez sur la zone de la photo à afficher':'Click the area of the photo you want shown'}
+                  </p>
+                </div>
+              )}
+
+              {/* ── פריסת דף ── */}
+              <div>
+                <label className={labelCls}>
+                  {locale==='he'?'פריסת הדף':locale==='fr'?"Mise en page":'Page layout'}
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    {
+                      key: 'classic',
+                      label: locale==='he'?'קלאסי':locale==='fr'?'Classique':'Classic',
+                      desc: locale==='he'?'גיבור מסך מלא':locale==='fr'?'Héros plein écran':'Full-screen hero',
+                      preview: (
+                        <div className="w-full h-16 rounded overflow-hidden flex flex-col">
+                          <div className="flex-1 bg-stone-700 flex items-center justify-center">
+                            <div className="text-white text-xs opacity-70">A &amp; B</div>
+                          </div>
+                          <div className="h-3 bg-stone-100 flex items-center px-1 gap-0.5">
+                            <div className="h-1 w-6 bg-stone-300 rounded"/>
+                          </div>
+                        </div>
+                      ),
+                    },
+                    {
+                      key: 'romantic',
+                      label: locale==='he'?'רומנטי':locale==='fr'?'Romantique':'Romantic',
+                      desc: locale==='he'?'גיבור קמור':locale==='fr'?'Héros en arche':'Arched hero',
+                      preview: (
+                        <div className="w-full h-16 rounded overflow-hidden flex flex-col">
+                          <div className="flex-[2] bg-stone-700 rounded-b-full mx-1 flex items-center justify-center">
+                            <div className="text-white text-xs opacity-70">A &amp; B</div>
+                          </div>
+                          <div className="flex-1 bg-stone-100 flex items-center justify-center">
+                            <div className="h-1 w-8 bg-stone-300 rounded"/>
+                          </div>
+                        </div>
+                      ),
+                    },
+                    {
+                      key: 'minimal',
+                      label: locale==='he'?'מינימלי':locale==='fr'?'Minimaliste':'Minimal',
+                      desc: locale==='he'?'טיפוגרפיה נקייה':locale==='fr'?'Typographie épurée':'Clean type',
+                      preview: (
+                        <div className="w-full h-16 rounded overflow-hidden bg-stone-50 flex flex-col items-center justify-center gap-1 py-1">
+                          <div className="h-1 w-12 bg-stone-800 rounded"/>
+                          <div className="h-0.5 w-6 bg-[#c9a84c] rounded"/>
+                          <div className="h-1 w-12 bg-stone-800 rounded"/>
+                          <div className="h-2 w-10 bg-stone-300 rounded mt-1"/>
+                        </div>
+                      ),
+                    },
+                  ] as const).map(l => (
+                    <button
+                      key={l.key}
+                      type="button"
+                      onClick={() => setEditForm(p => ({ ...p, page_layout: l.key }))}
+                      className="border rounded-xl p-2 text-center transition-all"
+                      style={{
+                        borderColor: editForm.page_layout === l.key ? '#c9a84c' : '#e7e5e4',
+                        background: editForm.page_layout === l.key ? '#fdf6e3' : '#faf8f5',
+                        borderWidth: editForm.page_layout === l.key ? '2px' : '1px',
+                      }}
+                    >
+                      {l.preview}
+                      <span className="block text-xs font-medium text-stone-600 mt-1.5">{l.label}</span>
+                      <span className="block text-[10px] text-stone-400 mt-0.5">{l.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -942,69 +1164,100 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </button>
             </div>
 
-            {/* Brunch quick-add */}
-            <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100 mb-3">
-              <div>
-                <p className="text-sm font-medium text-stone-700">
-                  {locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
-                </p>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  {locale==='he'?"הוספה מהירה של בראנץ' (11:00–14:00)"
-                    :locale==='fr'?"Ajout rapide d'un brunch (11h–14h)"
-                    :'Quick-add a brunch event (11am–2pm)'}
-                </p>
+            {/* רשימת אירועים — מוצגת לפני ה-toggle של בראנץ' */}
+            {schedule.length > 0 ? (
+              <div className="space-y-2 mb-4">
+                {[...schedule]
+                  .sort((a, b) => a.event_date.localeCompare(b.event_date) || a.start_time.localeCompare(b.start_time))
+                  .map(ev => {
+                    const isBrunch = ev.event_name?.toLowerCase().includes('brunch') || ev.event_name?.toLowerCase().includes('בראנץ')
+                    return (
+                      <div key={ev.id} className="flex items-center gap-3 py-2.5 px-4 bg-white border border-stone-100 rounded-xl text-sm">
+                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: isBrunch ? '#f59e0b' : '#c9a84c' }}/>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-stone-700 font-medium">{ev.event_name}</span>
+                          {ev.location_name && <span className="text-stone-400 text-xs ml-2">· {ev.location_name}</span>}
+                          <span className="text-stone-300 text-xs ml-2">{ev.event_date}</span>
+                        </div>
+                        <span className="text-xs text-stone-400 flex-shrink-0">{ev.start_time?.slice(0,5)}</span>
+                        {/* Edit button */}
+                        <button
+                          type="button"
+                          onClick={() => openEditEvent(ev)}
+                          className="text-stone-300 hover:text-[#c9a84c] transition-colors flex-shrink-0"
+                          title={locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit'}
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                          </svg>
+                        </button>
+                        {/* Delete button */}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEvent(ev.id)}
+                          disabled={deletingEventId === ev.id}
+                          className="text-stone-300 hover:text-red-400 transition-colors flex-shrink-0 disabled:opacity-40"
+                          title={locale==='he'?'מחק':locale==='fr'?'Supprimer':'Delete'}
+                        >
+                          {deletingEventId === ev.id ? (
+                            <span className="text-xs animate-pulse">…</span>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    )
+                  })}
               </div>
-              <button
-                type="button"
-                onClick={handleToggleBrunch}
-                disabled={togglingBrunch}
-                aria-pressed={brunchEnabled}
-                className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0"
-                style={{ background: brunchEnabled ? '#c9a84c' : '#d4d0cb' }}
-              >
-                <span
-                  className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200"
-                  style={{ transform: brunchEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
-                />
-              </button>
-            </div>
-
-            {/* רשימת אירועים */}
-            {schedule.length > 0 && (
-              <div className="space-y-2">
-                {schedule.map(ev => (
-                  <div key={ev.id} className="flex items-center gap-3 py-2.5 px-4 bg-white border border-stone-100 rounded-xl text-sm">
-                    <div className="w-2 h-2 rounded-full bg-[#c9a84c] flex-shrink-0"/>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-stone-700 font-medium">{ev.event_name}</span>
-                      {ev.location_name && <span className="text-stone-400 text-xs ml-2">· {ev.location_name}</span>}
-                    </div>
-                    <span className="text-xs text-stone-400 flex-shrink-0">{ev.start_time?.slice(0,5)}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteEvent(ev.id)}
-                      disabled={deletingEventId === ev.id}
-                      className="text-stone-300 hover:text-red-400 transition-colors flex-shrink-0 disabled:opacity-40"
-                      title={locale==='he'?'מחק':locale==='fr'?'Supprimer':'Delete'}
-                    >
-                      {deletingEventId === ev.id ? (
-                        <span className="text-xs animate-pulse">…</span>
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {schedule.length === 0 && (
-              <p className="text-xs text-stone-400 text-center py-4">
+            ) : (
+              <p className="text-xs text-stone-400 text-center py-4 mb-4">
                 {locale==='he'?'אין אירועים עדיין. הוסיפו את הטקס, הקבלת פנים ועוד.':locale==='fr'?'Pas encore d\'événements. Ajoutez la cérémonie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
               </p>
             )}
+
+            {/* ── בראנץ' למחרת ── */}
+            <div className="border-t border-stone-100 pt-4">
+              <h3 className="font-cormorant text-xl text-stone-700 mb-3">
+                {locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
+              </h3>
+              <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100">
+                <div>
+                  <p className="text-sm font-medium text-stone-700">
+                    {locale==='he'?"הוספה מהירה של בראנץ' (11:00–14:00)"
+                      :locale==='fr'?"Ajout rapide d'un brunch (11h–14h)"
+                      :'Quick-add a brunch event (11am–2pm)'}
+                  </p>
+                  {brunchEnabled && brunchEventId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ev = schedule.find(e => e.id === brunchEventId)
+                        if (ev) openEditEvent(ev)
+                      }}
+                      className="text-xs mt-1 underline"
+                      style={{ color: '#c9a84c' }}
+                    >
+                      {locale==='he'?'ערוך פרטי בראנץ\'':locale==='fr'?'Modifier les détails du brunch':'Edit brunch details'}
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleToggleBrunch}
+                  disabled={togglingBrunch}
+                  aria-pressed={brunchEnabled}
+                  className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0"
+                  style={{ background: brunchEnabled ? '#c9a84c' : '#d4d0cb' }}
+                >
+                  <span
+                    className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200"
+                    style={{ transform: brunchEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* ── כפתור שמירה ── */}
@@ -1056,7 +1309,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                     onClick={handleDeleteRequest}
                     className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-colors"
                   >
-                    {locale==='he'?'כמ, מחק':locale==='fr'?'Oui, supprimer':'Yes, delete'}
+                    {locale==='he'?'כן, מחק':locale==='fr'?'Oui, supprimer':'Yes, delete'}
                   </button>
                 </div>
               </div>
@@ -1124,7 +1377,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 title="Copy"
               >
                 <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2L8 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
               </button>
             </div>
@@ -1207,6 +1460,86 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 className="flex-1 py-3 text-white text-sm font-medium tracking-wide transition-colors disabled:opacity-60 rounded-xl"
                 style={{ background: savingEvent ? '#a8a29e' : '#c9a84c' }}>
                 {savingEvent ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...') : (locale==='he'?'הוסף':locale==='fr'?'Ajouter':'Add')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════════════════════════════════════
+          מודאל עריכת�וע קיים
+      ══════════════════════════════════════════════ */}
+      {editingEventId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
+          onClick={e => { if (e.target === e.currentTarget) setEditingEventId(null) }}>
+          <div dir={isRTL ? 'rtl' : 'ltr'}
+            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+              <h2 className="font-cormorant text-xl text-stone-800">
+                {locale==='he'?'עריכת אירוע':locale==='fr'?"Modifier l'événement":'Edit event'}
+              </h2>
+              <button onClick={() => setEditingEventId(null)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              {editEventError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{editEventError}</div>}
+
+              <div>
+                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
+                <input
+                  value={editEventForm.event_name}
+                  onChange={e => setEditEventForm(p => ({ ...p, event_name: e.target.value }))}
+                  dir="auto"
+                  className={inputCls}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>{locale==='he'?'תאריך *':locale==='fr'?'Date *':'Date *'}</label>
+                  <input type="date" value={editEventForm.event_date} onChange={e => setEditEventForm(p => ({ ...p, event_date: e.target.value }))} dir="ltr" className={inputCls}/>
+                </div>
+                <div>
+                  <label className={labelCls}>{locale==='he'?'שעת התחלה *':locale==='fr'?'Heure de début *':'Start time *'}</label>
+                  <input type="time" value={editEventForm.start_time} onChange={e => setEditEventForm(p => ({ ...p, start_time: e.target.value }))} dir="ltr" className={inputCls}/>
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>{locale==='he'?'שעת סיום':locale==='fr'?'Heure de fin':'End time'}</label>
+                <input type="time" value={editEventForm.end_time} onChange={e => setEditEventForm(p => ({ ...p, end_time: e.target.value }))} dir="ltr" className={inputCls}/>
+              </div>
+
+              <div>
+                <label className={labelCls}>{locale==='he'?'מיקום':locale==='fr'?'Lieu':'Location'}</label>
+                <input value={editEventForm.location_name} onChange={e => setEditEventForm(p => ({ ...p, location_name: e.target.value }))} dir="auto" className={inputCls}/>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Waze URL</label>
+                  <input value={editEventForm.waze_url} onChange={e => setEditEventForm(p => ({ ...p, waze_url: e.target.value }))} dir="ltr" className={inputCls} placeholder="https://waze.com/..."/>
+                </div>
+                <div>
+                  <label className={labelCls}>Google Maps URL</label>
+                  <input value={editEventForm.google_maps_url} onChange={e => setEditEventForm(p => ({ ...p, google_maps_url: e.target.value }))} dir="ltr" className={inputCls} placeholder="https://maps.google.com/..."/>
+                </div>
+              </div>
+
+              <div>
+                <label className={labelCls}>{locale==='he'?'תיאור':locale==='fr'?'Description':'Description'}</label>
+                <textarea value={editEventForm.description} onChange={e => setEditEventForm(p => ({ ...p, description: e.target.value }))} rows={2} dir="auto" className={inputCls + ' resize-none'}/>
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 py-4 border-t border-stone-100 bg-stone-50 rounded-b-2xl">
+              <button onClick={() => setEditingEventId(null)}
+                className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors rounded-xl">
+                {locale==='he'?'ביטול':locale==='fr'?'Annuler':'Cancel'}
+              </button>
+              <button onClick={handleUpdateEvent} disabled={savingEditEvent}
+                className="flex-1 py-3 text-white text-sm font-medium tracking-wide transition-colors disabled:opacity-60 rounded-xl"
+                style={{ background: savingEditEvent ? '#a8a29e' : '#c9a84c' }}>
+                {savingEditEvent ? (locale==='he'?'שומר...':'Saving...') : (locale==='he'?'שמור שינויים':locale==='fr'?'Enregistrer':'Save changes')}
               </button>
             </div>
           </div>
