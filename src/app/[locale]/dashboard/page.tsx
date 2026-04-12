@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite – Dashboard Page (Server Component)
+//  GrandInvite â Dashboard Page (Server Component)
 //  src/app/[locale]/dashboard/page.tsx
 // ============================================================
 
@@ -11,6 +11,7 @@ import type { Guest, Wedding } from '@/types'
 import DashboardClient from '@/components/DashboardClient'
 import AIInvitationChat from '@/components/AIInvitationChat'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import ShareButton from '@/components/ShareButton'
 
 export default async function DashboardPage({
   params,
@@ -21,11 +22,11 @@ export default async function DashboardPage({
   const tr = t(locale)
   const supabase = await createServerSupabaseClient()
 
-  // ── בדיקת אותנטיקציה ──
+  // ââ ××××§×ª ×××ª× ×××§×¦×× ââ
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/login`)
 
-  // ── טעינת חתונה של המשתמש (כולל לו"ז) ──
+  // ââ ××¢×× ×ª ××ª×× × ×©× ×××©×ª××© (×××× ××"×) ââ
   const { data: wedding } = await supabase
     .from('weddings')
     .select('*, event_schedule(*)')
@@ -34,10 +35,10 @@ export default async function DashboardPage({
 
   if (!wedding) redirect(`/${locale}/onboarding`)
 
-  // ── טעינת אורחים ──
+  // ââ ××¢×× ×ª ×××¨××× ââ
   const guests = await getGuestsByWeddingId(wedding.id) as Guest[]
 
-  // ── חישוב סטטיסטיקות ──
+  // ââ ×××©×× ×¡××××¡×××§××ª ââ
   const stats = {
     confirmed:  guests.filter(g => g.rsvp_status === 'confirmed'),
     declined:   guests.filter(g => g.rsvp_status === 'declined'),
@@ -50,40 +51,47 @@ export default async function DashboardPage({
 
   return (
     <main className="min-h-screen bg-stone-50">
-      {/* ── Header ── */}
+      {/* ââ Header ââ */}
       <header className="bg-white border-b border-stone-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center min-w-0">
             <span className="font-cormorant text-xl md:text-2xl text-stone-800 flex-shrink-0">
               GrandInvite
             </span>
-            <span className="text-stone-300 mx-2 md:mx-3 flex-shrink-0">·</span>
+            <span className="text-stone-300 mx-2 md:mx-3 flex-shrink-0">Â·</span>
             <span className="text-stone-500 text-sm truncate">
               {wedding.bride_name} &amp; {wedding.groom_name}
             </span>
           </div>
 
           <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
-            {/* בוחר שפה */}
+            {/* ××××¨ ×©×¤× */}
             <LanguageSwitcher currentLocale={locale} variant="inline" />
 
-            {/* קישור לעמוד ההזמנה */}
+            {/* ××¤×ª××¨ ×©××ª××£ */}
+            <ShareButton
+              url={`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/${locale}/${wedding.slug}`}
+              coupleName={`${wedding.bride_name} & ${wedding.groom_name}`}
+              locale={locale}
+            />
+
+            {/* ×§××©××¨ ××¢××× ××××× × */}
             <a
               href={`/${locale}/${wedding.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-[#c9a84c] hover:underline tracking-wide"
             >
-              {locale === 'he' ? 'הזמנה ↗' : locale === 'fr' ? 'Invitation ↗' : 'Invitation ↗'}
+              {locale === 'he' ? '×××× × â' : locale === 'fr' ? 'Invitation â' : 'Invitation â'}
             </a>
 
-            {/* לוגאוט */}
+            {/* ×××××× */}
             <form action={`/api/auth/signout`} method="POST">
               <button
                 type="submit"
                 className="text-sm text-stone-400 hover:text-stone-700 transition-colors"
               >
-                {locale === 'he' ? 'התנתק' : locale === 'fr' ? 'Déconnexion' : 'Sign out'}
+                {locale === 'he' ? '××ª× ×ª×§' : locale === 'fr' ? 'DÃ©connexion' : 'Sign out'}
               </button>
             </form>
           </div>
@@ -92,7 +100,7 @@ export default async function DashboardPage({
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
 
-        {/* ── כותרת ── */}
+        {/* ââ ×××ª×¨×ª ââ */}
         <div className="mb-6 md:mb-10">
           <h1 className="section-title">{tr.dashboard.title}</h1>
           <p className="text-stone-400 text-sm mt-2">
@@ -100,11 +108,11 @@ export default async function DashboardPage({
               locale === 'he' ? 'he-IL' : locale === 'fr' ? 'fr-FR' : 'en-GB',
               { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
             )}
-            {wedding.venue_city && ` · ${wedding.venue_city}`}
+            {wedding.venue_city && ` Â· ${wedding.venue_city}`}
           </p>
         </div>
 
-        {/* ── כרטיסי סטטיסטיקות ── */}
+        {/* ââ ××¨×××¡× ×¡××××¡×××§××ª ââ */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-10">
           <StatCard
             label={tr.dashboard.confirmed}
@@ -138,7 +146,7 @@ export default async function DashboardPage({
           />
         </div>
 
-        {/* מגבלת Freemium */}
+        {/* ×××××ª Freemium */}
         {wedding.plan === 'free' && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 flex items-center justify-between flex-wrap gap-3">
             <p className="text-amber-700 text-sm flex-shrink-0">
@@ -153,13 +161,13 @@ export default async function DashboardPage({
             </div>
             {stats.confirmed.length >= wedding.max_guests * 0.9 && (
               <span className="text-xs text-amber-700 font-medium">
-                Upgrade to Premium →
+                Upgrade to Premium â
               </span>
             )}
           </div>
         )}
 
-        {/* ── טבלת אורחים + עריכה (Client Component) ── */}
+        {/* ââ ××××ª ×××¨××× + ×¢×¨××× (Client Component) ââ */}
         <DashboardClient
           guests={guests}
           wedding={wedding}
@@ -168,7 +176,7 @@ export default async function DashboardPage({
         />
       </div>
 
-      {/* ── AI Invitation Builder (floating widget) ── */}
+      {/* ââ AI Invitation Builder (floating widget) ââ */}
       <AIInvitationChat
         locale={locale}
         weddingContext={{
@@ -183,7 +191,7 @@ export default async function DashboardPage({
   )
 }
 
-// ── StatCard Component ──
+// ââ StatCard Component ââ
 function StatCard({
   label,
   value,
