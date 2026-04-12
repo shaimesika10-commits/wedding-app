@@ -1,5 +1,5 @@
-// ===========================================================
-//  GrandInvite – TypeScript Types
+// ============================================================
+//  GrandInvite â TypeScript Types
 // ============================================================
 
 export type Locale = 'fr' | 'he' | 'en'
@@ -31,6 +31,7 @@ export interface Wedding {
   locale: Locale
   is_active: boolean
   plan: 'free' | 'premium'
+  co_owner_email: string | null  // Additional email for receiving RSVP notifications
   created_at: string
   updated_at: string
   event_schedule?: EventSchedule[]
@@ -61,7 +62,7 @@ export interface Guest {
   children_count: number
   dietary_preferences: string | null
   allergies: string | null
-  notes: string | null            // שדה 'אמר / הערות נוסהוך'
+  notes: string | null            // ×©×× '×××¨ / ××¢×¨××ª × ××¡×¤××ª'
   rsvp_status: RSVPStatus
   rsvp_submitted_at: string | null
   invitation_sent_at: string | null
@@ -78,7 +79,7 @@ export interface RSVPFormData {
   children_count: number
   dietary_preferences?: string
   allergies?: string
-  notes?: string                  // שדה 'אמר / הערות נוסהוך'
+  notes?: string                  // ×©×× '×××¨ / ××¢×¨××ª × ××¡×¤××ª'
   rsvp_status: 'confirmed' | 'declined'
 }
 
