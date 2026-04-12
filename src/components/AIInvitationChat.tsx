@@ -157,12 +157,12 @@ export default function AIInvitationChat({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 rounded-full text-white text-sm font-medium shadow-xl transition-all hover:scale-105 z-50"
+        className="fixed top-20 right-4 flex items-center gap-2 px-4 py-2 rounded-full text-white text-xs font-medium shadow-lg transition-all hover:scale-105 z-40"
         style={{ background: 'linear-gradient(135deg, #c9a84c, #a07830)' }}
         dir="ltr"
       >
-        <span style={{ fontSize: '1.1rem' }}>✨</span>
-        <span>{l.expand}</span>
+        <span style={{ fontSize: '1rem' }}>✨</span>
+        <span className="hidden sm:inline">{l.expand}</span>
         <span
           className="px-1.5 py-0.5 rounded-md text-xs font-bold"
           style={{ background: 'rgba(255,255,255,0.25)' }}
@@ -177,8 +177,8 @@ export default function AIInvitationChat({
   return (
     <div
       dir={isRTL ? 'rtl' : 'ltr'}
-      className="fixed bottom-6 right-6 w-96 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden"
-      style={{ height: '560px', border: '1px solid rgba(201,168,76,0.2)', background: '#fff' }}
+      className="fixed top-16 right-4 w-80 md:w-96 rounded-2xl shadow-2xl z-40 flex flex-col overflow-hidden"
+      style={{ height: '520px', maxHeight: 'calc(100vh - 80px)', border: '1px solid rgba(201,168,76,0.2)', background: '#fff' }}
     >
       {/* Header */}
       <div
@@ -246,7 +246,7 @@ export default function AIInvitationChat({
 
       {/* Generated invitation card */}
       {generatedInvitation && (
-        <div className="px-4 py-3 bg-yellow-50 border-t border-zellow-200">
+        <div className="px-4 py-3 bg-yellow-50 border-t border-yellow-200">
           <p className="text-xs text-yellow-700 font-medium mb-2">
             {locale === 'he' ? '✨ ההזמנה מוכנה!' : locale === 'fr' ? '✨ Invitation générée !' : '✨ Invitation ready!'}
           </p>
