@@ -10,7 +10,14 @@ import { createClient } from '@/lib/supabase'
 import type { Locale } from '@/lib/i18n'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
-// ── Labels ──────────────────────────────────────────────────
+// ── Labels ────────────────────────────────────────────
+const URL_ERRORS: Record<string, Record<string, string>> = {
+  invalid_link:    { fr: 'Ce lien est invalide ou a expiré. Veuillez réessayer.',       he: 'הקישור אינו תקין או שפג תוקפו. אנא נסה/י שוב.',       en: 'This link is invalid or has expired. Please try again.' },
+  oauth_failed:    { fr: 'La connexion Google a échoué. Veuillez réessayer.',           he: 'ההתחברות עם גוגל נכשלה. אנא נסה/י שוב.',               en: 'Google sign-in failed. Please try again.' },
+  oauth_cancelled: { fr: 'Connexion Google annulée.',                                   he: 'ההתחברות עם גוגל בוטלה.',                               en: 'Google sign-in was cancelled.' },
+  missing_params:  { fr: 'Lien de connexion manquant. Veuillez vous reconnecter.',      he: 'קישור ההתחברות חסר. אנא התחבר/י מחדש.',                en: 'Missing login link. Please sign in again.' },
+}
+
 const L = {
   fr: {
     confirmSubject: 'Vérifiez votre e-mail',
@@ -138,9 +145,23 @@ function slugify(bride: string, groom: string, date: string): string {
 const fieldCls = 'w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-500 transition bg-stone-50'
 const labelCls = 'block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider'
 
-function OAuthButton({ provider, label, icon, onClick }: { provider: string; label: string; icon: React.ReactNode; onClick: () => void }) {
+function OAuthButton({
+  provider,
+  label,
+  icon,
+  onClick,
+}: {
+  provider: string
+  label: string
+  icon: React.ReactNode
+  onClick: () => void
+}) {
   return (
-    <button type="button" onClick={onClick} className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-sm font-medium transition-all">
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-sm font-medium transition-all"
+    >
       {icon}
       {label}
     </button>
@@ -168,7 +189,7 @@ function Divider({ label }: { label: string }) {
   )
 }
 
-// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════
 export default function LoginPage() {
   const params = useParams()
   const router = useRouter()
@@ -182,7 +203,14 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [sentEmail, setSentEmail] = useState('')
 
-  // Read ?tab=register URL param — open register tab directly when coming from CTA buttons
+  // BUG FIX: If already authenticated → redirect to dashboard immediately
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace(`/${locale}/dashboard`)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get('tab')
     if (tab === 'register') setView('register')
@@ -191,11 +219,13 @@ export default function LoginPage() {
   const urlError = typeof window !== 'undefined'
     ? new URLSearchParams(window.location.search).get('error')
     : null
+  const urlErrorMsg = urlError
+    ? (URL_ERRORS[urlError]?.[locale] ?? URL_ERRORS[urlError]?.['en'] ?? l.errorLogin)
+    : null
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [forgotEmail, setForgotEmail] = useState('')
-
   const [reg, setReg] = useState({
     email: '',
     password: '',
@@ -211,8 +241,15 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const { error: authError } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword })
-    if (authError) { setError(l.errorLogin); setLoading(false); return }
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
+    })
+    if (authError) {
+      setError(l.errorLogin)
+      setLoading(false)
+      return
+    }
     router.push(`/${locale}/dashboard`)
   }
 
@@ -230,22 +267,25 @@ export default function LoginPage() {
       })
       if (authError) { setError(l.errorRegister); setLoading(false); return }
       if (!authData.user) { setError(l.errorRegister); setLoading(false); return }
-      if (!authData.user.identities || authData.user.identities.length === 0) { setError(l.errorDuplicateEmail); setLoading(false); return }
-      if (authData.session) {
-        const slug = slugify(reg.bride_name, reg.groom_name, reg.wedding_date)
-        await supabase.from('weddings').insert({
-          user_id: authData.user.id, slug,
-          bride_name: reg.bride_name.trim(), groom_name: reg.groom_name.trim(),
-          wedding_date: reg.wedding_date, venue_name: reg.venue.trim() || null,
-          locale: reg.invitation_locale, max_guests: 200, plan: 'free', is_active: true,
-        })
-        setLoading(false)
-        router.push(`/${locale}/dashboard`)
-        return
+      if (!authData.user.identities || authData.user.identities.length === 0) {
+        setError(l.errorDuplicateEmail); setLoading(false); return
       }
-      setSentEmail(reg.email)
-      setView('confirm-email')
-      setLoading(false)
+      if (authData.session) {
+        const { data: existingWedding } = await supabase.from('weddings').select('id').eq('user_id', authData.user.id).maybeSingle()
+        if (!existingWedding) {
+          let slug = slugify(reg.bride_name, reg.groom_name, reg.wedding_date)
+          const { data: slugExists } = await supabase.from('weddings').select('id').eq('slug', slug).maybeSingle()
+          if (slugExists) { slug = `${slug}-${Math.random().toString(36).slice(2, 6)}` }
+          await supabase.from('weddings').insert({
+            user_id: authData.user.id, slug,
+            bride_name: reg.bride_name.trim(), groom_name: reg.groom_name.trim(),
+            wedding_date: reg.wedding_date, venue_name: reg.venue.trim() || null,
+            locale: reg.invitation_locale, max_guests: 200, plan: 'free', is_active: true,
+          })
+        }
+        setLoading(false); router.push(`/${locale}/dashboard`); return
+      }
+      setSentEmail(reg.email); setView('confirm-email'); setLoading(false)
     } catch { setError(l.errorRegister); setLoading(false) }
   }
 
@@ -259,27 +299,25 @@ export default function LoginPage() {
         redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/${locale}/reset-password`,
       })
       if (resetError) { setError(resetError.message); setLoading(false); return }
-      setSentEmail(forgotEmail)
-      setView('forgot-sent')
-    } catch { setError(l.forgotEmailError) } finally { setLoading(false) }
+      setSentEmail(forgotEmail); setView('forgot-sent')
+    } catch { setError(l.forgotEmailError) }
+    finally { setLoading(false) }
   }
 
   const handleOAuth = async (provider: 'google') => {
-    await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard` } })
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard` },
+    })
   }
 
   return (
     <main dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-[#faf8f5] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
-
-        <div className="flex justify-end mb-4">
-          <LanguageSwitcher currentLocale={locale} variant="inline" />
-        </div>
+        <div className="flex justify-end mb-4"><LanguageSwitcher currentLocale={locale} variant="inline" /></div>
         <div className="text-center mb-8">
           <a href={`/${locale}`}>
-            <h1 className="font-cormorant text-4xl font-light text-stone-900 tracking-widest">
-              Grand<span style={{ color: '#c9a84c' }}>Invite</span>
-            </h1>
+            <h1 className="font-cormorant text-4xl font-light text-stone-900 tracking-widest">Grand<span style={{ color: '#c9a84c' }}>Invite</span></h1>
           </a>
           <div className="h-px w-14 mx-auto my-3" style={{ background: '#c9a84c' }} />
           <p className="text-stone-400 text-sm">{l.subtitle}</p>
@@ -294,9 +332,7 @@ export default function LoginPage() {
             </div>
             <h2 className="font-cormorant text-2xl text-stone-800 mb-2">{l.confirmSubject}</h2>
             <p className="text-stone-500 text-sm leading-relaxed">{l.confirmMsg(sentEmail)}</p>
-            <button onClick={() => { setView('login'); setSentEmail('') }} className="mt-6 text-xs text-stone-400 hover:text-stone-600 underline transition">
-              {l.tabLogin}
-            </button>
+            <button onClick={() => { setView('login'); setSentEmail('') }} className="mt-6 text-xs text-stone-400 hover:text-stone-600 underline transition">{l.tabLogin}</button>
           </div>
         )}
 
@@ -316,9 +352,7 @@ export default function LoginPage() {
                 {loading ? l.forgotSending : l.forgotBtn}
               </button>
             </form>
-            <button onClick={() => { setView('login'); setError('') }} className="mt-4 w-full text-center text-xs text-stone-400 hover:text-stone-600 transition">
-              ← {l.backToLogin}
-            </button>
+            <button onClick={() => { setView('login'); setError('') }} className="mt-4 w-full text-center text-xs text-stone-400 hover:text-stone-600 transition">← {l.backToLogin}</button>
           </div>
         )}
 
@@ -331,16 +365,15 @@ export default function LoginPage() {
             </div>
             <h2 className="font-cormorant text-2xl text-stone-800 mb-2">{l.forgotSentTitle}</h2>
             <p className="text-stone-500 text-sm leading-relaxed">{l.forgotSentMsg(sentEmail)}</p>
-            <button onClick={() => { setView('login'); setSentEmail('') }} className="mt-6 text-xs text-stone-400 hover:text-stone-600 underline transition">
-              {l.backToLogin}
-            </button>
+            <button onClick={() => { setView('login'); setSentEmail('') }} className="mt-6 text-xs text-stone-400 hover:text-stone-600 underline transition">{l.backToLogin}</button>
           </div>
         )}
 
         {(view === 'login' || view === 'register') && (<>
         <div className="flex bg-stone-100 rounded-2xl p-1 mb-6">
           {(['login', 'register'] as const).map(tabKey => (
-            <button key={tabKey} onClick={() => { setView(tabKey); setError('') }} className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+            <button key={tabKey} onClick={() => { setView(tabKey); setError('') }}
+              className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
               style={{ background: view === tabKey ? '#fff' : 'transparent', color: view === tabKey ? '#1c1917' : '#a8a29e', boxShadow: view === tabKey ? '0 1px 3px rgba(0,0,0,0.08)' : 'none' }}>
               {tabKey === 'login' ? l.tabLogin : l.tabRegister}
             </button>
@@ -348,8 +381,8 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
-          {(error || urlError) && (
-            <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 text-red-600 text-sm mb-5">{error || l.errorLogin}</div>
+          {(error || urlErrorMsg) && (
+            <div className="bg-red-50 border border-red-100 rounded-lg px-4 py-3 text-red-600 text-sm mb-5">{error || urlErrorMsg}</div>
           )}
 
           {view === 'login' && (
@@ -361,9 +394,7 @@ export default function LoginPage() {
               <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <label className={labelCls}>{l.password}</label>
-                  <button type="button" className="text-xs text-[#c9a84c] hover:text-stone-700 transition" onClick={() => { setView('forgot'); setError(''); setForgotEmail(loginEmail) }}>
-                    {l.forgotPassword}
-                  </button>
+                  <button type="button" className="text-xs text-[#c9a84c] hover:text-stone-700 transition" onClick={() => { setView('forgot'); setError(''); setForgotEmail(loginEmail) }}>{l.forgotPassword}</button>
                 </div>
                 <input type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} required dir="ltr" className={fieldCls} placeholder="••••••••" />
               </div>
@@ -401,7 +432,7 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <label className={labelCls}>{l.groomName}</label>
-                  <input name="groom_name" value={reg.groom_name} onChange={e => setReg(p => ({ ...p, groom_name: e.target.value }))} required className={fieldCls} placeholder={locale === 'he' ? 'דניאל' : 'Antoine'} />
+                  <input name="groom_name" value={reg.groom_name} onChange={e => setReg(p => ({ ...p, groom_name: e.target.value }))} required className={fieldCls} placeholder={locale === 'he' ? 'דניאל' : locale === 'en' ? 'James' : 'Antoine'} />
                 </div>
               </div>
               <div>
@@ -416,7 +447,8 @@ export default function LoginPage() {
                 <label className={labelCls}>{l.language}</label>
                 <div className="flex gap-2">
                   {(['fr', 'he', 'en'] as const).map(lang => (
-                    <button key={lang} type="button" onClick={() => setReg(p => ({ ...p, invitation_locale: lang }))} className="flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all"
+                    <button key={lang} type="button" onClick={() => setReg(p => ({ ...p, invitation_locale: lang }))}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all"
                       style={{ background: reg.invitation_locale === lang ? '#c9a84c' : '#faf8f5', color: reg.invitation_locale === lang ? '#fff' : '#78716c', borderColor: reg.invitation_locale === lang ? '#c9a84c' : '#e7e5e4' }}>
                       {lang === 'fr' ? l.langFr : lang === 'he' ? l.langHe : l.langEn}
                     </button>
@@ -434,9 +466,7 @@ export default function LoginPage() {
         </div>
         </>)}
 
-        <p className="text-center text-xs text-stone-300 mt-6">
-          © {new Date().getFullYear()} GrandInvite
-        </p>
+        <p className="text-center text-xs text-stone-300 mt-6">© {new Date().getFullYear()} GrandInvite</p>
       </div>
     </main>
   )
