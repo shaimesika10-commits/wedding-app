@@ -1,91 +1,93 @@
 // ============================================================
-//  GrandInvite â AI Translation Route
+//  GrandInvite â Translation Route (DeepL)
 //  POST /api/ai/translate
 //  Body: { text: string, targetLanguage: 'fr' | 'he' | 'en', context?: string }
+//  context is comma-separated terms to exclude (venue names, cities)
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server'
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  fr: 'French',
-  he: 'Hebrew',
-  en: 'English',
+// DeepL language codes
+const DEEPL_LANG: Record<string, string> = {
+  fr: 'FR',
+  he: 'HE', // DeepL added Hebrew support
+  en: 'EN-US',
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, targetLanguage, context, sourceLanguage } = await request.json()
+    const { text, targetLanguage, context } = await request.json()
 
     if (!text || !targetLanguage) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const langName = LANGUAGE_NAMES[targetLanguage] ?? targetLanguage
-
-    const systemPrompt = `You are a professional wedding invitation translator.
-Rules:
-- If the text is ALREADY written in ${langName}, return it EXACTLY as-is without any modification.
-- Otherwise translate it into ${langName} while:
-  - Preserving the elegant, formal, and romantic tone of a wedding invitation
-  - Keeping proper names (people, venues, cities, addresses) unchanged in their original language
-  - Keeping dates and times in their original format
-  - Maintaining any formatting or line breaks
-  - For Hebrew: use right-to-left appropriate phrasing and natural Israeli Hebrew
-  - Being natural and culturally appropriate for the target language
-${context ? `Wedding context: ${context}` : ''}
-
-Return ONLY the translated text with zero additional commentary.`
-
-    const apiKey = process.env.ANTHROPIC_API_KEY
+    const apiKey = process.env.DEEPL_API_KEY
 
     if (!apiKey) {
-      // Fallback: use MyMemory free translation API (no key needed)
-      try {
-        const srcLang = sourceLanguage ?? 'fr'
-        const mmRes = await fetch(
-          'https://api.mymemory.translated.net/get?q=' +
-          encodeURIComponent(text) + '&langpair=' + srcLang + '|' + targetLanguage
-        )
-        const mmData = await mmRes.json()
-        const translated: string = mmData?.responseData?.translatedText ?? text
-        // MyMemory sometimes returns HTML entities – decode them
-        const decoded = translated.replace(/&#([0-9]+);/g, (_, n) => String.fromCharCode(Number(n)))
-        return NextResponse.json({ translatedText: decoded })
-      } catch {
-        return NextResponse.json({ translatedText: text, fallback: true })
-      }
+      // No DeepL key: return original text as fallback
+      console.warn('[translate] DEEPL_API_KEY not set â returning original text')
+      return NextResponse.json({ translatedText: text, fallback: true })
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const targetLang = DEEPL_LANG[targetLanguage] ?? 'EN-US'
+
+    // ââ Extract terms to preserve (venue names, cities, addresses) ââ
+    // We wrap them in <x> tags (ignored by DeepL with tag_handling=xml)
+    // then restore them after translation.
+    const preserveTerms: string[] = context
+      ? context
+          .split(/[,\n]/)
+          .map((t: string) => t.trim())
+          .filter((t: string) => t.length > 2)
+      : []
+
+    let processedText = text
+    const termMap: Record<string, string> = {}
+
+    preserveTerms.forEach((term, i) => {
+      const placeholder = `<x id="${i}">${term}</x>`
+      termMap[placeholder] = term
+      // Replace exact occurrences (case-sensitive)
+      processedText = processedText.split(term).join(placeholder)
+    })
+
+    // ââ Call DeepL API ââ
+    const res = await fetch('https://api.deepl.com/v2/translate', {
       method: 'POST',
       headers: {
+        'Authorization': `DeepL-Auth-Key ${apiKey}`,
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2000,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: `Translate this wedding invitation text to ${langName}:\n\n${text}`,
-          },
-        ],
+        text: [processedText],
+        target_lang: targetLang,
+        tag_handling: preserveTerms.length > 0 ? 'xml' : undefined,
+        ignore_tags: preserveTerms.length > 0 ? ['x'] : undefined,
+        split_sentences: 'nonewlines',
+        preserve_formatting: true,
+        formality: 'prefer_more', // formal tone for wedding invitations
       }),
     })
 
-    if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.status}`)
+    if (!res.ok) {
+      const errBody = await res.text()
+      console.error('DeepL API error:', errBody)
+      // Graceful fallback: return original text
+      return NextResponse.json({ translatedText: text, fallback: true })
     }
 
-    const data = await response.json()
-    const translatedText = data.content?.[0]?.text ?? text
+    const data = await res.json()
+    let translatedText: string = data.translations?.[0]?.text ?? text
+
+    // ââ Restore preserved terms ââ
+    // DeepL keeps <x> tags as-is; unwrap them
+    translatedText = translatedText.replace(/<x id="\d+">(.*?)<\/x>/g, (_match, inner) => inner)
 
     return NextResponse.json({ translatedText })
   } catch (err) {
     console.error('Translation error:', err)
+    // Graceful fallback
     return NextResponse.json({ error: 'Translation failed' }, { status: 500 })
   }
 }
