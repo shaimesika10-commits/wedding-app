@@ -90,7 +90,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       g.adults_count, g.children_count,
       g.dietary_preferences??'', g.allergies??'', g.notes??'',
       g.rsvp_submitted_at ? new Date(g.rsvp_submitted_at).toLocaleDateString() : '',
-    ]
+    ])
 
     const csv = [headers,...rows]
       .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
