@@ -91,7 +91,6 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       g.dietary_preferences??'', g.allergies??'', g.notes??'',
       g.rsvp_submitted_at ? new Date(g.rsvp_submitted_at).toLocaleDateString() : '',
     ])
-
     const csv = [headers,...rows]
       .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
       .join('\n')
@@ -544,7 +543,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
                 </svg>
                 {t.addGuest}
-  3           </button>
+              </button>
             </div>
           </div>
 
@@ -620,7 +619,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                           <td colSpan={7} className="px-6 py-5">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                               {guest.phone && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Phone</p><p className="text-stone-700">{guest.phone}</p></div>}
-                              {guest.allergies && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Allergies</p><p className="text-red-600">{guest.allergies}|/p></div>}
+                              {guest.allergies && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Allergies</p><p className="text-red-600">{guest.allergies}</p></div>}
                               {guest.notes && <div className="md:col-span-2"><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Notes / Other</p><p className="text-stone-700 bg-white p-3 border border-stone-100">{guest.notes}</p></div>}
                             </div>
                           </td>
@@ -794,7 +793,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </svg>
               {locale==='he'?'נשמר בהצלחה!':locale==='fr'?'Enregistré avec succès !':'Saved successfully!'}
             </div>
-  3       )}
+          )}
 
           {/* ── הזוג ── */}
           <div>
@@ -825,11 +824,11 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <div className="space-y-3">
               <div>
                 <label className={labelCls}>{locale==='he'?'שם האולם':locale==='fr'?'Nom du lieu':'Venue name'}</label>
-                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Château de...'}/>
+                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'hâteau de...'}/>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{locale==='he'?'עיר':locale==='fr'?'Ville':'City'}</label>
+                  <label className={labelCls}>{locale==='he'?'עמק':locale==='fr'?'Ville':'City'}</label>
                   <input value={editForm.venue_city} onChange={e=>setEditForm(p=>({...p,venue_city:e.target.value}))} className={inputCls}/>
                 </div>
                 <div>
@@ -846,7 +845,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <label className={labelCls}>Waze URL</label>
                   <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://waze.com/..."/>
                 </div>
-   3          </div>
+              </div>
             </div>
           </div>
 
@@ -855,7 +854,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
               {locale==='he'?'תוכן ההזמנה':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
             </h3>
-       3    <div className="space-y-3">
+            <div className="space-y-3">
               <div>
                 <label className={labelCls}>{locale==='he'?'שפה ראשית':locale==='fr'?'Langue principale':'Main language'}</label>
                 <div className="flex gap-2">
@@ -903,7 +902,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 {editForm.cover_image_url && (
                   <div className="relative h-28 rounded-xl overflow-hidden mb-2 border border-stone-100">
                     <img src={editForm.cover_image_url} alt="cover" className="w-full h-full object-cover" style={{
-             0        objectPosition:
+                      objectPosition:
                         editForm.image_position === 'top' ? '50% 20%' :
                         editForm.image_position === 'bottom' ? '50% 80%' :
                         editForm.image_position === 'left' ? '20% 50%' :
@@ -916,7 +915,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       className="absolute top-2 right-2 bg-black/50 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center hover:bg-black/70"
                     >×</button>
                   </div>
- 0              )}
+                )}
                 <label className="flex items-center gap-2 cursor-pointer px-4 py-2.5 border border-dashed border-stone-200 rounded-xl text-sm text-stone-500 hover:bg-stone-50 transition-colors">
                   {uploadingCover ? (
                     <span className="animate-pulse">{locale==='he'?'מעלה...':locale==='fr'?'Téléchargement...':'Uploading...'}</span>
@@ -1079,7 +1078,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                     </div>
                   </div>
                   <p className="text-xs text-stone-400">
-                    {locale==='he'?'לחץ על החלק בתמונה שברצונך לראות בהזמנה':locale==='fr'?'Cliquez sur la zone de la photo à afficher':'Clicd the area of the photo you want shown'}
+                    {locale==='he'?'לחץ על החלק בתמונה שברצונך לראות בהזמנה':locale==='fr'?'Cliquez sur la zone de la photo à afficher':'Click the area of the photo you want shown'}
                   </p>
                 </div>
               )}
@@ -1177,7 +1176,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
             {/* רשימת אירועים — מוצגת לפני ה-toggle של בראנץ' */}
             {schedule.length > 0 ? (
-              <div className="space-y-2 m[-4">
+              <div className="space-y-2 mb-4">
                 {[...schedule]
                   .sort((a, b) => a.event_date.localeCompare(b.event_date) || a.start_time.localeCompare(b.start_time))
                   .map(ev => {
@@ -1287,7 +1286,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <h3 className="font-cormorant text-xl text-red-700 mb-2">
               {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
             </h3>
-            <p className="text-xs text-stone-400 m[-4 leading-relaxed">
+            <p className="text-xs text-stone-400 mb-4 leading-relaxed">
               {locale==='he'
                 ? 'מחיקת החשבון תסיר לצמיתות את כל נתוני החתונה, האורחים והגלריה. פעולה בלתי הפיכה.'
                 : locale==='fr'
@@ -1370,56 +1369,20 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             style={{ background:'#c9a84c', boxShadow:'0 4px 14px rgba(201,168,76,0.25)' }}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-2M144h6m0 0v6m0-6L10 14"/>
             </svg>
-            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↗
+            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↶
           </a>
           <div className="mt-6">
             <p className="text-xs text-stone-400 mb-2">
-              {locale==='he'?'קישור ההזמנה':locale==='fr'?"Lien de l'invitation":'Invitation link'}
-            </p>
-            <div className="flex items-center gap-2 max-w-sm mx-auto">
-              <code className="flex-1 text-xs bg-stone-100 px-3 py-2 rounded-lg text-stone-600 truncate dir-ltr" dir="ltr">
-                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug ?? '…'}
-              </code>
-              <button
-                onClick={() => wedding.slug && navigator.clipboard?.writeText(`${window.location.origin}/${locale}/${wedding.slug}`)}
-                className="p-2 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
-                title="Copy"
-              >
-                <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════
-          מודאל הוספת אירוע ללו"ז
-      ══════════════════════════════════════════════ */}
-      {showEventModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.4)' }}
-          onClick={e => { if (e.target === e.currentTarget) setShowEventModal(false) }}>
-          <div dir={isRTL ? 'rtl' : 'ltr'}
-            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-              <h2 className="font-cormorant text-xl text-stone-800">
-                {locale==='he'?'הוספת אירוע ללו"ז':locale==='fr'?"Ajouter un événement":'Add event to schedule'}
-              </h2>
-              <button onClick={() => setShowEventModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
-              {eventModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{eventModalError}</div>}
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
-                <input
-                  value={eventForm.event_name}
-                  onChange={e => setEventForm(p => ({ ...p, event_name: e.target.value }))}
-                  placeholder={locale==='he'?'קבלת פנים':locale==='fr'?'Cérémonie':'Ceremony'}
+              {locale==='he'?'קישור ההזק^��P�鱽���������Ȝ��1�����������٥хѥ����%�٥хѥ���������(���������������(�������������؁�����9���􉙱����ѕ�̵���ѕȁ����ȁ���ܵʹ��൅�Ѽ��(��������������񍽑�������9���􉙱��āѕ�е�́����ѽ���������́��ȁɽչ�������ѕ�е�ѽ���������չ��є���ȵ��Ȉ������Ȉ�(������������������������ݥ���܄���չ���������ݥ���ܹ����ѥ����ɥ���蜝��������������ݕ������ͱ՜���������(��������������𽍽���(�����������������ѽ�(������������������
+�����젤����ݕ������ͱ՜������٥��ѽȹ�������ɐ���ɥѕQ��С���ݥ���ܹ����ѥ����ɥ�����������������ݕ������ͱ՝����(���������������������9������ȁ����ѽ���������ٕ�鉜��ѽ�������ɽչ��������Ʌ�ͥѥ��������̈(����������������ѥѱ��
+���(���������������(������������������ٜ������9����ܴЁ��Ёѕ�е�ѽ������������􉹽����٥��	��������Ѐ�Ј���ɽ�����ɕ��
+���Ȉ�(���������������������Ѡ���ɽ��1�������ɽչ�����ɽ��1��������ɽչ�����ɽ��]��Ѡ�����4��� لȀȀ�����Ȁ���ɄȀȀ����Ȁɠ���ȀȀ����ȴ�ش�4��ՄȀȀ����ȀɠɄȀȀ����ȴ�4��ՄȀȀ����ȴɠɄȀȀ����ȀȈ��(������������������ٜ�(�����������������ѽ��(������������𽑥��(����������𽑥��(��������𽑥��(��������((������켨��VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�V@(����������^{^W^O^C^p�^S^W^�^�^��^C^g^�^W^��^s^s^T�^X(�������VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�VC�V@����(�������͡��ٕ��5���������(���������؁�����9���􉙥ᕐ���͕д������������ѕ�̵���ѕȁ���ѥ�䵍��ѕȁ��Ј(������������屔��쁉����ɽչ�耝ɝ�����������Ф����(������������
+�����픀���쁥�����хɝ�Ѐ��􁔹���ɕ��Q�ɝ�Ф�͕�M���ٕ��5��������͔�����(�����������؁�������IQ0�����Ѱ��耝��ȝ�(�����������������9���􉉜�ݡ�є�ܵ�ձ�����ܵ�����ൠ�l��١t��ٕə��ܵ䵅�Ѽ�͡���ܴ�ᰁɽչ�����ᰈ�(�������������؁�����9���􉙱����ѕ�̵���ѕȁ���ѥ�䵉��ݕ�����؁��Ё��ɑ�ȵ����ɑ�ȵ�ѽ��������(���������������ȁ�����9���􉙽�е��ɵ�Ʌ�Ёѕ�еᰁѕ�е�ѽ��������(��������������������������������^S^W^�^�^��^C^g^�^W^��^s^s^T�^X�鱽���������Ȝ�����ѕȁո���������Ј�����ٕ�ЁѼ�͍���ձ���(�����������������(�����������������ѽ����
+�����젤����͕�M���ٕ��5��������͔�􁍱���9����ѕ�е�ѽ���������ٕ��ѕ�е�ѽ��������Ʌ�ͥѥ��������́ѕ�д�ᰁ��������������\���ѽ��(������������𽑥��(�������������؁�����9������؁��ԁ�������Ј�(���������������ٕ��5�����ɽȀ����؁�����9���􉉜�ɕ�������ɑ�ȁ��ɑ�ȵɕ������ѕ�еɕ������ѕ�еʹ���Ё��́ɽչ���������ٕ��5�����ɽ��𽑥���((�����������������(����������������񱅉��������9����������
+��������������������^�^t�^S^C^g^�^W^����鱽���������Ȝ��9�������p���������Ѐ���ٕ�Ё��������𽱅����(��������������������(������������������م�Ք��ٕ���ɴ��ٕ��}�����(��������������������
+������픀���͕�ٕ���ɴ�������쀸������ٕ��}����联�хɝ�йم�Ք�����(����������������������������������������������^�^G^s^��^�^�^g^t�鱽���������Ȝ��érémonie':'Ceremony'}
                   dir="auto"
                   className={inputCls}
                 />
