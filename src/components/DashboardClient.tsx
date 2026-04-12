@@ -13,7 +13,7 @@ import type { Guest, Wedding, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
 
 type RSVPStatus = 'all' | 'confirmed' | 'declined' | 'pending'
-type Tab = 'guests' | 'seating' | 'edit' | 'preview'
+type Tab = 'guests' | 'seating' | 'edit' | 'preview' | 'account'
 type DeleteState = 'idle' | 'confirm' | 'sending' | 'sent' | 'error'
 type TableInputsMap = Record<string, string>
 type EditEventFormState = {
@@ -547,6 +547,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
           { key:'edit',    label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
           { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
+          { key:'account', label: locale==='he'?'⚙ חשבון':locale==='fr'?'⚙ Compte':'⚙ Account' },
         ] as const).map(tab => (
           <button
             key={tab.key}
@@ -1414,6 +1415,81 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          TAB: ACCOUNT SETTINGS
+      ══════════════════════════════════════════════════════════════ */}
+      {activeTab === 'account' && (
+        <div dir={isRTL ? 'rtl' : 'ltr'} className="max-w-2xl">
+          <div className="mb-6">
+            <h3 className="font-cormorant text-2xl text-stone-700">
+              {locale==='he'?'ניהול חשבון':locale==='fr'?'Gestion du compte':'Account Settings'}
+            </h3>
+            <p className="text-sm text-stone-400 mt-1">
+              {locale==='he'?'שינוי סיסמה, הוספת שותף/ה ומחיקת חשבון'
+                :locale==='fr'?'Modifier le mot de passe, ajouter un(e) co-responsable et supprimer le compte'
+                :'Change password, add a co-owner, delete account'}
+            </p>
+          </div>
+          <a
+            href={`/${locale}/dashboard/account-settings`}
+            className="flex items-center gap-3 p-5 bg-white border border-stone-100 rounded-2xl hover:border-[#c9a84c] transition-colors group mb-4"
+          >
+            <div className="w-10 h-10 rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-50 transition-colors">
+              <svg className="w-5 h-5 text-stone-400 group-hover:text-[#c9a84c] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-stone-700 group-hover:text-stone-900">
+                {locale==='he'?'שינוי סיסמה':locale==='fr'?'Changer le mot de passe':'Change password'}
+              </p>
+              <p className="text-xs text-stone-400 mt-0.5">
+                {locale==='he'?'עדכן את סיסמת הכניסה שלך':locale==='fr'?'Mettre à jour votre mot de passe':'Update your login password'}
+              </p>
+            </div>
+            <svg className="w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}/></svg>
+          </a>
+          <a
+            href={`/${locale}/dashboard/account-settings`}
+            className="flex items-center gap-3 p-5 bg-white border border-stone-100 rounded-2xl hover:border-[#c9a84c] transition-colors group mb-4"
+          >
+            <div className="w-10 h-10 rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-50 transition-colors">
+              <svg className="w-5 h-5 text-stone-400 group-hover:text-[#c9a84c] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-stone-700 group-hover:text-stone-900">
+                {locale==='he'?'בעל/ת שמחה נוסף/ת':locale==='fr'?'Co-responsable du compte':'Co-owner account'}
+              </p>
+              <p className="text-xs text-stone-400 mt-0.5">
+                {locale==='he'?'הוסף אימייל שיקבל גם עדכוני הגעה':locale==='fr'?"Ajouter un e-mail pour recevoir les confirmations":'Add an email to also receive RSVP notifications'}
+              </p>
+            </div>
+            <svg className="w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}/></svg>
+          </a>
+          <a
+            href={`/${locale}/dashboard/account-settings`}
+            className="flex items-center gap-3 p-5 bg-white border border-red-100 rounded-2xl hover:border-red-300 transition-colors group"
+          >
+            <div className="w-10 h-10 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-600">
+                {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
+              </p>
+              <p className="text-xs text-stone-400 mt-0.5">
+                {locale==='he'?'פעולה סופית ובלתי הפיכה — ישלח קישור אישור למייל':locale==='fr'?"Action irréversible — un lien de confirmation sera envoyé":'Irreversible action — a confirmation link will be emailed to you'}
+              </p>
+            </div>
+            <svg className="w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}/></svg>
+          </a>
         </div>
       )}
 
