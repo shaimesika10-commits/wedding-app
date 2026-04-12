@@ -15,6 +15,7 @@ import type { Locale } from '@/lib/i18n'
 type RSVPStatus = 'all' | 'confirmed' | 'declined' | 'pending'
 type Tab = 'guests' | 'seating' | 'edit' | 'preview'
 type DeleteState = 'idle' | 'confirm' | 'sending' | 'sent' | 'error'
+type TableInputsMap = Record<string, string>
 type EditEventFormState = {
   event_name: string
   event_date: string
@@ -65,8 +66,8 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   // ════════════════════════════════════════
   // TAB: SEATING
   // ════════════════════════════════════════
-  const [tableInputs, setTableInputs] = useState<Record<string, string>>(() => {
-    const m: Record<string, string> = {}
+  const [tableInputs, setTableInputs] = useState<TableInputsMap>(() => {
+    const m: TableInputsMap = {}
     guests.forEach(g => { if (g.table_number != null) m[g.id] = String(g.table_number) })
     return m
   })
@@ -89,7 +90,8 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       g.adults_count, g.children_count,
       g.dietary_preferences??'', g.allergies??'', g.notes??'',
       g.rsvp_submitted_at ? new Date(g.rsvp_submitted_at).toLocaleDateString() : '',
-    ])
+    ]
+
     const csv = [headers,...rows]
       .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
       .join('\n')
@@ -415,7 +417,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     }
   }
 
-  // ── Toggle בראנץ' (משעקן: state אופטימיסטי + בלי double-click) ──
+  // ── Toggle בראנץ' (מתוקן: state אופטימיסטי + בלי double-click) ──
   const handleToggleBrunch = async () => {
     if (togglingBrunch) return  // מניעת double-click
 
@@ -480,7 +482,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     <div>
       {/* ── Tab Bar ── */}
       <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
-        x([
+        {([
           { key:'guests',  label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
           { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
           { key:'edit',    label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
@@ -542,7 +544,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
                 </svg>
                 {t.addGuest}
-              </button>
+  3           </button>
             </div>
           </div>
 
@@ -618,7 +620,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                           <td colSpan={7} className="px-6 py-5">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                               {guest.phone && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Phone</p><p className="text-stone-700">{guest.phone}</p></div>}
-                              {guest.allergies && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Allergies</p><p className="text-red-600">{guest.allergies}</p></div>}
+                              {guest.allergies && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Allergies</p><p className="text-red-600">{guest.allergies}|/p></div>}
                               {guest.notes && <div className="md:col-span-2"><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Notes / Other</p><p className="text-stone-700 bg-white p-3 border border-stone-100">{guest.notes}</p></div>}
                             </div>
                           </td>
@@ -792,7 +794,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </svg>
               {locale==='he'?'נשמר בהצלחה!':locale==='fr'?'Enregistré avec succès !':'Saved successfully!'}
             </div>
-          )}
+  3       )}
 
           {/* ── הזוג ── */}
           <div>
@@ -844,7 +846,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <label className={labelCls}>Waze URL</label>
                   <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://waze.com/..."/>
                 </div>
-              </div>
+   3          </div>
             </div>
           </div>
 
@@ -853,7 +855,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
               {locale==='he'?'תוכן ההזמנה':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
             </h3>
-            <div className="space-y-3">
+       3    <div className="space-y-3">
               <div>
                 <label className={labelCls}>{locale==='he'?'שפה ראשית':locale==='fr'?'Langue principale':'Main language'}</label>
                 <div className="flex gap-2">
@@ -901,7 +903,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 {editForm.cover_image_url && (
                   <div className="relative h-28 rounded-xl overflow-hidden mb-2 border border-stone-100">
                     <img src={editForm.cover_image_url} alt="cover" className="w-full h-full object-cover" style={{
-                      objectPosition:
+             0        objectPosition:
                         editForm.image_position === 'top' ? '50% 20%' :
                         editForm.image_position === 'bottom' ? '50% 80%' :
                         editForm.image_position === 'left' ? '20% 50%' :
@@ -914,7 +916,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                       className="absolute top-2 right-2 bg-black/50 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center hover:bg-black/70"
                     >×</button>
                   </div>
-                )}
+ 0              )}
                 <label className="flex items-center gap-2 cursor-pointer px-4 py-2.5 border border-dashed border-stone-200 rounded-xl text-sm text-stone-500 hover:bg-stone-50 transition-colors">
                   {uploadingCover ? (
                     <span className="animate-pulse">{locale==='he'?'מעלה...':locale==='fr'?'Téléchargement...':'Uploading...'}</span>
@@ -1077,7 +1079,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                     </div>
                   </div>
                   <p className="text-xs text-stone-400">
-                    {locale==='he'?'לחץ על החלק בתמונה שברצונך לראות בהזמנה':locale==='fr'?'Cliquez sur la zone de la photo à afficher':'Click the area of the photo you want shown'}
+                    {locale==='he'?'לחץ על החלק בתמונה שברצונך לראות בהזמנה':locale==='fr'?'Cliquez sur la zone de la photo à afficher':'Clicd the area of the photo you want shown'}
                   </p>
                 </div>
               )}
@@ -1175,7 +1177,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
             {/* רשימת אירועים — מוצגת לפני ה-toggle של בראנץ' */}
             {schedule.length > 0 ? (
-              <div className="space-y-2 mb-4">
+              <div className="space-y-2 m[-4">
                 {[...schedule]
                   .sort((a, b) => a.event_date.localeCompare(b.event_date) || a.start_time.localeCompare(b.start_time))
                   .map(ev => {
@@ -1222,7 +1224,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </div>
             ) : (
               <p className="text-xs text-stone-400 text-center py-4 mb-4">
-                {locale==='he'?'אין אירועים נדיין. הוסיפו את הטקס, הקבלת פנים ועוד.':locale==='fr'?'Pas encore d\'événements. Ajoutez la cérémonie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
+                {locale==='he'?'אין אירועים עדיין. הוסיפו את הטקס, הקבלת פנים ועוד.':locale==='fr'?'Pas encore d\'événements. Ajoutez la cérémonie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
               </p>
             )}
 
@@ -1285,7 +1287,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             <h3 className="font-cormorant text-xl text-red-700 mb-2">
               {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
             </h3>
-            <p className="text-xs text-stone-400 mb-4 leading-relaxed">
+            <p className="text-xs text-stone-400 m[-4 leading-relaxed">
               {locale==='he'
                 ? 'מחיקת החשבון תסיר לצמיתות את כל נתוני החתונה, האורחים והגלריה. פעולה בלתי הפיכה.'
                 : locale==='fr'
