@@ -7,6 +7,7 @@ import type { Metadata, Viewport } from 'next'
 import { Cormorant_Garamond, Montserrat } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
+import SessionGuard from '@/components/SessionGuard'
 import '../globals.css'
 
 // ---- Fonts ----
@@ -109,6 +110,7 @@ export default async function LocaleLayout({
             : "var(--font-montserrat), sans-serif",
         }}
       >
+        <SessionGuard />
         {children}
       </body>
     </html>
