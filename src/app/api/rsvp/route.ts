@@ -161,10 +161,10 @@ function ownerNotificationEmail(
 
   const details = [
     guestDetails.email && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð§ ${guestDetails.email}</p>`,
-    guestDetails.phone && `<p style="margin:0 0 8pz;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð ${guestDetails.phone}</p>`,
-    isConfirmed && `<p style="margin:0 0 8pz;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð¤ ${adultsLabel}: <strong>${guestDetails.adults_count}</strong>${guestDetails.children_count > 0 ? `  ð¶ ${childrenLabel}: <strong>${guestDetails.children_count}</strong>` : ''}</p>`,
-    guestDetails.dietary_preferences && `<p style="margin:0 0 8pz;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð½ï¸ ${dietLabel}: ${guestDetails.dietary_preferences}</p>`,
-    guestDetails.allergies && `<p style="margin:0 0 8pz;font-size:13px;color:#b91c1c;font-family:system-ui,sans-serif">â ï¸ ${allergyLabel}: ${guestDetails.allergies}</p>`,
+    guestDetails.phone && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð ${guestDetails.phone}</p>`,
+    isConfirmed && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð¤ ${adultsLabel}: <strong>${guestDetails.adults_count}</strong>${guestDetails.children_count > 0 ? `  ð¶ ${childrenLabel}: <strong>${guestDetails.children_count}</strong>` : ''}</p>`,
+    guestDetails.dietary_preferences && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð½ï¸ ${dietLabel}: ${guestDetails.dietary_preferences}</p>`,
+    guestDetails.allergies && `<p style="margin:0 0 8px;font-size:13px;color:#b91c1c;font-family:system-ui,sans-serif">â ï¸ ${allergyLabel}: ${guestDetails.allergies}</p>`,
     guestDetails.notes && `<p style="margin:0;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð¬ ${notesLabel}: ${guestDetails.notes}</p>`,
   ].filter(Boolean).join('')
 
@@ -255,7 +255,7 @@ export async function POST(req: NextRequest) {
     // ââ ××××§×ª ×××××ª ×××¨××× (Freemium) ââ
     const { data: wedding } = await supabase
       .from('weddings')
-      .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id')
+      .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id, co_owner_email')
       .eq('id', wedding_id)
       .single()
 
@@ -323,28 +323,44 @@ export async function POST(req: NextRequest) {
         sendEmail(email.trim(), subject, html).catch(console.error)
       }
 
-      // 2. Owner notification email
+      // 2. Owner notification email (+ co-owner if set)
       if (wedding.user_id) {
         try {
           const { data: ownerData } = await supabase.auth.admin.getUserById(wedding.user_id)
           const ownerEmail = ownerData?.user?.email
+          const coOwnerEmail = (wedding as { co_owner_email?: string | null }).co_owner_email
+
+          const notificationDetails = {
+            email: email?.trim() || null,
+            phone: phone?.trim() || null,
+            adults_count: adults_count ?? 1,
+            children_count: children_count ?? 0,
+            dietary_preferences: dietary_preferences?.trim() || null,
+            allergies: allergies?.trim() || null,
+            notes: notes?.trim() || null,
+          }
+
           if (ownerEmail) {
             const { subject, html } = ownerNotificationEmail(
               coupleNames,
               name.trim(),
               rsvp_status as 'confirmed' | 'declined',
-              {
-                email: email?.trim() || null,
-                phone: phone?.trim() || null,
-                adults_count: adults_count ?? 1,
-                children_count: children_count ?? 0,
-                dietary_preferences: dietary_preferences?.trim() || null,
-                allergies: allergies?.trim() || null,
-                notes: notes?.trim() || null,
-              },
+              notificationDetails,
               weddingLocale
             )
             sendEmail(ownerEmail, subject, html).catch(console.error)
+          }
+
+          // Also notify co-owner if set (and different from owner email)
+          if (coOwnerEmail && coOwnerEmail !== ownerEmail) {
+            const { subject, html } = ownerNotificationEmail(
+              coupleNames,
+              name.trim(),
+              rsvp_status as 'confirmed' | 'declined',
+              notificationDetails,
+              weddingLocale
+            )
+            sendEmail(coOwnerEmail, subject, html).catch(console.error)
           }
         } catch (err) {
           console.error('Could not fetch owner email:', err)
