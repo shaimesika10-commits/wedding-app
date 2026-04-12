@@ -14,6 +14,18 @@ import type { Locale } from '@/lib/i18n'
 
 type RSVPStatus = 'all' | 'confirmed' | 'declined' | 'pending'
 type Tab = 'guests' | 'seating' | 'edit' | 'preview'
+type DeleteState = 'idle' | 'confirm' | 'sending' | 'sent' | 'error'
+type EditEventFormState = {
+  event_name: string
+  event_date: string
+  start_time: string
+  end_time: string
+  location_name: string
+  address: string
+  google_maps_url: string
+  waze_url: string
+  description: string
+}
 
 interface Props {
   guests: Guest[]
@@ -185,10 +197,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
   // ── עריכת אירוע קיים ──
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
-  const [editEventForm, setEditEventForm] = useState<{
-    event_name: string; event_date: string; start_time: string; end_time: string
-    location_name: string; address: string; google_maps_url: string; waze_url: string; description: string
-  }>({
+  const [editEventForm, setEditEventForm] = useState<EditEventFormState>({
     event_name: '', event_date: '', start_time: '18:00', end_time: '',
     location_name: '', address: '', google_maps_url: '', waze_url: '', description: '',
   })
@@ -249,7 +258,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   }
 
   // ── מחיקת חשבון ──
-  const [deleteState, setDeleteState] = useState<'idle' | 'confirm' | 'sending' | 'sent' | 'error'>('idle')
+  const [deleteState, setDeleteState] = useState<DeleteState>('idle')
   const [deleteError, setDeleteError] = useState('')
 
   const handleDeleteRequest = async () => {
@@ -406,7 +415,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     }
   }
 
-  // ── Toggle בראנץ' (מתוקן: state אופטימיסטי + בלי double-click) ──
+  // ── Toggle בראנץ' (משעקן: state אופטימיסטי + בלי double-click) ──
   const handleToggleBrunch = async () => {
     if (togglingBrunch) return  // מניעת double-click
 
@@ -471,7 +480,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
     <div>
       {/* ── Tab Bar ── */}
       <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
-        {([
+        x([
           { key:'guests',  label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
           { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
           { key:'edit',    label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
@@ -788,11 +797,11 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
           {/* ── הזוג ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'הזוג":locale==='fr'?'Les mariés':'The Couple'}
+              {locale==='he'?'הזוג':locale==='fr'?'Les mariés':'The Couple'}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>{locale==='he'?'שם הכלה':locale==='fr'?"Prènom de la mariée":"Bride's name"}</label>
+                <label className={labelCls}>{locale==='he'?'שם הכלה':locale==='fr'?"Prénom de la mariée":"Bride's name"}</label>
                 <input value={editForm.bride_name} onChange={e=>setEditForm(p=>({...p,bride_name:e.target.value}))} className={inputCls}/>
               </div>
               <div>
@@ -1213,7 +1222,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               </div>
             ) : (
               <p className="text-xs text-stone-400 text-center py-4 mb-4">
-                {locale==='he'?'אין אירועים עדיין. הוסיפו את הטקס, הקבלת פנים ועוד.':locale==='fr'?'Pas encore d\'événements. Ajoutez la cérémonie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
+                {locale==='he'?'אין אירועים נדיין. הוסיפו את הטקס, הקבלת פנים ועוד.':locale==='fr'?'Pas encore d\'événements. Ajoutez la cérémonie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
               </p>
             )}
 
@@ -1377,7 +1386,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 title="Copy"
               >
                 <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2L8 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
               </button>
             </div>
@@ -1466,8 +1475,8 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         </div>
       )}
 
-      {/* ════════════════════════════════════════════════
-          מודאל עריכת�וע קיים
+      {/* ══════════════════════════════════════════════
+          מודאל עריכת אירוע קיים
       ══════════════════════════════════════════════ */}
       {editingEventId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
