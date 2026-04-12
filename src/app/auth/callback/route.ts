@@ -1,8 +1,9 @@
 // ============================================================
-// GrandInvite – Auth Callback Route
-// Task 2: After Google OAuth, redirect new users → onboarding, existing users → dashboard
-// src/app/auth/callback/route.ts
+//  GrandInvite – Auth Callback Route
+//  Handles Magic Link & OAuth redirects from Supabase
+//  src/app/auth/callback/route.ts
 // ============================================================
+
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
@@ -10,74 +11,93 @@ import type { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
-  const token_hash = requestUrl.searchParams.get('token_hash')
-  const type = requestUrl.searchParams.get('type')
-  const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next')
+  const token_hash  = requestUrl.searchParams.get('token_hash')
+  const type        = requestUrl.searchParams.get('type')
+  const code        = requestUrl.searchParams.get('code')
+  const next        = requestUrl.searchParams.get('next')
+  const oauthError  = requestUrl.searchParams.get('error')   // provider-level error (access_denied…)
 
   // Determine locale from the 'next' param or default to 'fr'
-  const locale = next?.split('/')?.[1] ?? 'fr'
-  const dashboardUrl = new URL(`/${locale}/dashboard`, requestUrl.origin)
-  const onboardingUrl = new URL(`/${locale}/onboarding`, requestUrl.origin)
-  const loginUrl = new URL(`/${locale}/login`, requestUrl.origin)
+  const locale       = next?.split('/')?.[1] ?? 'fr'
+  const dashboardUrl  = new URL(`/${locale}/dashboard`,   requestUrl.origin)
+  const onboardingUrl = new URL(`/${locale}/onboarding`,  requestUrl.origin)
+  const loginUrl      = new URL(`/${locale}/login`,       requestUrl.origin)
 
-  // ── Helper: get cookie-forwarding Supabase client ──
-  const makeSupa = async () => {
-    const cookieStore = await cookies()
-    const cookiesToForward: Array<{ name: string; value: string; options: Record<string, unknown> }> = []
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll() },
-          setAll(toSet) { cookiesToForward.push(...toSet) },
-        },
-      }
+  // ── BUG FIX: Handle OAuth provider-level errors (user cancelled, account disabled…) ──
+  if (oauthError) {
+    loginUrl.searchParams.set(
+      'error',
+      oauthError === 'access_denied' ? 'oauth_cancelled' : 'oauth_failed'
     )
-    return { supabase, cookiesToForward }
+    return NextResponse.redirect(loginUrl)
   }
 
-  // ── Handle Magic Link / Email Confirmation / Password Recovery ──
+  const cookieStore = await cookies()
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Ignore – middleware refreshes sessions anyway
+          }
+        },
+      },
+    }
+  )
+
+  // ── BUG FIX: After any successful auth, redirect to onboarding if user has no wedding ──
+  // (Covers: first-time Google OAuth signup, email confirmation for new users)
+  const redirectByWeddingStatus = async (): Promise<NextResponse> => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.redirect(loginUrl)
+
+    const { data: wedding } = await supabase
+      .from('weddings')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    return NextResponse.redirect(wedding ? dashboardUrl : onboardingUrl)
+  }
+
+  // ── Magic Link / Email Confirmation / Password Recovery (token_hash flow) ──
   if (token_hash && type) {
-    const { supabase, cookiesToForward } = await makeSupa()
     const { error } = await supabase.auth.verifyOtp({
       type: type as 'magiclink' | 'recovery' | 'invite' | 'email',
       token_hash,
     })
+
     if (!error) {
-      const redirectUrl = type === 'recovery'
-        ? new URL(`/${locale}/reset-password`, requestUrl.origin)
-        : dashboardUrl
-      const response = NextResponse.redirect(redirectUrl)
-      cookiesToForward.forEach(({ name, value, options }) => {
-        response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
-      })
-      return response
+      // Password recovery → dedicated reset page
+      if (type === 'recovery') {
+        const resetUrl = new URL(`/${locale}/reset-password`, requestUrl.origin)
+        return NextResponse.redirect(resetUrl)
+      }
+      // Email confirmation: go to onboarding if no wedding, dashboard otherwise
+      return redirectByWeddingStatus()
     }
+
     loginUrl.searchParams.set('error', 'invalid_link')
     return NextResponse.redirect(loginUrl)
   }
 
-  // ── Handle OAuth (Google, etc.) ──
+  // ── OAuth code exchange (Google, etc.) ──
   if (code) {
-    const { supabase, cookiesToForward } = await makeSupa()
-    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error && sessionData?.user) {
-      // Check if user already has a wedding → route accordingly
-      const { data: existingWedding } = await supabase
-        .from('weddings')
-        .select('id')
-        .eq('user_id', sessionData.user.id)
-        .maybeSingle()
-
-      const redirectTo = existingWedding ? dashboardUrl : onboardingUrl
-      const response = NextResponse.redirect(redirectTo)
-      cookiesToForward.forEach(({ name, value, options }) => {
-        response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
-      })
-      return response
+    if (!error) {
+      // First-time Google signup: go to onboarding; returning user: go to dashboard
+      return redirectByWeddingStatus()
     }
 
     loginUrl.searchParams.set('error', 'oauth_failed')
