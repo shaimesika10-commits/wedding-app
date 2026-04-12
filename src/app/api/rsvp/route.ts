@@ -1,14 +1,14 @@
 // ============================================================
-//  GrandInvite â RSVP API Route
+//  GrandInvite – RSVP API Route
 //  src/app/api/rsvp/route.ts
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase-server'
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────
 //  EMAIL TEMPLATES
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────
 
 const LOGO_HTML = `<span style="font-size:20px;font-weight:300;letter-spacing:0.1em;color:#fff">Grand<span style="color:#c9a84c">Invite</span></span>`
 
@@ -29,7 +29,7 @@ function emailWrapper(locale: string, bodyContent: string) {
         ${bodyContent}
         <tr>
           <td style="padding:16px 40px;border-top:1px solid #f0ede8;text-align:center">
-            <p style="font-size:11px;color:#a8a29e;font-family:system-ui,sans-serif;margin:0">Â© ${new Date().getFullYear()} GrandInvite</p>
+            <p style="font-size:11px;color:#a8a29e;font-family:system-ui,sans-serif;margin:0">© ${new Date().getFullYear()} GrandInvite</p>
           </td>
         </tr>
       </table>
@@ -56,7 +56,7 @@ function guestConfirmationEmail(
   const isFr = loc === 'fr'
   const isConfirmed = rsvpStatus === 'confirmed'
 
-  const greet = isHe ? `×©××× ${guestName}` : isFr ? `Bonjour ${guestName}` : `Hello ${guestName}`
+  const greet = isHe ? `שלום ${guestName}` : isFr ? `Bonjour ${guestName}` : `Hello ${guestName}`
   const coupleNames = `${weddingDetails.bride_name} & ${weddingDetails.groom_name}`
   const dateStr = new Date(weddingDetails.wedding_date).toLocaleDateString(
     isHe ? 'he-IL' : isFr ? 'fr-FR' : 'en-GB',
@@ -67,35 +67,35 @@ function guestConfirmationEmail(
 
   if (isConfirmed) {
     subject = isHe
-      ? `×××©×¨×ª ×××¢× ×××ª×× ×ª ${coupleNames} â`
+      ? `אישרת הגעה לחתונת ${coupleNames} ✓`
       : isFr
-      ? `Confirmation de prÃ©sence â Mariage de ${coupleNames}`
-      : `RSVP Confirmed â ${coupleNames}'s Wedding`
-    heading = isHe ? 'ð ×××©××¨ ×××¢× ××ª×§××' : isFr ? 'ð PrÃ©sence confirmÃ©e !' : 'ð Attendance Confirmed!'
+      ? `Confirmation de présence — Mariage de ${coupleNames}`
+      : `RSVP Confirmed — ${coupleNames}'s Wedding`
+    heading = isHe ? '🎉 אישור הגעה התקבל' : isFr ? '🎉 Présence confirmée !' : '🎉 Attendance Confirmed!'
     body = isHe
-      ? `×××©×¨×ª ××ª ×××¢×ª× ×××ª×× ×ª <strong>${coupleNames}</strong>. ×× × ×©×××× ×©×ª××× ×××ª× × ×××× ×××××× ×××!`
+      ? `אישרת את הגעתך לחתונת <strong>${coupleNames}</strong>. אנו שמחים שתהיו איתנו ביום המיוחד הזה!`
       : isFr
-      ? `Vous avez confirmÃ© votre prÃ©sence au mariage de <strong>${coupleNames}</strong>. Nous sommes ravis de vous accueillir !`
+      ? `Vous avez confirmé votre présence au mariage de <strong>${coupleNames}</strong>. Nous sommes ravis de vous accueillir !`
       : `You've confirmed your attendance at <strong>${coupleNames}</strong>'s wedding. We're thrilled you'll be joining us!`
-    statusPill = `<span style="display:inline-block;background:#d1fae5;color:#065f46;font-family:system-ui,sans-serif;font-size:12px;font-weight:600;padding:4px 14px;border-radius:999px;letter-spacing:0.04em">${isHe ? 'â ××××©×¨' : isFr ? 'â ConfirmÃ©' : 'â Confirmed'}</span>`
+    statusPill = `<span style="display:inline-block;background:#d1fae5;color:#065f46;font-family:system-ui,sans-serif;font-size:12px;font-weight:600;padding:4px 14px;border-radius:999px;letter-spacing:0.04em">${isHe ? '✓ מאושר' : isFr ? '✓ Confirmé' : '✓ Confirmed'}</span>`
   } else {
     subject = isHe
-      ? `×§×××× × ××ª ×ª×©×××ª× â ××ª×× ×ª ${coupleNames}`
+      ? `קיבלנו את תשובתך — חתונת ${coupleNames}`
       : isFr
-      ? `RÃ©ponse enregistrÃ©e â Mariage de ${coupleNames}`
-      : `RSVP Received â ${coupleNames}'s Wedding`
-    heading = isHe ? '×ª×©×××ª× ××ª×§×××' : isFr ? 'Votre rÃ©ponse a bien Ã©tÃ© reÃ§ue' : 'Your Response Was Received'
+      ? `Réponse enregistrée — Mariage de ${coupleNames}`
+      : `RSVP Received — ${coupleNames}'s Wedding`
+    heading = isHe ? 'תשובתך התקבלה' : isFr ? 'Votre réponse a bien été reçue' : 'Your Response Was Received'
     body = isHe
-      ? `×¦××× ×ª ×©×× ×ª××× ×××××¢ ×××ª×× ×ª <strong>${coupleNames}</strong>. ×ª××× ×¢× ×¢×××× ×××× â ×× ××§×××× ××¨×××ª× ××¤×¢× ×××¨×ª.`
+      ? `ציינת שלא תוכל להגיע לחתונת <strong>${coupleNames}</strong>. תודה על עדכון הזוג — הם מקווים לראותך בפעם אחרת.`
       : isFr
-      ? `Vous avez indiquÃ© que vous ne pourrez pas assister au mariage de <strong>${coupleNames}</strong>. Merci d'avoir informÃ© les mariÃ©s.`
+      ? `Vous avez indiqué que vous ne pourrez pas assister au mariage de <strong>${coupleNames}</strong>. Merci d'avoir informé les mariés.`
       : `You've indicated that you won't be able to attend <strong>${coupleNames}</strong>'s wedding. Thank you for letting the couple know.`
-    statusPill = `<span style="display:inline-block;background:#fee2e2;color:#991b1b;font-family:system-ui,sans-serif;font-size:12px;font-weight:600;padding:4px 14px;border-radius:999px;letter-spacing:0.04em">${isHe ? 'â ×× ××××¢' : isFr ? 'â Absent(e)' : 'â Not Attending'}</span>`
+    statusPill = `<span style="display:inline-block;background:#fee2e2;color:#991b1b;font-family:system-ui,sans-serif;font-size:12px;font-weight:600;padding:4px 14px;border-radius:999px;letter-spacing:0.04em">${isHe ? '✗ לא מגיע' : isFr ? '✗ Absent(e)' : '✗ Not Attending'}</span>`
   }
 
-  const detailsLabel = isHe ? '×¤×¨×× ××××¨××¢' : isFr ? "DÃ©tails de l'Ã©vÃ©nement" : 'Event Details'
-  const dateLabel = isHe ? '×ª××¨××' : isFr ? 'Date' : 'Date'
-  const venueLabel = isHe ? '××§××' : isFr ? 'Lieu' : 'Venue'
+  const detailsLabel = isHe ? 'פרטי האירוע' : isFr ? "Détails de l'événement" : 'Event Details'
+  const dateLabel = isHe ? 'תאריך' : isFr ? 'Date' : 'Date'
+  const venueLabel = isHe ? 'מקום' : isFr ? 'Lieu' : 'Venue'
   const venue = [weddingDetails.venue_name, weddingDetails.venue_city].filter(Boolean).join(', ')
 
   const bodyContent = `
@@ -141,31 +141,31 @@ function ownerNotificationEmail(
   const isConfirmed = rsvpStatus === 'confirmed'
 
   const subject = isHe
-    ? `${isConfirmed ? 'â ×××©××¨ ×××¢×' : 'â ×× ×××¢×'} â ${guestName}`
+    ? `${isConfirmed ? '✓ אישור הגעה' : '✗ אי הגעה'} — ${guestName}`
     : isFr
-    ? `${isConfirmed ? 'â Nouvelle confirmation' : 'â Refus'} â ${guestName}`
-    : `${isConfirmed ? 'â New RSVP' : 'â Declined'} â ${guestName}`
+    ? `${isConfirmed ? '✓ Nouvelle confirmation' : '✗ Refus'} — ${guestName}`
+    : `${isConfirmed ? '✓ New RSVP' : '✗ Declined'} — ${guestName}`
 
-  const greet = isHe ? `×©××× ${ownerName}` : isFr ? `Bonjour ${ownerName}` : `Hello ${ownerName}`
+  const greet = isHe ? `שלום ${ownerName}` : isFr ? `Bonjour ${ownerName}` : `Hello ${ownerName}`
   const statusLabel = isConfirmed
-    ? isHe ? 'â ×××©×¨ ×××¢×' : isFr ? 'â A confirmÃ© sa prÃ©sence' : 'â Confirmed attendance'
-    : isHe ? 'â ×× ××××¢' : isFr ? 'â Ne viendra pas' : 'â Cannot attend'
+    ? isHe ? '✓ אישר הגעה' : isFr ? '✓ A confirmé sa présence' : '✓ Confirmed attendance'
+    : isHe ? '✗ לא יגיע' : isFr ? '✗ Ne viendra pas' : '✗ Cannot attend'
   const statusColor = isConfirmed ? '#065f46' : '#991b1b'
   const statusBg = isConfirmed ? '#d1fae5' : '#fee2e2'
 
-  const adultsLabel = isHe ? '×××××¨××' : isFr ? 'Adultes' : 'Adults'
-  const childrenLabel = isHe ? '×××××' : isFr ? 'Enfants' : 'Children'
-  const dietLabel = isHe ? '××¢××¤××ª ×§×××× ×¨×××ª' : isFr ? 'PrÃ©fÃ©rences alimentaires' : 'Dietary preferences'
-  const allergyLabel = isHe ? '×××¨××××ª' : isFr ? 'Allergies' : 'Allergies'
-  const notesLabel = isHe ? '××¢×¨××ª' : isFr ? 'Notes' : 'Notes'
+  const adultsLabel = isHe ? 'מבוגרים' : isFr ? 'Adultes' : 'Adults'
+  const childrenLabel = isHe ? 'ילדים' : isFr ? 'Enfants' : 'Children'
+  const dietLabel = isHe ? 'העדפות קולינריות' : isFr ? 'Préférences alimentaires' : 'Dietary preferences'
+  const allergyLabel = isHe ? 'אלרגיות' : isFr ? 'Allergies' : 'Allergies'
+  const notesLabel = isHe ? 'הערות' : isFr ? 'Notes' : 'Notes'
 
   const details = [
-    guestDetails.email && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð§ ${guestDetails.email}</p>`,
-    guestDetails.phone && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð ${guestDetails.phone}</p>`,
-    isConfirmed && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð¤ ${adultsLabel}: <strong>${guestDetails.adults_count}</strong>${guestDetails.children_count > 0 ? `  ð¶ ${childrenLabel}: <strong>${guestDetails.children_count}</strong>` : ''}</p>`,
-    guestDetails.dietary_preferences && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð½ï¸ ${dietLabel}: ${guestDetails.dietary_preferences}</p>`,
-    guestDetails.allergies && `<p style="margin:0 0 8px;font-size:13px;color:#b91c1c;font-family:system-ui,sans-serif">â ï¸ ${allergyLabel}: ${guestDetails.allergies}</p>`,
-    guestDetails.notes && `<p style="margin:0;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">ð¬ ${notesLabel}: ${guestDetails.notes}</p>`,
+    guestDetails.email && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">📧 ${guestDetails.email}</p>`,
+    guestDetails.phone && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">📞 ${guestDetails.phone}</p>`,
+    isConfirmed && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">👤 ${adultsLabel}: <strong>${guestDetails.adults_count}</strong>${guestDetails.children_count > 0 ? `  👶 ${childrenLabel}: <strong>${guestDetails.children_count}</strong>` : ''}</p>`,
+    guestDetails.dietary_preferences && `<p style="margin:0 0 8px;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">🍽️ ${dietLabel}: ${guestDetails.dietary_preferences}</p>`,
+    guestDetails.allergies && `<p style="margin:0 0 8px;font-size:13px;color:#b91c1c;font-family:system-ui,sans-serif">⚠️ ${allergyLabel}: ${guestDetails.allergies}</p>`,
+    guestDetails.notes && `<p style="margin:0;font-size:13px;color:#44403c;font-family:system-ui,sans-serif">💬 ${notesLabel}: ${guestDetails.notes}</p>`,
   ].filter(Boolean).join('')
 
   const bodyContent = `
@@ -214,9 +214,9 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   }
 }
 
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────
 //  ROUTE HANDLER
-// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
@@ -234,7 +234,7 @@ export async function POST(req: NextRequest) {
       rsvp_status,
     } = body
 
-    // ââ Validation ââ
+    // ── Validation ──
     if (!wedding_id || !name || !rsvp_status) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -252,7 +252,7 @@ export async function POST(req: NextRequest) {
     // Use admin client to bypass RLS for unauthenticated guest submissions
     const supabase = createAdminSupabaseClient()
 
-    // ââ ××××§×ª ×××××ª ×××¨××× (Freemium) ââ
+    // ── בדיקת מגבלת אורחים (Freemium) ──
     const { data: wedding } = await supabase
       .from('weddings')
       .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id, co_owner_email')
@@ -277,7 +277,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ââ ××× ×¡×ª RSVP ×××¡××¡ ×× ×ª×× ×× ââ
+    // ── הכנסת RSVP לבסיס הנתונים ──
     const { data, error } = await supabase
       .from('guests')
       .insert({
@@ -289,7 +289,7 @@ export async function POST(req: NextRequest) {
         children_count: children_count ?? 0,
         dietary_preferences: dietary_preferences?.trim() || null,
         allergies: allergies?.trim() || null,
-        notes: notes?.trim() || null,       // ×©×× '×××¨ / ××¢×¨××ª × ××¡×¤××ª'
+        notes: notes?.trim() || null,       // שדה 'אחר / הערות נוספות'
         rsvp_status,
         rsvp_submitted_at: new Date().toISOString(),
       })
@@ -301,7 +301,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Database error' }, { status: 500 })
     }
 
-    // ââ ×©××××ª ×××××× (non-blocking) ââ
+    // ── שליחת מיילים (non-blocking) ──
     if (wedding) {
       const weddingLocale = (wedding.locale as string) ?? 'fr'
       const coupleNames = `${wedding.bride_name} & ${wedding.groom_name}`
@@ -320,14 +320,41 @@ export async function POST(req: NextRequest) {
             locale: weddingLocale,
           }
         )
-        sendEmail(email.trim(), subject, html).catch(console.error)
+        sendEmail(email.trim(), subject, html).catch(e => console.error('[RSVP] Guest confirmation email error:', e))
+      } else {
+        console.log('[RSVP] Guest has no email — confirmation email skipped.')
       }
 
       // 2. Owner notification email (+ co-owner if set)
       if (wedding.user_id) {
         try {
-          const { data: ownerData } = await supabase.auth.admin.getUserById(wedding.user_id)
-          const ownerEmail = ownerData?.user?.email
+          // Try admin API to get owner email
+          let ownerEmail: string | undefined
+          try {
+            const { data: ownerData, error: authErr } = await supabase.auth.admin.getUserById(wedding.user_id)
+            if (authErr) {
+              console.error('[RSVP] auth.admin.getUserById error:', authErr.message)
+            }
+            ownerEmail = ownerData?.user?.email
+          } catch (authFetchErr) {
+            console.error('[RSVP] Could not fetch owner via admin API:', authFetchErr)
+            // Fallback: try public users table
+            const { data: publicUser } = await supabase
+              .from('users')
+              .select('email')
+              .eq('id', wedding.user_id)
+              .maybeSingle()
+            ownerEmail = (publicUser as { email?: string } | null)?.email
+          }
+
+          if (!ownerEmail) {
+            console.warn('[RSVP] No owner email found for user_id:', wedding.user_id, '— owner notification not sent')
+          }
+
+          if (!process.env.RESEND_API_KEY) {
+            console.warn('[RSVP] RESEND_API_KEY is not set — emails will NOT be sent. Add it to Vercel environment variables.')
+          }
+
           const coOwnerEmail = (wedding as { co_owner_email?: string | null }).co_owner_email
 
           const notificationDetails = {
@@ -348,7 +375,7 @@ export async function POST(req: NextRequest) {
               notificationDetails,
               weddingLocale
             )
-            sendEmail(ownerEmail, subject, html).catch(console.error)
+            sendEmail(ownerEmail, subject, html).catch(e => console.error('[RSVP] Owner email error:', e))
           }
 
           // Also notify co-owner if set (and different from owner email)
@@ -360,10 +387,10 @@ export async function POST(req: NextRequest) {
               notificationDetails,
               weddingLocale
             )
-            sendEmail(coOwnerEmail, subject, html).catch(console.error)
+            sendEmail(coOwnerEmail, subject, html).catch(e => console.error('[RSVP] Co-owner email error:', e))
           }
         } catch (err) {
-          console.error('Could not fetch owner email:', err)
+          console.error('[RSVP] Email notification block failed:', err)
         }
       }
     }
