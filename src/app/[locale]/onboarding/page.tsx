@@ -5,7 +5,7 @@
 //  src/app/[locale]/onboarding/page.tsx
 // ============================================================
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import type { Locale } from '@/lib/i18n'
@@ -16,6 +16,55 @@ const PALETTE_OPTIONS = [
   { key: 'sage',     bg: '#f4f7f4', accent: '#6a9a6e', text: '#1f2e1f' },
   { key: 'midnight', bg: '#1a1a2e', accent: '#c9a84c', text: '#f5f0e8' },
 ] as const
+
+// ── All countries, alphabetical (France & Israel pinned top) ──
+const COUNTRIES = [
+  'France', 'Israel',
+  '─────────────',
+  'Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda',
+  'Argentina','Armenia','Australia','Austria','Azerbaijan',
+  'Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize',
+  'Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil',
+  'Brunei','Bulgaria','Burkina Faso','Burundi',
+  'Cabo Verde','Cambodia','Cameroon','Canada','Central African Republic','Chad',
+  'Chile','China','Colombia','Comoros','Congo (Brazzaville)','Congo (Kinshasa)',
+  'Costa Rica','Croatia','Cuba','Cyprus','Czech Republic',
+  'Denmark','Djibouti','Dominica','Dominican Republic',
+  'Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia',
+  'Eswatini','Ethiopia',
+  'Fiji','Finland',
+  'Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada',
+  'Guatemala','Guinea','Guinea-Bissau','Guyana',
+  'Haiti','Honduras','Hungary',
+  'Iceland','India','Indonesia','Iran','Iraq','Ireland','Italy',
+  'Jamaica','Japan','Jordan',
+  'Kazakhstan','Kenya','Kiribati','Kuwait','Kyrgyzstan',
+  'Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein',
+  'Lithuania','Luxembourg',
+  'Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands',
+  'Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia',
+  'Montenegro','Morocco','Mozambique','Myanmar',
+  'Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger',
+  'Nigeria','North Korea','North Macedonia','Norway',
+  'Oman',
+  'Pakistan','Palau','Palestine','Panama','Papua New Guinea','Paraguay','Peru',
+  'Philippines','Poland','Portugal',
+  'Qatar',
+  'Romania','Russia','Rwanda',
+  'Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines',
+  'Samoa','San Marino','Sao Tome and Principe','Saudi Arabia','Senegal','Serbia',
+  'Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands',
+  'Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan',
+  'Suriname','Sweden','Switzerland','Syria',
+  'Taiwan','Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga',
+  'Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu',
+  'Uganda','Ukraine','United Arab Emirates','United Kingdom','United States',
+  'Uruguay','Uzbekistan',
+  'Vanuatu','Vatican City','Venezuela','Vietnam',
+  'Yemen',
+  'Zambia','Zimbabwe',
+  'Other',
+]
 
 const labels = {
   fr: {
@@ -37,14 +86,15 @@ const labels = {
     welcomeMessage: 'Message de bienvenue',
     welcomePlaceholder: 'Nous sommes ravis de vous inviter à notre mariage...',
     palette: 'Palette de couleurs',
+    coverPhoto: 'Photo de couverture',
+    coverPhotoHint: 'JPG, PNG, WEBP · max 5 MB · optionnel',
+    coverPhotoClick: 'Cliquez pour choisir une photo',
+    coverPhotoChange: 'Changer la photo',
     next: 'Continuer',
     back: 'Retour',
     create: 'Créer mon invitation',
     creating: 'Création en cours...',
     logout: 'Se déconnecter',
-    france: 'France',
-    israel: 'Israël',
-    other: 'Autre',
     localeFr: 'Français',
     localeHe: 'Hébreu',
     localeEn: 'Anglais',
@@ -68,14 +118,15 @@ const labels = {
     welcomeMessage: 'הודעת פתיחה',
     welcomePlaceholder: 'אנו שמחים להזמינכם לחגוג איתנו...',
     palette: 'פלטת צבעים',
+    coverPhoto: 'תמונת שער',
+    coverPhotoHint: 'JPG, PNG, WEBP · עד 5 MB · אופציונלי',
+    coverPhotoClick: 'לחצו לבחירת תמונה',
+    coverPhotoChange: 'החלפת תמונה',
     next: 'המשך',
     back: 'חזרה',
     create: 'יצירת ההזמנה',
     creating: 'יוצר...',
     logout: 'התנתקות',
-    france: 'צרפת',
-    israel: 'ישראל',
-    other: 'אחר',
     localeFr: 'צרפתית',
     localeHe: 'עברית',
     localeEn: 'אנגלית',
@@ -99,14 +150,15 @@ const labels = {
     welcomeMessage: 'Welcome message',
     welcomePlaceholder: 'We are delighted to invite you to our wedding...',
     palette: 'Color palette',
+    coverPhoto: 'Cover photo',
+    coverPhotoHint: 'JPG, PNG, WEBP · max 5 MB · optional',
+    coverPhotoClick: 'Click to choose a photo',
+    coverPhotoChange: 'Change photo',
     next: 'Continue',
     back: 'Back',
     create: 'Create my invitation',
     creating: 'Creating...',
     logout: 'Sign out',
-    france: 'France',
-    israel: 'Israel',
-    other: 'Other',
     localeFr: 'French',
     localeHe: 'Hebrew',
     localeEn: 'English',
@@ -138,12 +190,15 @@ export default function OnboardingPage() {
   const urlLocale = (params.locale as Locale) ?? 'fr'
   const router = useRouter()
   const supabase = createClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // step 0 = language picker, steps 1-3 = form
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
   const [locale, setLocale] = useState<Locale>(urlLocale)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null)
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null)
 
   const l = labels[locale] ?? labels.fr
   // Only apply RTL direction from step 1 onwards — applying dir change at step 0 causes
@@ -176,6 +231,20 @@ export default function OnboardingPage() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image too large (max 5 MB)')
+      return
+    }
+    setCoverImageFile(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => setCoverImagePreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+    setError('')
+  }
+
   const handleSelectLanguage = (lang: Locale) => {
     setLocale(lang)
     setForm(prev => ({
@@ -183,7 +252,6 @@ export default function OnboardingPage() {
       invitation_locale: lang,
       venue_country: lang === 'he' ? 'Israel' : 'France',
     }))
-    // Update URL without full reload so back-button works correctly
     setStep(1)
   }
 
@@ -199,6 +267,22 @@ export default function OnboardingPage() {
 
     const slug = slugify(form.bride_name, form.groom_name, form.wedding_date)
 
+    // Upload cover image if provided
+    let coverImageUrl: string | null = null
+    if (coverImageFile) {
+      const ext = coverImageFile.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+      const path = `${user.id}/${slug}.${ext}`
+      const { error: uploadErr } = await supabase.storage
+        .from('wedding-covers')
+        .upload(path, coverImageFile, { upsert: true })
+      if (!uploadErr) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('wedding-covers')
+          .getPublicUrl(path)
+        coverImageUrl = publicUrl
+      }
+    }
+
     const { error: insertError } = await supabase
       .from('weddings')
       .insert({
@@ -210,12 +294,13 @@ export default function OnboardingPage() {
         venue_name: form.venue_name.trim() || null,
         venue_address: form.venue_address.trim() || null,
         venue_city: form.venue_city.trim() || null,
-        venue_country: form.venue_country,
+        venue_country: form.venue_country === '─────────────' ? null : form.venue_country,
         locale: form.invitation_locale,
         rsvp_deadline: form.rsvp_deadline || null,
         welcome_message: form.welcome_message.trim() || null,
         layout_style: form.layout_style,
         font_style: form.font_style,
+        cover_image_url: coverImageUrl,
         max_guests: 200,
         plan: 'free',
         is_active: true,
@@ -448,9 +533,11 @@ export default function OnboardingPage() {
                         onChange={handleChange}
                         className={inputCls + ' bg-white'}
                       >
-                        <option value="France">{l.france}</option>
-                        <option value="Israel">{l.israel}</option>
-                        <option value="Other">{l.other}</option>
+                        {COUNTRIES.map(c => (
+                          c === '─────────────'
+                            ? <option key={c} value={c} disabled>{c}</option>
+                            : <option key={c} value={c}>{c}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -467,6 +554,51 @@ export default function OnboardingPage() {
                       className={inputCls}
                       dir="ltr"
                     />
+                  </div>
+
+                  {/* ── Cover photo upload ── */}
+                  <div>
+                    <label className="block text-xs text-stone-500 mb-2 font-medium uppercase tracking-wider">
+                      {l.coverPhoto}
+                    </label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleCoverImageChange}
+                      className="hidden"
+                    />
+                    {coverImagePreview ? (
+                      <div className="relative rounded-xl overflow-hidden" style={{ height: 180 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={coverImagePreview}
+                          alt="cover preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition"
+                          style={{ background: 'rgba(0,0,0,0.55)' }}
+                        >
+                          {l.coverPhotoChange}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-200 hover:border-stone-300 transition-colors"
+                        style={{ height: 120 }}
+                      >
+                        <svg className="w-8 h-8 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm text-stone-400">{l.coverPhotoClick}</span>
+                        <span className="text-xs text-stone-300">{l.coverPhotoHint}</span>
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex gap-3">
