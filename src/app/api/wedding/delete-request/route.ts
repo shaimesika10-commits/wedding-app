@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite – Delete Account Request API
+//  GrandInvite â Delete Account Request API
 //  Sends a confirmation email with a deletion link via Resend
 //  src/app/api/wedding/delete-request/route.ts
 // ============================================================
@@ -12,29 +12,29 @@ const deleteEmailHtml = (names: string, confirmUrl: string, locale: string) => {
   const isFr = locale === 'fr'
 
   const subject = isHe
-    ? 'אישור מחיקת חשבון GrandInvite'
+    ? '×××©××¨ ××××§×ª ××©××× GrandInvite'
     : isFr
     ? 'Confirmation de suppression de compte GrandInvite'
     : 'Confirm GrandInvite account deletion'
 
-  const heading = isHe ? `שלום ${names}` : isFr ? `Bonjour ${names}` : `Hello ${names}`
+  const heading = isHe ? `×©××× ${names}` : isFr ? `Bonjour ${names}` : `Hello ${names}`
   const body = isHe
-    ? 'קיבלנו בקשה למחיקת חשבון GrandInvite שלכם, כולל כל נתוני החתונה והאורחים. פעולה זו היא <strong>בלתי הפיכה</strong>.'
+    ? '×§×××× × ××§×©× ×××××§×ª ××©×©×× GrandInvite ×©×××, ×××× ×× × ×ª×× × ×××ª×× × ×××××¨×××. ×¤×¢××× ×× ××× <strong>×××ª× ××¤×××</strong>.'
     : isFr
-    ? 'Nous avons reçu une demande de suppression de votre compte GrandInvite, y compris toutes les données de votre mariage et de vos invités. Cette action est <strong>irréversible</strong>.'
+    ? 'Nous avons reÃ§u une demande de suppression de votre compte GrandInvite, y compris toutes les donnÃ©es de votre mariage et de vos invitÃ©s. Cette action est <strong>irrÃ©versible</strong>.'
     : 'We received a request to delete your GrandInvite account, including all wedding and guest data. This action is <strong>irreversible</strong>.'
 
   const btnLabel = isHe
-    ? 'אישור מחיקה'
+    ? '×××©××¨ ××××§×'
     : isFr
     ? 'Confirmer la suppression'
     : 'Confirm deletion'
 
   const ignoreNote = isHe
-    ? 'אם לא ביקשת זאת, התעלמו מאימייל זה — החשבון שלכם בטוח.'
+    ? '×× ×× ×××§×©×ª ×××ª, ××ª×¢××× ××××××× ×× â ×××©××× ×©××× ××××.'
     : isFr
-    ? "Si vous n'avez pas fait cette demande, ignorez cet e-mail — votre compte est en sécurité."
-    : "If you didn't request this, ignore this email — your account is safe."
+    ? "Si vous n'avez pas fait cette demande, ignorez cet e-mail â votre compte est en sÃ©curitÃ©."
+    : "If you didn't request this, ignore this email â your account is safe."
 
   return { subject, html: `<!DOCTYPE html>
 <html dir="${isHe ? 'rtl' : 'ltr'}" lang="${locale}">
@@ -73,7 +73,7 @@ const deleteEmailHtml = (names: string, confirmUrl: string, locale: string) => {
         <tr>
           <td style="padding:20px 40px;border-top:1px solid #e7e5e4;text-align:center">
             <p style="font-size:11px;color:#a8a29e;font-family:system-ui,sans-serif;margin:0">
-              © ${new Date().getFullYear()} GrandInvite
+              Â© ${new Date().getFullYear()} GrandInvite
             </p>
           </td>
         </tr>
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'GrandInvite <noreply@grandinvite.com>',
+          from: 'GrandInvite <onboarding@resend.dev>',
           to: [user.email],
           subject,
           html,
