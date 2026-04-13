@@ -188,9 +188,16 @@ function ownerNotificationEmail(
 async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
-    console.log(`[DEV] Email to ${to}: ${subject}`)
+    // ⚠️  Production fix required: add RESEND_API_KEY to Vercel environment variables.
+    // Get your key at https://resend.com/api-keys
+    console.warn('[GrandInvite] RESEND_API_KEY not set — email NOT sent.', { to, subject })
     return
   }
+  // Use a custom sender if configured, otherwise fall back to Resend shared domain.
+  // For production, verify your domain at resend.com and set RESEND_FROM_EMAIL.
+  const from = process.env.RESEND_FROM_EMAIL
+    ? `GrandInvite <${process.env.RESEND_FROM_EMAIL}>`
+    : 'GrandInvite <onboarding@resend.dev>'
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -198,19 +205,14 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: 'GrandInvite <onboarding@resend.dev>',
-        to: [to],
-        subject,
-        html,
-      }),
+      body: JSON.stringify({ from, to: [to], subject, html }),
     })
     if (!res.ok) {
-      const err = await res.text()
-      console.error('Resend error:', err)
+      const errText = await res.text()
+      console.error('[GrandInvite] Resend API error:', errText)
     }
   } catch (err) {
-    console.error('sendEmail failed:', err)
+    console.error('[GrandInvite] sendEmail network error:', err)
   }
 }
 
