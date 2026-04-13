@@ -33,9 +33,13 @@ export async function generateMetadata({
       ? `אתם מוזמנים לחתונה של ${coupleNames}. אשרו הגעה.`
       : `You're invited to celebrate the wedding of ${coupleNames}. Please RSVP.`)
 
+  // cover_image_url from Supabase storage is already an absolute URL.
+  // WhatsApp & social previews require an absolute URL; use NEXT_PUBLIC_APP_URL
+  // (set this in Vercel: Project Settings → Environment Variables → NEXT_PUBLIC_APP_URL = https://your-domain.com)
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://grandinvite.vercel.app').replace(/\/$/, '')
   const images = wedding.cover_image_url
     ? [{ url: wedding.cover_image_url, width: 1200, height: 630, alt: coupleNames }]
-    : [{ url: 'https://wedding-app-pearl-alpha.vercel.app/logo512.png', width: 512, height: 512, alt: 'GrandInvite' }]
+    : [{ url: `${appUrl}/icons/icon-512.png`, width: 512, height: 512, alt: 'GrandInvite' }]
 
   return {
     title: pageTitle,
