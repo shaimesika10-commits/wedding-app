@@ -75,10 +75,11 @@ export default async function WeddingPage({
     (a, b) => a.sort_order - b.sort_order
   )
 
-  // content_language is the language the couple wrote their invitation in.
+  // The 'locale' field on the wedding row is the language the couple used when
+  // writing the invitation (set during onboarding).
   // originalLocale (from URL) is the guest's preferred display language.
   // When they differ, WeddingPageContent auto-translates on mount.
-  const contentLocale = ((wedding as WeddingRow & { content_language?: string }).content_language ?? null) as Locale | null
+  const contentLocale = ((wedding as WeddingRow).locale as Locale | null) ?? null
 
   return (
     <>
