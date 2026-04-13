@@ -643,37 +643,131 @@ export default function OnboardingPage() {
                     </select>
                   </div>
 
-                  {/* Palette picker */}
+                  {/* Palette picker — mini invitation previews */}
                   <div>
                     <label className="block text-xs text-stone-500 mb-3 font-medium uppercase tracking-wider">
                       {l.palette}
                     </label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {PALETTE_OPTIONS.map(p => (
-                        <button
-                          key={p.key}
-                          type="button"
-                          onClick={() => setForm(prev => ({ ...prev, layout_style: p.key }))}
-                          className="relative rounded-xl overflow-hidden transition-all"
-                          style={{
-                            height: 56,
-                            background: p.bg,
-                            border: form.layout_style === p.key ? `2px solid ${p.accent}` : '2px solid #e7e5e4',
-                            boxShadow: form.layout_style === p.key ? `0 0 0 2px ${p.accent}33` : 'none',
-                          }}
-                        >
-                          <div className="absolute bottom-1.5 left-0 right-0 flex justify-center">
-                            <div className="w-4 h-1 rounded-full" style={{ background: p.accent }} />
-                          </div>
-                          {form.layout_style === p.key && (
-                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full flex items-center justify-center" style={{ background: p.accent }}>
-                              <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
-                              </svg>
+                    <div className="grid grid-cols-2 gap-3">
+                      {PALETTE_OPTIONS.map(p => {
+                        const isSelected = form.layout_style === p.key
+                        const themeName =
+                          p.key === 'ivory'    ? (locale === 'he' ? 'שנהב' : locale === 'fr' ? 'Ivoire'  : 'Ivory')
+                        : p.key === 'blush'    ? (locale === 'he' ? 'ורוד'  : locale === 'fr' ? 'Blush'   : 'Blush')
+                        : p.key === 'sage'     ? (locale === 'he' ? 'מרווה' : locale === 'fr' ? 'Sauge'   : 'Sage')
+                        :                        (locale === 'he' ? 'חצות'  : locale === 'fr' ? 'Minuit'  : 'Midnight')
+                        const bridePH   = locale === 'he' ? 'כלה'  : locale === 'fr' ? 'Mariée' : 'Bride'
+                        const groomPH   = locale === 'he' ? 'חתן'  : locale === 'fr' ? 'Marié'  : 'Groom'
+                        const datePH    = locale === 'he' ? 'תאריך החתונה' : locale === 'fr' ? 'Votre date' : 'Your date'
+                        const displayDate = form.wedding_date
+                          ? new Date(form.wedding_date + 'T12:00:00').toLocaleDateString(
+                              locale === 'he' ? 'he-IL' : locale === 'fr' ? 'fr-FR' : 'en-GB',
+                              { day: 'numeric', month: 'long', year: 'numeric' }
+                            )
+                          : datePH
+                        return (
+                          <button
+                            key={p.key}
+                            type="button"
+                            onClick={() => setForm(prev => ({ ...prev, layout_style: p.key }))}
+                            className="relative rounded-2xl overflow-hidden transition-all text-left focus:outline-none"
+                            style={{
+                              border: isSelected ? `2px solid ${p.accent}` : '2px solid transparent',
+                              boxShadow: isSelected
+                                ? `0 0 0 2px ${p.accent}40, 0 4px 14px rgba(0,0,0,0.1)`
+                                : '0 1px 5px rgba(0,0,0,0.07)',
+                              transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                            }}
+                          >
+                            {/* Mini invitation card body */}
+                            <div
+                              dir={locale === 'he' ? 'rtl' : 'ltr'}
+                              style={{
+                                background: p.bg,
+                                padding: '20px 14px 16px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: 7,
+                                minHeight: 126,
+                                justifyContent: 'center',
+                              }}
+                            >
+                              {/* Ornament */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                                <div style={{ width: 14, height: 1, background: p.accent, opacity: 0.55 }} />
+                                <div style={{ width: 5, height: 5, borderRadius: '50%', background: p.accent, flexShrink: 0 }} />
+                                <div style={{ width: 14, height: 1, background: p.accent, opacity: 0.55 }} />
+                              </div>
+                              {/* Couple names */}
+                              <p style={{
+                                fontFamily: "'Cormorant Garamond', Cormorant, Georgia, serif",
+                                fontSize: 13,
+                                fontWeight: 400,
+                                letterSpacing: '0.04em',
+                                color: p.text,
+                                margin: 0,
+                                lineHeight: 1.35,
+                                textAlign: 'center',
+                              }}>
+                                {form.bride_name || bridePH}
+                                {' '}<span style={{ opacity: 0.35 }}>&</span>{' '}
+                                {form.groom_name || groomPH}
+                              </p>
+                              {/* Accent line */}
+                              <div style={{ width: 28, height: 1, background: p.accent }} />
+                              {/* Date */}
+                              <p style={{
+                                fontFamily: 'system-ui, sans-serif',
+                                fontSize: 8,
+                                letterSpacing: '0.13em',
+                                textTransform: 'uppercase',
+                                color: p.text,
+                                opacity: 0.4,
+                                margin: 0,
+                                textAlign: 'center',
+                              }}>
+                                {displayDate}
+                              </p>
                             </div>
-                          )}
-                        </button>
-                      ))}
+                            {/* Theme name footer */}
+                            <div style={{
+                              background: p.key === 'midnight' ? '#0f0f22' : '#f0ede8',
+                              padding: '7px 12px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}>
+                              <span style={{
+                                fontSize: 9,
+                                fontFamily: 'system-ui, sans-serif',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.13em',
+                                color: p.key === 'midnight' ? '#6b7280' : '#a8a29e',
+                              }}>
+                                {themeName}
+                              </span>
+                              <div style={{ width: 10, height: 10, borderRadius: '50%', background: p.accent, flexShrink: 0 }} />
+                            </div>
+                            {/* Selected checkmark */}
+                            {isSelected && (
+                              <div
+                                className="absolute top-2 flex items-center justify-center w-5 h-5 rounded-full"
+                                style={{
+                                  [locale === 'he' ? 'right' : 'left']: 8,
+                                  background: p.accent,
+                                  boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                                }}
+                              >
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
