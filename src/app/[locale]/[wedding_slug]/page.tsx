@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getWeddingBySlug } from '@/lib/supabase-server'
 import type { Locale } from '@/lib/i18n'
+import type { WeddingRow } from '@/lib/supabase-server'
 import WeddingPageContent from '@/components/WeddingPageContent'
 import type { EventSchedule } from '@/types'
 
@@ -23,6 +24,7 @@ export async function generateMetadata({
   const coupleNames = `${wedding.bride_name} & ${wedding.groom_name}`
   const pageTitle = `${coupleNames} — Invitation`
 
+  // Locale-aware description
   const desc =
     wedding.welcome_message ??
     (locale === 'fr'
@@ -52,7 +54,7 @@ export async function generateMetadata({
       description: desc,
       images: images.map(function(img) { return img.url }),
     },
-    robots: { index: false, follow: false },
+    robots: { index: false, follow: false }, // private invitations — no indexing
   }
 }
 
@@ -69,13 +71,23 @@ export default async function WeddingPage({
     (a, b) => a.sort_order - b.sort_order
   )
 
+  // content_language is the language the couple wrote their invitation in.
+  // originalLocale (from URL) is the guest's preferred display language.
+  // When they differ, WeddingPageContent auto-translates on mount.
+  const contentLocale = ((wedding as WeddingRow & { content_language?: string }).content_language ?? null) as Locale | null
+
   return (
     <>
+      {/* Main invitation content with language switcher + AI translation */}
       <WeddingPageContent
         wedding={wedding}
         schedule={schedule}
         originalLocale={locale}
+        contentLocale={contentLocale ?? undefined}
       />
+
+      {/* Floating AI assistant — visible to guests who want help */}
+      {/* Note: this is a lightweight helper for guests, not for building the invitation */}
     </>
   )
 }
