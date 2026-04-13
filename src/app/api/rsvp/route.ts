@@ -255,19 +255,35 @@ export async function POST(req: NextRequest) {
     // ── בדיקת מגבלת אורחים (Freemium) ──
     const { data: wedding } = await supabase
       .from('weddings')
-      .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id, co_owner_email')
+      .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id, co_owner_email, rsvp_deadline')
       .eq('id', wedding_id)
       .single()
 
-    if (wedding && rsvp_status === 'confirmed') {
-      const { count } = await supabase
+    if (!wedding) {
+      return NextResponse.json({ error: 'Wedding not found' }, { status: 404 })
+    }
+
+    // ── RSVP deadline enforcement ──
+    if (wedding.rsvp_deadline && new Date() > new Date(wedding.rsvp_deadline)) {
+      return NextResponse.json(
+        { error: 'RSVP deadline has passed', deadline: wedding.rsvp_deadline },
+        { status: 410 }
+      )
+    }
+
+    if (rsvp_status === 'confirmed') {
+      // Sum total people (adults + children), not just row count
+      const { data: confirmedGuests } = await supabase
         .from('guests')
-        .select('*', { count: 'exact', head: true })
+        .select('adults_count, children_count')
         .eq('wedding_id', wedding_id)
         .eq('rsvp_status', 'confirmed')
 
-      const currentCount = count ?? 0
-      const newTotal = currentCount + (adults_count ?? 1) + (children_count ?? 0)
+      const currentTotal = (confirmedGuests ?? []).reduce(
+        (sum, g) => sum + (g.adults_count ?? 1) + (g.children_count ?? 0),
+        0
+      )
+      const newTotal = currentTotal + (adults_count ?? 1) + (children_count ?? 0)
 
       if (newTotal > wedding.max_guests) {
         return NextResponse.json(
