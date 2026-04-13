@@ -1,40 +1,49 @@
 // ============================================================
-//  GrandInvite â Delete Account Request API
+//  GrandInvite – Delete Account Request API
 //  Sends a confirmation email with a deletion link via Resend
 //  src/app/api/wedding/delete-request/route.ts
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createHmac } from 'crypto'
+
+function generateDeleteToken(weddingId: string): string {
+  const secret = process.env.DELETE_TOKEN_SECRET ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'fallback-secret'
+  const timestamp = Date.now()
+  const payload = `${weddingId}:${timestamp}`
+  const sig = createHmac('sha256', secret).update(payload).digest('hex')
+  return Buffer.from(`${payload}:${sig}`).toString('base64url')
+}
 
 const deleteEmailHtml = (names: string, confirmUrl: string, locale: string) => {
   const isHe = locale === 'he'
   const isFr = locale === 'fr'
 
   const subject = isHe
-    ? '×××©××¨ ××××§×ª ××©××× GrandInvite'
+    ? 'אישור מחיקת חשבון GrandInvite'
     : isFr
     ? 'Confirmation de suppression de compte GrandInvite'
     : 'Confirm GrandInvite account deletion'
 
-  const heading = isHe ? `×©××× ${names}` : isFr ? `Bonjour ${names}` : `Hello ${names}`
+  const heading = isHe ? `שלום ${names}` : isFr ? `Bonjour ${names}` : `Hello ${names}`
   const body = isHe
-    ? '×§×××× × ××§×©× ×××××§×ª ××©×©×× GrandInvite ×©×××, ×××× ×× × ×ª×× × ×××ª×× × ×××××¨×××. ×¤×¢××× ×× ××× <strong>×××ª× ××¤×××</strong>.'
+    ? 'קיבלנו בקשה למחיקת חשבון GrandInvite שלכם, כולל כל נתוני החתונה והאורחים. פעולה זו היא <strong>בלתי הפיכה</strong>.'
     : isFr
-    ? 'Nous avons reÃ§u une demande de suppression de votre compte GrandInvite, y compris toutes les donnÃ©es de votre mariage et de vos invitÃ©s. Cette action est <strong>irrÃ©versible</strong>.'
+    ? 'Nous avons reçu une demande de suppression de votre compte GrandInvite, y compris toutes les données de votre mariage et de vos invités. Cette action est <strong>irréversible</strong>.'
     : 'We received a request to delete your GrandInvite account, including all wedding and guest data. This action is <strong>irreversible</strong>.'
 
   const btnLabel = isHe
-    ? '×××©××¨ ××××§×'
+    ? 'אישור מחיקה'
     : isFr
     ? 'Confirmer la suppression'
     : 'Confirm deletion'
 
   const ignoreNote = isHe
-    ? '×× ×× ×××§×©×ª ×××ª, ××ª×¢××× ××××××× ×× â ×××©××× ×©××× ××××.'
+    ? 'אם לא ביקשת זאת, התעלמו מאימייל זה — החשבון שלכם בטוח.'
     : isFr
-    ? "Si vous n'avez pas fait cette demande, ignorez cet e-mail â votre compte est en sÃ©curitÃ©."
-    : "If you didn't request this, ignore this email â your account is safe."
+    ? "Si vous n'avez pas fait cette demande, ignorez cet e-mail — votre compte est en sécurité."
+    : "If you didn't request this, ignore this email — your account is safe."
 
   return { subject, html: `<!DOCTYPE html>
 <html dir="${isHe ? 'rtl' : 'ltr'}" lang="${locale}">
@@ -73,7 +82,7 @@ const deleteEmailHtml = (names: string, confirmUrl: string, locale: string) => {
         <tr>
           <td style="padding:20px 40px;border-top:1px solid #e7e5e4;text-align:center">
             <p style="font-size:11px;color:#a8a29e;font-family:system-ui,sans-serif;margin:0">
-              Â© ${new Date().getFullYear()} GrandInvite
+              © ${new Date().getFullYear()} GrandInvite
             </p>
           </td>
         </tr>
@@ -104,8 +113,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 })
     }
 
-    // Generate a deletion token (base64 of wedding_id:timestamp)
-    const token = Buffer.from(`${wedding.id}:${Date.now()}`).toString('base64')
+    // Generate a secure HMAC-signed deletion token (expires in 1 hour)
+    const token = generateDeleteToken(wedding.id)
     const confirmUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/wedding/delete-confirm?token=${token}`
 
     const names = `${wedding.bride_name} & ${wedding.groom_name}`
