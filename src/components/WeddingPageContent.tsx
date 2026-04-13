@@ -5,7 +5,7 @@
 //  src/components/WeddingPageContent.tsx
 // ============================================================
 
-import React, { useState, useTransition } from 'react'
+import React, { useState, useTransition, useEffect } from 'react'
 import RSVPForm from './RSVPForm'
 import EventScheduleSection from './EventScheduleSection'
 import type { EventSchedule } from '@/types'
@@ -80,6 +80,9 @@ interface WeddingPageContentProps {
   wedding: Wedding
   schedule: EventSchedule[]
   originalLocale: Locale
+  /** Language the wedding content was written in (from DB content_language).
+   *  Defaults to originalLocale when not provided (backward-compatible). */
+  contentLocale?: Locale
 }
 
 // Translation cache
@@ -102,7 +105,13 @@ export default function WeddingPageContent({
   wedding,
   schedule,
   originalLocale,
+  contentLocale: _contentLocale,
 }: WeddingPageContentProps) {
+  // contentLocale = the language the wedding content was written in (from DB).
+  // originalLocale = the URL locale = the guest's display language preference.
+  // These may differ (e.g. French wedding viewed from /he/ URL).
+  const contentLocale: Locale = (_contentLocale as Locale | undefined) ?? originalLocale
+
   const [locale, setLocale] = useState<Locale>(originalLocale)
   const [welcomeMsg, setWelcomeMsg] = useState(wedding.welcome_message)
   const [translatedSchedule, setTranslatedSchedule] = useState(schedule)
@@ -126,21 +135,21 @@ export default function WeddingPageContent({
 
   const [weddingDateFormatted, setWeddingDateFormatted] = useState(formatDate(originalLocale))
 
-  const switchLanguage = async (newLocale: Locale) => {
-    if (newLocale === locale) return
-    setLocale(newLocale)
-    setWeddingDateFormatted(formatDate(newLocale))
-
-    if (newLocale === originalLocale) {
+  // ── Core translation helper ──────────────────────────────────
+  // Translates welcome message + schedule TO targetLocale and updates state.
+  // Does NOT change the locale/date state — call setLocale separately.
+  const doTranslateTo = (targetLocale: Locale) => {
+    // If targeting the original content language → just restore originals
+    if (targetLocale === contentLocale) {
       setWelcomeMsg(wedding.welcome_message)
       setTranslatedSchedule(schedule)
       return
     }
 
     startTransition(async () => {
-      // Translate welcome message
+      // ── Translate welcome message ──
       if (wedding.welcome_message) {
-        const cacheKey = `${wedding.id}-welcome-${newLocale}`
+        const cacheKey = `${wedding.id}-welcome-${targetLocale}`
         if (translationCache[cacheKey]) {
           setWelcomeMsg(translationCache[cacheKey])
         } else {
@@ -150,7 +159,7 @@ export default function WeddingPageContent({
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 text: wedding.welcome_message,
-                targetLanguage: newLocale,
+                targetLanguage: targetLocale,
                 context: `Wedding invitation of ${wedding.bride_name} and ${wedding.groom_name} at ${wedding.venue_name ?? ''} on ${wedding.wedding_date}. Keep proper names (people, venues, cities) unchanged. Do NOT translate: ${[wedding.venue_name, wedding.venue_city].filter(Boolean).join(', ')}`,
               }),
             })
@@ -164,14 +173,13 @@ export default function WeddingPageContent({
         }
       }
 
-      // Translate schedule event names + descriptions
+      // ── Translate schedule event names + descriptions ──
       if (schedule.length > 0) {
-        const cacheKey = `${wedding.id}-schedule-${newLocale}`
+        const cacheKey = `${wedding.id}-schedule-${targetLocale}`
         if (translationCache[cacheKey]) {
           setTranslatedSchedule(JSON.parse(translationCache[cacheKey]))
         } else {
           try {
-            // Build a flat list of {eventIdx, field, text} for every translatable field
             const toTranslate: Array<{ idx: number; field: 'event_name' | 'description'; text: string }> = []
             schedule.forEach((e, idx) => {
               if (e.event_name) toTranslate.push({ idx, field: 'event_name', text: e.event_name })
@@ -184,19 +192,16 @@ export default function WeddingPageContent({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   text: toTranslate.map(x => x.text).join('\n---\n'),
-                  targetLanguage: newLocale,
+                  targetLanguage: targetLocale,
                   context: `Wedding schedule events for ${wedding.bride_name} and ${wedding.groom_name}. Keep venue/location names unchanged: ${[wedding.venue_name, wedding.venue_city].filter(Boolean).join(', ')}`,
                 }),
               })
               const data = await res.json()
               const translatedTexts = (data.translatedText ?? '').split('\n---\n')
-
-              // Rebuild schedule with translated fields
               const translated = schedule.map(e => ({ ...e }))
               toTranslate.forEach(({ idx, field, text }, i) => {
                 translated[idx] = { ...translated[idx], [field]: translatedTexts[i]?.trim() ?? text }
               })
-
               translationCache[cacheKey] = JSON.stringify(translated)
               setTranslatedSchedule(translated)
             }
@@ -207,6 +212,21 @@ export default function WeddingPageContent({
       }
     })
   }
+
+  const switchLanguage = (newLocale: Locale) => {
+    if (newLocale === locale) return
+    setLocale(newLocale)
+    setWeddingDateFormatted(formatDate(newLocale))
+    doTranslateTo(newLocale)
+  }
+
+  // ── Auto-translate on mount when URL locale ≠ content locale ─
+  // Example: French wedding accessed via /he/ — translate FR→HE immediately.
+  useEffect(() => {
+    if (originalLocale !== contentLocale) {
+      doTranslateTo(originalLocale)
+    }
+ %}, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Share handler ────────────────────────────────────────────
   const [shareCopied, setShareCopied] = useState(false)
