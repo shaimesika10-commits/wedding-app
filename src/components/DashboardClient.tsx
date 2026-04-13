@@ -11,6 +11,7 @@ import { useState, useMemo, Fragment, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Guest, Wedding, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
+import AccountSettingsClient from '@/components/AccountSettingsClient'
 
 type RSVPStatus = 'all' | 'confirmed' | 'declined' | 'pending'
 type Tab = 'guests' | 'seating' | 'edit' | 'preview' | 'account'
@@ -33,6 +34,8 @@ interface Props {
   wedding: Wedding
   locale: Locale
   t: Record<string, string>
+  userEmail?: string
+  coOwnerEmail?: string | null
 }
 
 const emptyNewGuest = {
@@ -47,7 +50,7 @@ const emptyNewGuest = {
   notes: '',
 }
 
-export default function DashboardClient({ guests, wedding, locale, t }: Props) {
+export default function DashboardClient({ guests, wedding, locale, t, userEmail = '', coOwnerEmail = null }: Props) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('guests')
 
@@ -360,7 +363,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       const { url } = await res.json()
       setEditForm(p => ({ ...p, cover_image_url: url }))
     } catch {
-      setCoverUploadError(locale === 'he' ? 'שגיטת העלאה' : locale === 'fr' ? "Erreur d'upload" : 'Upload error')
+      setCoverUploadError(locale === 'he' ? 'שגיאת העלאה' : locale === 'fr' ? "Erreur d'upload" : 'Upload error')
     } finally {
       setUploadingCover(false)
     }
@@ -539,7 +542,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
   const isRTL = locale === 'he'
 
   return (
-    <div>
+    <div dir={locale === 'he' ? 'rtl' : 'ltr'}>
       {/* ── Tab Bar ── */}
       <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
         {([
@@ -667,7 +670,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                         <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-1">
                             <button onClick={() => openEditGuest(guest)}
-                              className="text-stone-300 hover:text-[#c9a84c] transition-colors p-1"
+                              className="text-[#c9a84c] hover:text-amber-600 transition-colors p-1 opacity-70 hover:opacity-100"
                               title={locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit'}>
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -711,7 +714,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
 
       {/* ══════════════════════════════════════════════
           TAB: SEATING
-      ══════════════════════════════════════════════ */}
+     .══════════════════════════════════════════════ */}
       {activeTab === 'seating' && (
         <div dir={isRTL?'rtl':'ltr'}>
           {/* Header */}
@@ -772,7 +775,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                           {savingTable === g.id && (
                             <svg className="w-4 h-4 text-stone-300 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V8z"/>
                             </svg>
                           )}
                         </div>
@@ -904,7 +907,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <input value={editForm.venue_city} onChange={e=>setEditForm(p=>({...p,venue_city:e.target.value}))} className={inputCls}/>
                 </div>
                 <div>
-                  <label className={labelCls}>{locale==='he'?'כתובד':locale==='fr'?'Adresse':'Address'}</label>
+                  <label className={labelCls}>{locale==='he'?'כתובת':locale==='fr'?'Adresse':'Address'}</label>
                   <input value={editForm.venue_address} onChange={e=>setEditForm(p=>({...p,venue_address:e.target.value}))} className={inputCls}/>
                 </div>
               </div>
@@ -918,7 +921,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                   <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://waze.com/..."/>
                 </div>
               </div>
-            </div>
+      2     </div>
           </div>
 
           {/* ── הודעה ותאריך RSVP ── */}
@@ -969,7 +972,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               {/* ── Cover image ── */}
               <div>
                 <label className={labelCls}>
-                  {locale==='he'?'תמונה כיסוי':locale==='fr'?"Photo de couverture":'Cover photo'}
+                  {locale==='he'?'תמונת כיסוי':locale==='fr'?"Photo de couverture":'Cover photo'}
                 </label>
                 {editForm.cover_image_url && (
                   <div className="relative h-28 rounded-xl overflow-hidden mb-2 border border-stone-100">
@@ -1045,7 +1048,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               {/* ── Color palette ── */}
               <div>
                 <label className={labelCls}>
-                  {locale==='he'?'פלטה צבעים':locale==='fr'?'Palette de couleurs':'Color palette'}
+                  {locale==='he'?'פלטת צבעים':locale==='fr'?'Palette de couleurs':'Color palette'}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {([
@@ -1088,7 +1091,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                     {([
                       { key: 'fullscreen', label: locale==='he'?'מסך מלא':locale==='fr'?'Plein écran':'Fullscreen', icon: '⬛' },
                       { key: 'arch',       label: locale==='he'?'קשת':locale==='fr'?'Arche':'Arch',                icon: '🔼' },
-                      { key: 'oval',       label: locale==='he'?'אובאלי':locale==='fr'?'Ovale':'Oval',              icon: '⬭' },
+                      { key: 'oval',       label: locale==='he'?'אובלי':locale==='fr'?'Ovale':'Oval',              icon: '⬭' },
                       { key: 'contained',  label: locale==='he'?'ממוסגר':locale==='fr'?'Encadré':'Contained',      icon: '▢' },
                     ] as const).map(f => (
                       <button
@@ -1353,26 +1356,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             </button>
           </div>
 
-          {/* ── ניהול חשבון (moved to dedicated page) ── */}
-          <div className="pt-8 mt-4 border-t border-stone-100">
-            <p className="text-xs text-stone-400 mb-3">
-              {locale==='he'
-                ? 'לניהול סיסמה, הוספת בעל/ת שמחה נוסף/ת ומחיקת חשבון:'
-                : locale==='fr'
-                ? 'Pour gérer le mot de passe, ajouter un co-responsable et supprimer le compte :'
-                : 'To manage your password, add a co-owner or delete your account:'}
-            </p>
-            <a
-              href={`/${locale}/dashboard/account-settings`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 border border-stone-200 text-stone-600 text-sm font-medium rounded-xl hover:bg-stone-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {locale==='he'?'ניהול חשבון':locale==='fr'?'Gestion du compte':'Account settings'}
-            </a>
-          </div>
+          {/* ── ניהול חשבון moved to account tab ── */}
         </div>
       )}
 
@@ -1418,79 +1402,16 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════
+      {/* ══════════════════════════════════════════════
           TAB: ACCOUNT SETTINGS
-      ══════════════════════════════════════════════════════════════ */}
+      ══════════════════════════════════════════════ */}
       {activeTab === 'account' && (
-        <div dir={isRTL ? 'rtl' : 'ltr'} className="max-w-2xl">
-          <div className="mb-6">
-            <h3 className="font-cormorant text-2xl text-stone-700">
-              {locale==='he'?'ניהול חשבון':locale==='fr'?'Gestion du compte':'Account Settings'}
-            </h3>
-            <p className="text-sm text-stone-400 mt-1">
-              {locale==='he'?'שינוי סיסמה, הוספת שותף/ה ומחיקת חשבון'
-                :locale==='fr'?'Modifier le mot de passe, ajouter un(e) co-responsable et supprimer le compte'
-                :'Change password, add a co-owner, delete account'}
-            </p>
-          </div>
-          <a
-            href={`/${locale}/dashboard/account-settings`}
-            className="flex items-center gap-3 p-5 bg-white border border-stone-100 rounded-2xl hover:border-[#c9a84c] transition-colors group mb-4"
-          >
-            <div className="w-10 h-10 rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-50 transition-colors">
-              <svg className="w-5 h-5 text-stone-400 group-hover:text-[#c9a84c] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-stone-700 group-hover:text-stone-900">
-                {locale==='he'?'שינוי סיסמה':locale==='fr'?'Changer le mot de passe':'Change password'}
-              </p>
-              <p className="text-xs text-stone-400 mt-0.5">
-                {locale==='he'?'עדכן את סיסמת הכניסה שלך':locale==='fr'?'Mettre à jour votre mot de passe':'Update your login password'}
-              </p>
-            </div>
-            <svg className="w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}/></svg>
-          </a>
-          <a
-            href={`/${locale}/dashboard/account-settings`}
-            className="flex items-center gap-3 p-5 bg-white border border-stone-100 rounded-2xl hover:border-[#c9a84c] transition-colors group mb-4"
-          >
-            <div className="w-10 h-10 rounded-full bg-stone-50 border border-stone-100 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-50 transition-colors">
-              <svg className="w-5 h-5 text-stone-400 group-hover:text-[#c9a84c] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-stone-700 group-hover:text-stone-900">
-                {locale==='he'?'בעל/ת שמחה נוסף/ת':locale==='fr'?'Co-responsable du compte':'Co-owner account'}
-              </p>
-              <p className="text-xs text-stone-400 mt-0.5">
-                {locale==='he'?'הוסף אימייל שיקבל גם עדכוני הגעה':locale==='fr'?"Ajouter un e-mail pour recevoir les confirmations":'Add an email to also receive RSVP notifications'}
-              </p>
-            </div>
-            <svg className="w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}/></svg>
-          </a>
-          <a
-            href={`/${locale}/dashboard/account-settings`}
-            className="flex items-center gap-3 p-5 bg-white border border-red-100 rounded-2xl hover:border-red-300 transition-colors group"
-          >
-            <div className="w-10 h-10 rounded-full bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-red-600">
-                {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
-              </p>
-              <p className="text-xs text-stone-400 mt-0.5">
-                {locale==='he'?'פעולה סופית ובלתי הפיכה — ישלח קישור אישור למייל':locale==='fr'?"Action irréversible — un lien de confirmation sera envoyé":'Irreversible action — a confirmation link will be emailed to you'}
-              </p>
-            </div>
-            <svg className="w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? 'M15 19l-7-7 7-7' : 'M9 5l7 7-7 7'}/></svg>
-          </a>
-        </div>
+        <AccountSettingsClient
+          locale={locale}
+          userEmail={userEmail}
+          initialCoOwnerEmail={coOwnerEmail}
+          weddingId={wedding.id}
+        />
       )}
 
       {/* ══════════════════════════════════════════════
@@ -1504,9 +1425,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
               <h2 className="font-cormorant text-xl text-stone-800">
-                {locale==='he'?'הוספט אירוע ללו"ז':locale==='fr'?"Ajouter un événement":'Add event to schedule'}
+                {locale==='he'?'הוספת אירוע ללו"ז':locale==='fr'?"Ajouter un événement":'Add event to schedule'}
               </h2>
-              <button onClick={() => setShowEventModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none"×</button>
+              <button onClick={() => setShowEventModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               {eventModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{eventModalError}</div>}
@@ -1515,8 +1436,8 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
                 <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
                 <input
                   value={eventForm.event_name}
-                  onChange={e => setEventForm(p => ({ ...p, event_name: e.target.value }))}
-                  placeholder={locale==='he'?'קבלה פנים':locale==='fr'?'Cérémonie':'Ceremony'}
+     0            onChange={e => setEventForm(p => ({ ...p, event_name: e.target.value }))}
+                  placeholder={locale==='he'?'קבלת פנים':locale==='fr'?'Cérémonie':'Ceremony'}
                   dir="auto"
                   className={inputCls}
                 />
@@ -1587,7 +1508,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
               <h2 className="font-cormorant text-xl text-stone-800">
                 {locale==='he'?'עריכת אירוע':locale==='fr'?"Modifier l'événement":'Edit event'}
               </h2>
-              <button onClick={() => setEditingEventId(null)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none"×</button>
+              <button onClick={() => setEditingEventId(null)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               {editEventError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{editEventError}</div>}
@@ -1665,9 +1586,9 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
               <h2 className="font-cormorant text-xl text-stone-800">
-                {locale==='he'?'עריכה אורח':locale==='fr'?"Modifier l'invité":'Edit guest'}
+                {locale==='he'?'עריכת אורח':locale==='fr'?"Modifier l'invité":'Edit guest'}
               </h2>
-              <button onClick={()=>setEditingGuest(null)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none"×</button>
+              <button onClick={()=>setEditingGuest(null)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               {editGuestError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{editGuestError}</div>}
@@ -1745,7 +1666,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
       )}
 
       {/* ══════════════════════════════════════════════
-          מודאל הוספה אורח
+          מודאל הוספת אורח
       ══════════════════════════════════════════════ */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -1755,7 +1676,7 @@ export default function DashboardClient({ guests, wedding, locale, t }: Props) {
             className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
               <h2 className="font-cormorant text-xl text-stone-800">{t.addGuestTitle}</h2>
-              <button onClick={()=>setShowAddModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none"×</button>
+              <button onClick={()=>setShowAddModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               {guestModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{guestModalError}</div>}
