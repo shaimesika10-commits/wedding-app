@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite â Translation Route (DeepL)
+//  GrandInvite – Translation Route (DeepL)
 //  POST /api/ai/translate
 //  Body: { text: string, targetLanguage: 'fr' | 'he' | 'en', context?: string }
 //  context is comma-separated terms to exclude (venue names, cities)
@@ -26,13 +26,13 @@ export async function POST(request: NextRequest) {
 
     if (!apiKey) {
       // No DeepL key: return original text as fallback
-      console.warn('[translate] DEEPL_API_KEY not set â returning original text')
+      console.warn('[translate] DEEPL_API_KEY not set — returning original text')
       return NextResponse.json({ translatedText: text, fallback: true })
     }
 
     const targetLang = DEEPL_LANG[targetLanguage] ?? 'EN-US'
 
-    // ââ Extract terms to preserve (venue names, cities, addresses) ââ
+    // ── Extract terms to preserve (venue names, cities, addresses) ──
     // We wrap them in <x> tags (ignored by DeepL with tag_handling=xml)
     // then restore them after translation.
     const preserveTerms: string[] = context
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       processedText = processedText.split(term).join(placeholder)
     })
 
-    // ââ Call DeepL API ââ
+    // ── Call DeepL API ──
     const res = await fetch('https://api.deepl.com/v2/translate', {
       method: 'POST',
       headers: {
@@ -72,15 +72,23 @@ export async function POST(request: NextRequest) {
 
     if (!res.ok) {
       const errBody = await res.text()
-      console.error('DeepL API error:', errBody)
-      // Graceful fallback: return original text
+      console.warn('[translate] DeepL error:', errBody)
+      // Graceful fallback: return original text unchanged
       return NextResponse.json({ translatedText: text, fallback: true })
     }
 
     const data = await res.json()
     let translatedText: string = data.translations?.[0]?.text ?? text
 
-    // ââ Restore preserved terms ââ
+    // Guard: if DeepL echoes an error message as translated text, return original
+    if (
+      translatedText === 'PLEASE SELECT TWO DISTINCT LANGUAGES' ||
+      translatedText.startsWith('{"message"')
+    ) {
+      return NextResponse.json({ translatedText: text, fallback: true })
+    }
+
+    // ── Restore preserved terms ──
     // DeepL keeps <x> tags as-is; unwrap them
     translatedText = translatedText.replace(/<x id="\d+">(.*?)<\/x>/g, (_match, inner) => inner)
 
