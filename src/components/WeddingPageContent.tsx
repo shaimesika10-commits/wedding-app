@@ -226,7 +226,7 @@ export default function WeddingPageContent({
     if (originalLocale !== contentLocale) {
       doTranslateTo(originalLocale)
     }
- %}, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Share handler ────────────────────────────────────────────
   const [shareCopied, setShareCopied] = useState(false)
