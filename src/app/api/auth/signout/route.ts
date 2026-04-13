@@ -3,15 +3,14 @@
 //  POST /api/auth/signout
 // ============================================================
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   const supabase = await createServerSupabaseClient()
   await supabase.auth.signOut()
 
-  return NextResponse.redirect(
-    new URL('/', process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
-    { status: 302 }
-  )
+  // Use the request origin so this works on any domain (Vercel preview, custom domain, etc.)
+  const origin = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin
+  return NextResponse.redirect(new URL('/', origin), { status: 302 })
 }
