@@ -99,11 +99,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // ── OAuth code exchange (Google, etc.) ──
+  // ── OAuth code exchange (Google, etc.) OR PKCE password-reset ──
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // If this code exchange was for a password recovery (PKCE flow),
+      // redirect to the reset-password page instead of the dashboard.
+      if (type === 'recovery' || next?.includes('reset-password')) {
+        const resetUrl = new URL(`/${locale}/reset-password`, requestUrl.origin)
+        return NextResponse.redirect(resetUrl)
+      }
       // First-time Google signup: go to onboarding; returning user: go to dashboard
       return redirectByWeddingStatus()
     }
