@@ -10,7 +10,6 @@ import type { RSVPFormData } from '@/types'
 
 interface RSVPFormProps {
   weddingId: string
-  weddingSlug?: string
   locale: Locale
   t: Record<string, string>
   maxGuests: number
@@ -19,9 +18,10 @@ interface RSVPFormProps {
 type FormState = 'idle' | 'submitting' | 'success-confirm' | 'success-decline' | 'error'
 type AttendingChoice = 'confirmed' | 'declined' | null
 
-export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests }: RSVPFormProps) {
+export default function RSVPForm({ weddingId, locale, t, maxGuests }: RSVPFormProps) {
   const [attending, setAttending] = useState<AttendingChoice>(null)
   const [formState, setFormState] = useState<FormState>('idle')
+  const [errorMsg, setErrorMsg] = useState<string>('')
   const [form, setForm] = useState<RSVPFormData>({
     name: '',
     email: '',
@@ -63,22 +63,23 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         body: JSON.stringify({ ...form, wedding_id: weddingId }),
       })
 
-      if (!response.ok) throw new Error('Failed')
-
-      // Notify the wedding owner (fire-and-forget)
-      if (weddingSlug) {
-        fetch('/api/wedding/rsvp-notify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            wedding_slug: weddingSlug,
-            guest_name: form.name,
-            adults: form.adults_count,
-            children: form.children_count,
-            attending: attending === 'confirmed',
-            notes: form.notes || undefined,
-          }),
-        }).catch(() => {})
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        if (response.status === 410 || errData.error === 'RSVP deadline has passed') {
+          setErrorMsg(
+            locale === 'he' ? 'מועד ה-RSVP עבר. לא ניתן להגיב יותר.' :
+            locale === 'fr' ? "La date limite RSVP est dépassée." :
+            'RSVP deadline has passed.'
+          )
+        } else if (response.status === 409 || errData.error === 'Guest limit reached') {
+          setErrorMsg(
+            locale === 'he' ? 'הגענו לגבול האורחים המרבי.' :
+            locale === 'fr' ? "Nombre maximum d'invités atteint." :
+            'Guest limit has been reached.'
+          )
+        }
+        setFormState('error')
+        return
       }
 
       setFormState(
@@ -107,7 +108,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 fade-in">
 
-      {/* name */}
+      {/* ── שם ── */}
       <div>
         <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
           {t.name} <span className="text-[#c9a84c]">*</span>
@@ -124,7 +125,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         />
       </div>
 
-      {/* email */}
+      {/* ── אימייל ── */}
       <div>
         <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
           {t.email}
@@ -139,7 +140,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         />
       </div>
 
-      {/* attending */}
+      {/* ── האם מגיע? ── */}
       <div>
         <label className="block text-xs tracking-widest uppercase text-stone-400 mb-4">
           {t.attending} <span className="text-[#c9a84c]">*</span>
@@ -170,8 +171,10 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         </div>
       </div>
 
+      {/* ── שדות נוספים רק אם מגיע ── */}
       {attending === 'confirmed' && (
         <>
+          {/* מספר מבוגרים + ילדים */}
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
@@ -227,6 +230,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
             </div>
           </div>
 
+          {/* העדפות תזונתיות */}
           <div>
             <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
               {t.dietary}
@@ -242,6 +246,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
             />
           </div>
 
+          {/* אלרגיות */}
           <div>
             <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
               {t.allergies}
@@ -259,6 +264,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         </>
       )}
 
+      {/* ── שדה 'אחר / הערות נוספות' – תמיד גלוי ── */}
       {attending && (
         <div>
           <label className="block text-xs tracking-widest uppercase text-stone-400 mb-2">
@@ -278,6 +284,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
         </div>
       )}
 
+      {/* ── כפתור שליחה ── */}
       {attending && (
         <div className="pt-4">
           <button
@@ -285,7 +292,8 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
             disabled={formState === 'submitting' || !form.name.trim()}
             className={`w-full py-4 font-medium tracking-widest uppercase text-sm
                         transition-all duration-300 border
-                        ${attending === 'confirmed'
+                        ${
+                          attending === 'confirmed'
                           ? 'bg-[#c9a84c] hover:bg-[#9a7d35] text-white border-[#c9a84c]'
                           : 'bg-stone-800 hover:bg-stone-900 text-white border-stone-800'
                         }
@@ -300,7 +308,7 @@ export default function RSVPForm({ weddingId, weddingSlug, locale, t, maxGuests 
           </button>
 
           {formState === 'error' && (
-            <p className="text-center text-red-500 text-sm mt-4">{t.error}</p>
+            <p className="text-center text-red-500 text-sm mt-4">{errorMsg || t.error}</p>
           )}
         </div>
       )}
