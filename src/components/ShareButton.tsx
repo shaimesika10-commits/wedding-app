@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite â Share Button
+//  GrandInvite – Share Button
 //  Allows sharing the invitation URL via WhatsApp or email
 //  src/components/ShareButton.tsx
 // ============================================================
@@ -16,26 +16,26 @@ interface Props {
 
 const L = {
   he: {
-    share: '×©××ª××£',
+    share: 'שיתוף',
     whatsapp: 'WhatsApp',
-    email: '××××××',
-    copyLink: '××¢×ª×§ ×§××©××¨',
-    copied: '×××¢×ª×§!',
-    msgText: (couple: string) => `××××× ×ª ×××ª×× ×ª ${couple} ð\n××××©××¨ ×××¢× ××¤×¨×× ××××¨××¢:`,
-    emailSubject: (couple: string) => `×××× × ×××ª×× ×ª ${couple}`,
+    email: 'אימייל',
+    copyLink: 'העתק קישור',
+    copied: 'הועתק!',
+    msgText: (couple: string) => `הוזמנת לחתונת ${couple} 🎉\nלאישור הגעה ופרטי האירוע:`,
+    emailSubject: (couple: string) => `הזמנה לחתונת ${couple}`,
     emailBody: (couple: string, url: string) =>
-      `×©×××,\n\n××××× ×ª ×××ª×× ×ª ${couple}.\n\n××××©××¨ ×××¢× ××¤×¨××× × ××¡×¤××:\n${url}`,
+      `שלום,\n\nהוזמנת לחתונת ${couple}.\n\nלאישור הגעה ופרטים נוספים:\n${url}`,
   },
   fr: {
     share: 'Partager',
     whatsapp: 'WhatsApp',
     email: 'E-mail',
     copyLink: 'Copier le lien',
-    copied: 'CopiÃ© !',
-    msgText: (couple: string) => `Vous Ãªtes invitÃ©(e) au mariage de ${couple} ð\nPour confirmer votre prÃ©sence :`,
-    emailSubject: (couple: string) => `Invitation â Mariage de ${couple}`,
+    copied: 'Copié !',
+    msgText: (couple: string) => `Vous êtes invité(e) au mariage de ${couple} 🎉\nPour confirmer votre présence :`,
+    emailSubject: (couple: string) => `Invitation — Mariage de ${couple}`,
     emailBody: (couple: string, url: string) =>
-      `Bonjour,\n\nVous Ãªtes cordialement invitÃ©(e) au mariage de ${couple}.\n\nPour confirmer votre prÃ©sence et consulter les dÃ©tails :\n${url}`,
+      `Bonjour,\n\nVous êtes cordialement invité(e) au mariage de ${couple}.\n\nPour confirmer votre présence et consulter les détails :\n${url}`,
   },
   en: {
     share: 'Share',
@@ -43,8 +43,8 @@ const L = {
     email: 'Email',
     copyLink: 'Copy link',
     copied: 'Copied!',
-    msgText: (couple: string) => `You're invited to ${couple}'s wedding ð\nTo RSVP and view event details:`,
-    emailSubject: (couple: string) => `Invitation â ${couple}'s Wedding`,
+    msgText: (couple: string) => `You're invited to ${couple}'s wedding 🎉\nTo RSVP and view event details:`,
+    emailSubject: (couple: string) => `Invitation — ${couple}'s Wedding`,
     emailBody: (couple: string, url: string) =>
       `Hello,\n\nYou are cordially invited to ${couple}'s wedding.\n\nTo RSVP and view details:\n${url}`,
   },
@@ -93,18 +93,19 @@ export default function ShareButton({ url, coupleName, locale }: Props) {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-100"
+        className="flex items-center gap-2 text-sm font-medium text-white px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95"
+        style={{ background: '#c9a84c' }}
         aria-label={l.share}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round"
             d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
         </svg>
-        <span className="hidden sm:inline">{l.share}</span>
+        <span>{l.share}</span>
       </button>
 
       {open && (
-        <div className="absolute top-full mt-2 right-0 w-44 bg-white rounded-xl shadow-lg border border-stone-100 py-1.5 z-50"
+        <div className="absolute top-full mt-2 right-0 w-48 bg-white rounded-xl shadow-xl border border-stone-100 py-1.5 z-50"
           style={{ direction: locale === 'he' ? 'rtl' : 'ltr' }}>
 
           {/* WhatsApp */}
