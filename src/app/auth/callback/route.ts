@@ -71,6 +71,14 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Magic Link / Email Confirmation / Password Recovery (token_hash flow) ──
+  //
+  // ⚠️  PASSWORD RESET SETUP — required once in Supabase Dashboard:
+  //   1. Authentication → URL Configuration → Site URL:
+  //      Set to https://your-domain.vercel.app
+  //   2. Authentication → URL Configuration → Redirect URLs:
+  //      Add https://your-domain.vercel.app/auth/callback**
+  //   Without step 2, the email link redirectTo is ignored and reset emails break.
+  //
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({
       type: type as 'magiclink' | 'recovery' | 'invite' | 'email',
