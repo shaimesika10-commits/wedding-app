@@ -1,33 +1,17 @@
 'use client'
 // ============================================================
-//  GrandInvite – Dashboard Client Component
-//  טאב 1: ניהול אורחים (חיפוש / פילטור / הוספה / מחיקה / CSV)
-//  טאב 2: עריכת הזמנה (פרטים + לו"ז + בראנץ')
-//  טאב 3: תצוגה מקדימה
+//  GrandInvite â Dashboard Client Component
+//  ××× 1: × ×××× ×××¨××× | ××× 2: ××©××× | ××× 3: ×¢×¨×××
+//  ××× 4: ×ª×¦××× | ××× 5: ××××¨××ª
 //  src/components/DashboardClient.tsx
 // ============================================================
-
 import { useState, useMemo, Fragment, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Guest, Wedding, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
-import AccountSettingsClient from '@/components/AccountSettingsClient'
 
 type RSVPStatus = 'all' | 'confirmed' | 'declined' | 'pending'
-type Tab = 'guests' | 'seating' | 'edit' | 'preview' | 'account'
-type DeleteState = 'idle' | 'confirm' | 'sending' | 'sent' | 'error'
-type TableInputsMap = Record<string, string>
-type EditEventFormState = {
-  event_name: string
-  event_date: string
-  start_time: string
-  end_time: string
-  location_name: string
-  address: string
-  google_maps_url: string
-  waze_url: string
-  description: string
-}
+type Tab = 'guests' | 'seating' | 'edit' | 'preview' | 'settings'
 
 interface Props {
   guests: Guest[]
@@ -54,9 +38,9 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('guests')
 
-  // ════════════════════════════════════════
-  // TAB 1 — אורחים
-  // ════════════════════════════════════════
+  // ââââââââââââââââââââââââââââââââââââââââ
+  // TAB 1 â ×××¨×××
+  // ââââââââââââââââââââââââââââââââââââââââ
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<RSVPStatus>('all')
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
@@ -65,23 +49,151 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
   const [savingGuest, setSavingGuest] = useState(false)
   const [guestModalError, setGuestModalError] = useState('')
   const [deletingId, setDeletingId] = useState<string | null>(null)
-
-  // ── Edit guest ──
-  const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
-  const [editGuestForm, setEditGuestForm] = useState({ ...emptyNewGuest })
-  const [savingEditGuest, setSavingEditGuest] = useState(false)
-  const [editGuestError, setEditGuestError] = useState('')
-
-  // ════════════════════════════════════════
+  const [mounted, setMounted] = useState(false)*
+  // ââââââââââââââââââââââââââââââââââââââââ
   // TAB: SEATING
-  // ════════════════════════════════════════
-  const [tableInputs, setTableInputs] = useState<TableInputsMap>(() => {
-    const m: TableInputsMap = {}
-    guests.forEach(g => { if (g.table_number != null) m[g.id] = String(g.table_number) })
+  // ââââââââââââââââââââââââââââââââââââââââ
+  const [tableInputs, setTableInputs] = useState<Record<string, string>>(() => {
+    const m: Record<string, string> = {}
+    guests.forEach(g => {
+      if (g.table_number != null) m[g.id] = String(g.table_number)
+    })
     return m
   })
   const [savingTable, setSavingTable] = useState<string | null>(null)
 
+  // ââââââââââââââââââââââââââââââââââââââââ
+  // TAB 2 â ×¢×¨×××ª ×××× ×
+  // ââââââââââââââââââââââââââââââââââââââââ
+  const [editForm, setEditForm] = useState({
+    bride_name: wedding.bride_name,
+    groom_name: wedding.groom_name,
+    wedding_date: wedding.wedding_date,
+    venue_name: wedding.venue_name ?? '',
+    venue_city: wedding.venue_city ?? '',
+    venue_address: wedding.venue_address ?? '',
+    welcome_message: wedding.welcome_message ?? '',
+    rsvp_deadline: wedding.rsvp_deadline ?? '',
+    google_maps_url: wedding.google_maps_url ?? '',
+    waze_url: wedding.waze_url ?? '',
+    locale: wedding.locale,
+  })
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [editError, setEditError] = useState('')
+  const [editSuccess, setEditSuccess] = useState(false)*
+  // ââ ××"× / ××¨×× ×¥' ââ
+  const schedule = (wedding.event_schedule ?? []) as EventSchedule[]
+  const brunchEvent = schedule._ind(e =>
+    e.event_name?.toLowerCase().includes('brunch') ||
+    e.event_name?.toLowerCase().includes('××¨×× ×¥')
+  )
+  const [brunchEnabled, setBrunchEnabled] = useState<boolean>(!!brunchEvent)
+  const [brunchEventId, setBrunchEventId] = useState<string | undefined>(brunchEvent?.id)
+  const [togglingBrunch, setTogglingBrunch] = useState(false)
+
+  useEffect(() => {
+    setBrunchEnabled(!!brunchEvent)
+    setBrunchEventId(brunchEvent?.id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wedding.event_schedule?.length])
+
+  useEffect(() => { setMounted(true) }, [])
+
+  // ââââââââââââââââââââââââââââââââââââââââ
+  // TAB 5 â SETTINGS (××××¨××ª)
+  // ââââââââââââââââââââââââââââââââââââââââ
+  const [isHidden, setIsHidden] = useState(wedding.is_hidden ?? false)
+  const [savingVisibility, setSavingVisibility] = useState(false)
+
+  const [pinInput, setPinInput] = useState((wedding as any).guest_pin ?? '')
+  const [savingPin, setSavingPin] = useState(false)
+  const [pinSuccess, setPinSuccess] = useState(false)
+
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteConfirmUrl, setDeleteConfirmUrl] = useState('')*
+  const [fontStyle, setFontStyle] = useState((wedding as any).font_style ?? 'cormorant')
+  const [layoutStyle, setLayoutStyle] = useState((wedding as any).layout_style ?? 'centered')
+  const [savingDesign, setSavingDesign] = useState(false)
+  const [designSuccess, setDesignSuccess] = useState(false)
+
+  // ââ visibility handler ââ
+  const handleToggleVisibility = async () => {
+    if (savingVisibility) return
+    const next = !isHidden
+    setIsHidden(next)
+    setSavingVisibility(true)
+    try {
+      await fetch('/api/wedding/visibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_hidden: next }),
+      })
+      router.refresh()
+    } catch {
+      setIsHidden(!next)
+    } finally {
+      setSavingVisibility(false)
+    }
+  }
+
+  // ââ PIN handler ââ
+  const handleSavePin = async () => {
+    if (savingPin) return
+    setSavingPin(true)
+    try {
+      const pin = pinInput.trim() || null
+      await fetch('/api/wedding/pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin, wedding_id: wedding.id }),
+      })
+      setPinSuccess(true)
+      router.refresh()
+      setTimeout(() => setPinSuccess(false), 3000)
+    } finally {
+      setSavingPin(false)
+    }
+  }
+
+  // ââ delete request handler ââ
+  const handleRequestDelete = async () => {
+    const msg = locale === 'he'
+      ? '××× ××ª× ××××? × ×©×× ×××××× ××××©××¨ ××××§×ª ×××©×××.'
+      : locale === 'fr'
+      ? 'Ãtes-vous sÃ»r ? Un email de confirmation sera envoyÃ©.'
+      : 'Are you sure? A confirmation email will be sent.'
+    if (!confirm(msg)) return
+    setDeleteLoading(true)
+    try {
+      const res = await fetch('/api/wedding/delete-request', { method: 'POST' })
+      const data = await res.json()
+      if (data.confirmUrl) setDeleteConfirmUrl(data.confirmUrl)
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
+
+  // ââ design handler ââ
+  const handleSaveDesign = async () => {
+    if (savingDesign) return
+    setSavingDesign(true)
+    try {
+      await fetch('/api/weddings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: wedding.id, font_style: fontStyle, layout_style: layoutStyle }),
+      })
+      setDesignSuccess(true)
+      router.refresh()
+      setTimeout(() => setDesignSuccess(false), 3000)
+    } finally {
+      setSavingDesign(false)
+    }
+  }
+
+  // ââââââââââââââââââââââââââââââââââââââââ
+  // GUESTS helpers
+  // ââââââââââââââââââââââââââââââââââââââââ
   const filteredGuests = useMemo(() => {
     return guests.filter(g => {
       const matchSearch = g.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -100,9 +212,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
       g.dietary_preferences??'', g.allergies??'', g.notes??'',
       g.rsvp_submitted_at ? new Date(g.rsvp_submitted_at).toLocaleDateString() : '',
     ])
-    const csv = [headers,...rows]
-      .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
-      .join('\n')
+    const csv = [headers,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')
     const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -114,7 +224,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
 
   const handleAddGuest = async () => {
     if (!newGuest.name.trim()) {
-      setGuestModalError(locale==='he'?'שם הוא שדה חובה':locale==='fr'?'Le nom est requis':'Name is required')
+      setGuestModalError(locale==='he'?'×©× ××× ×©×× ××××':locale==='fr'?'Le nom est requis':'Name is required')
       return
     }
     setGuestModalError('')
@@ -132,9 +242,9 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
       }
       setShowAddModal(false)
       setNewGuest({ ...emptyNewGuest })
-      router.refresh()
+      rhuter.refresh()
     } catch {
-      setGuestModalError(locale==='he'?'שגיאה בשמירה':'Save error')
+      setGuestModalError(locale==='he'?'×©×××× ××©×××¨×':'Save error')
     } finally {
       setSavingGuest(false)
     }
@@ -151,14 +261,14 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: guestId, wedding_id: wedding.id, table_number: num }),
       })
-      router.refresh()
+      router.refresa()
     } finally {
       setSavingTable(null)
     }
   }
 
   const handleDeleteGuest = async (guestId: string) => {
-    const msg = locale==='he'?'למחוק אורח זה?':locale==='fr'?'Supprimer cet invité ?':'Delete this guest?'
+    const msg = locale==='he'?'×××××§ ×××¨× ××?':locale==='fr'?'Supprimer cet invitÃ© ?':'Delete this guest?'
     if (!confirm(msg)) return
     setDeletingId(guestId)
     try {
@@ -169,291 +279,13 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
     }
   }
 
-  const openEditGuest = (guest: Guest) => {
-    setEditingGuest(guest)
-    setEditGuestError('')
-    setEditGuestForm({
-      name: guest.name,
-      email: guest.email ?? '',
-      phone: guest.phone ?? '',
-      adults_count: guest.adults_count,
-      children_count: guest.children_count,
-      rsvp_status: guest.rsvp_status as 'confirmed' | 'declined' | 'pending',
-      dietary_preferences: guest.dietary_preferences ?? '',
-      allergies: guest.allergies ?? '',
-      notes: guest.notes ?? '',
-    })
-  }
-
-  const handleEditGuest = async () => {
-    if (!editingGuest || !editGuestForm.name.trim()) {
-      setEditGuestError(locale==='he'?'שם הוא שדה חובה':locale==='fr'?'Le nom est requis':'Name is required')
-      return
-    }
-    setEditGuestError('')
-    setSavingEditGuest(true)
-    try {
-      const res = await fetch('/api/guests', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: editingGuest.id,
-          wedding_id: wedding.id,
-          name: editGuestForm.name.trim(),
-          email: editGuestForm.email.trim() || null,
-          phone: editGuestForm.phone.trim() || null,
-          adults_count: editGuestForm.adults_count,
-          children_count: editGuestForm.children_count,
-          rsvp_status: editGuestForm.rsvp_status,
-          dietary_preferences: editGuestForm.dietary_preferences.trim() || null,
-          allergies: editGuestForm.allergies.trim() || null,
-          notes: editGuestForm.notes.trim() || null,
-        }),
-      })
-      if (!res.ok) {
-        const d = await res.json()
-        setEditGuestError(d.error || 'Error')
-        return
-      }
-      setEditingGuest(null)
-      router.refresh()
-    } catch {
-      setEditGuestError(locale==='he'?'שגיאה בשמירה':'Save error')
-    } finally {
-      setSavingEditGuest(false)
-    }
-  }
-
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'confirmed': return <span className="badge-confirmed">✓ {t.confirmed}</span>
-      case 'declined':  return <span className="badge-declined">✗ {t.declined}</span>
-      default:          return <span className="badge-pending">… {t.pending}</span>
+      case 'confirmed': return <span className="badge-confirmed">â {t.confirmed}</span>
+      case 'declined': return <span className="badge-declined">â {t.declined}</span>
+      default: return <span className="badge-pending">â¦ {t.pending}</span>
     }
   }
-
-  // ════════════════════════════════════════
-  // TAB 2 — עריכת הזמנה
-  // ════════════════════════════════════════
-  const [editForm, setEditForm] = useState({
-    bride_name: wedding.bride_name,
-    groom_name: wedding.groom_name,
-    wedding_date: wedding.wedding_date,
-    venue_name: wedding.venue_name ?? '',
-    venue_city: wedding.venue_city ?? '',
-    venue_address: wedding.venue_address ?? '',
-    welcome_message: wedding.welcome_message ?? '',
-    rsvp_deadline: wedding.rsvp_deadline ?? '',
-    google_maps_url: wedding.google_maps_url ?? '',
-    waze_url: wedding.waze_url ?? '',
-    locale: wedding.locale,
-    font_style: wedding.font_style ?? 'cormorant',
-    layout_style: wedding.layout_style ?? 'ivory',
-    image_position: wedding.image_position ?? 'center',
-    cover_frame: wedding.cover_frame ?? 'fullscreen',
-    page_layout: wedding.page_layout ?? 'classic',
-    cover_image_url: wedding.cover_image_url ?? '',
-  })
-  const [uploadingCover, setUploadingCover] = useState(false)
-  const [coverUploadError, setCoverUploadError] = useState('')
-  const [savingEdit, setSavingEdit] = useState(false)
-  const [editError, setEditError] = useState('')
-  const [editSuccess, setEditSuccess] = useState(false)
-
-  // ── עריכת אירוע קיים ──
-  const [editingEventId, setEditingEventId] = useState<string | null>(null)
-  const [editEventForm, setEditEventForm] = useState<EditEventFormState>({
-    event_name: '', event_date: '', start_time: '18:00', end_time: '',
-    location_name: '', address: '', google_maps_url: '', waze_url: '', description: '',
-  })
-  const [savingEditEvent, setSavingEditEvent] = useState(false)
-  const [editEventError, setEditEventError] = useState('')
-
-  const openEditEvent = (ev: EventSchedule) => {
-    setEditingEventId(ev.id)
-    setEditEventForm({
-      event_name: ev.event_name,
-      event_date: ev.event_date,
-      start_time: ev.start_time,
-      end_time: ev.end_time ?? '',
-      location_name: ev.location_name ?? '',
-      address: ev.address ?? '',
-      google_maps_url: ev.google_maps_url ?? '',
-      waze_url: ev.waze_url ?? '',
-      description: ev.description ?? '',
-    })
-    setEditEventError('')
-  }
-
-  const handleUpdateEvent = async () => {
-    if (!editingEventId || !editEventForm.event_name || !editEventForm.event_date || !editEventForm.start_time) {
-      setEditEventError(locale === 'he' ? 'שם, תאריך ושעה נדרשים' : 'Name, date and time required')
-      return
-    }
-    setSavingEditEvent(true)
-    setEditEventError('')
-    try {
-      const res = await fetch('/api/weddings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_id: editingEventId,
-          wedding_id: wedding.id,
-          ...editEventForm,
-          end_time: editEventForm.end_time || null,
-          location_name: editEventForm.location_name || null,
-          address: editEventForm.address || null,
-          google_maps_url: editEventForm.google_maps_url || null,
-          waze_url: editEventForm.waze_url || null,
-          description: editEventForm.description || null,
-        }),
-      })
-      if (!res.ok) {
-        const d = await res.json()
-        setEditEventError(d.error || 'Error')
-        return
-      }
-      setEditingEventId(null)
-      router.refresh()
-    } catch {
-      setEditEventError(locale === 'he' ? 'שגיאה בשמירה' : 'Save error')
-    } finally {
-      setSavingEditEvent(false)
-    }
-  }
-
-  // ── מחיקת חשבון ──
-  const [deleteState, setDeleteState] = useState<DeleteState>('idle')
-  const [deleteError, setDeleteError] = useState('')
-
-  const handleDeleteRequest = async () => {
-    setDeleteState('sending')
-    setDeleteError('')
-    try {
-      const res = await fetch('/api/wedding/delete-request', { method: 'POST' })
-      if (!res.ok) {
-        const d = await res.json()
-        setDeleteError(d.error || 'Error')
-        setDeleteState('error')
-        return
-      }
-      setDeleteState('sent')
-    } catch {
-      setDeleteError(locale === 'he' ? 'שגיאה. אנא נסה שוב.' : locale === 'fr' ? 'Erreur. Veuillez réessayer.' : 'Error. Please try again.')
-      setDeleteState('error')
-    }
-  }
-
-  // ── העלאת תמונת כיסוי ──
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploadingCover(true)
-    setCoverUploadError('')
-    try {
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('wedding_id', wedding.id)
-      const res = await fetch('/api/wedding/cover-upload', { method: 'POST', body: fd })
-      if (!res.ok) {
-        const d = await res.json()
-        setCoverUploadError(d.error || 'Error')
-        return
-      }
-      const { url } = await res.json()
-      setEditForm(p => ({ ...p, cover_image_url: url }))
-    } catch {
-      setCoverUploadError(locale === 'he' ? 'שגיאת העלאה' : locale === 'fr' ? "Erreur d'upload" : 'Upload error')
-    } finally {
-      setUploadingCover(false)
-    }
-  }
-
-  // ── ניהול לו"ז — אירועים מותאמים ──
-  const emptyEventForm = {
-    event_name: '',
-    event_date: wedding.wedding_date ?? '',
-    start_time: '18:00',
-    end_time: '',
-    location_name: '',
-    address: '',
-    google_maps_url: '',
-    waze_url: '',
-    description: '',
-  }
-  const [showEventModal, setShowEventModal] = useState(false)
-  const [eventForm, setEventForm] = useState({ ...emptyEventForm })
-  const [savingEvent, setSavingEvent] = useState(false)
-  const [eventModalError, setEventModalError] = useState('')
-  const [deletingEventId, setDeletingEventId] = useState<string | null>(null)
-
-  const handleAddEvent = async () => {
-    if (!eventForm.event_name || !eventForm.event_date || !eventForm.start_time) {
-      setEventModalError(locale === 'he' ? 'שם, תאריך ושעה נדרשים' : locale === 'fr' ? 'Nom, date et heure sont requis' : 'Name, date and start time are required')
-      return
-    }
-    setSavingEvent(true)
-    setEventModalError('')
-    try {
-      const res = await fetch('/api/weddings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          wedding_id: wedding.id,
-          event_name: eventForm.event_name.trim(),
-          event_date: eventForm.event_date,
-          start_time: eventForm.start_time,
-          end_time: eventForm.end_time || null,
-          location_name: eventForm.location_name.trim() || null,
-          address: eventForm.address.trim() || null,
-          google_maps_url: eventForm.google_maps_url.trim() || null,
-          waze_url: eventForm.waze_url.trim() || null,
-          description: eventForm.description.trim() || null,
-          sort_order: schedule.length,
-        }),
-      })
-      if (!res.ok) {
-        const d = await res.json()
-        setEventModalError(d.error || 'Error')
-        return
-      }
-      setShowEventModal(false)
-      setEventForm({ ...emptyEventForm })
-      router.refresh()
-    } catch {
-      setEventModalError(locale === 'he' ? 'שגיאה' : 'Error')
-    } finally {
-      setSavingEvent(false)
-    }
-  }
-
-  const handleDeleteEvent = async (eventId: string) => {
-    setDeletingEventId(eventId)
-    try {
-      await fetch(`/api/weddings?event_id=${eventId}&wedding_id=${wedding.id}`, { method: 'DELETE' })
-      router.refresh()
-    } finally {
-      setDeletingEventId(null)
-    }
-  }
-
-  // ── לו"ז / בראנץ' ──
-  const schedule = (wedding.event_schedule ?? []) as EventSchedule[]
-  const brunchEvent = schedule.find(e =>
-    e.event_name?.toLowerCase().includes('brunch') ||
-    e.event_name?.toLowerCase().includes('בראנץ')
-  )
-  // State נפרד מה-brunchEvent כדי לאפשר toggle מיידי (ללא תלות ב-router.refresh)
-  const [brunchEnabled, setBrunchEnabled] = useState<boolean>(!!brunchEvent)
-  const [brunchEventId, setBrunchEventId] = useState<string | undefined>(brunchEvent?.id)
-  const [togglingBrunch, setTogglingBrunch] = useState(false)
-
-  // סינכרון כשהדף מתרענן
-  useEffect(() => {
-    setBrunchEnabled(!!brunchEvent)
-    setBrunchEventId(brunchEvent?.id)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wedding.event_schedule?.length])
 
   const handleSaveEdit = async () => {
     setSavingEdit(true)
@@ -471,67 +303,50 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
         return
       }
       setEditSuccess(true)
-      router.refresh()
+      router.refresa()
       setTimeout(() => setEditSuccess(false), 3000)
     } catch {
-      setEditError(locale==='he'?'שגיאה בשמירה':'Save error')
+      setEditError(locale==='he'?'×©×××× ××©×××¨×':'Save error')
     } finally {
       setSavingEdit(false)
     }
   }
 
-  // ── Toggle בראנץ' (מתוקן: state אופטימיסטי + בלי double-click) ──
   const handleToggleBrunch = async () => {
-    if (togglingBrunch) return  // מניעת double-click
-
+    if (togglingBrunch) return
     const nextEnabled = !brunchEnabled
-    setBrunchEnabled(nextEnabled)   // עדכון מיידי ב-UI
+    setBrunchEnabled(nextEnabled)
     setTogglingBrunch(true)
-
     try {
       if (nextEnabled) {
-        // הוספת אירוע בראנץ'
-        // Parse date parts directly to avoid UTC/local timezone offset bugs
         const [by, bm, bd] = wedding.wedding_date.split('-').map(Number)
-        const brunchDate = new Date(by, bm - 1, bd + 1)  // local time constructor
+        const brunchDate = new Date(by, bm - 1, bd + 1)
         const dateStr = `${brunchDate.getFullYear()}-${String(brunchDate.getMonth()+1).padStart(2,'0')}-${String(brunchDate.getDate()).padStart(2,'0')}`
-        const name = locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'
-
+        const name = locale==='he'?"××¨×× ×¥' ××××¨×ª":locale==='fr'?'Brunch du lendemain':'Morning-after Brucch'
         const res = await fetch('/api/weddings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            wedding_id: wedding.id,
-            event_name: name,
-            event_date: dateStr,
-            start_time: '11:00',
-            end_time: '14:00',
-            sort_order: 99,
-          }),
+          body: JSON.stringify({ wedding_id: wedding.id, event_name: name, event_date: dateStr, start_time: '11:00', end_time: '14:00', sort_order: 99 }),
         })
         if (res.ok) {
           const data = await res.json()
           setBrunchEventId(data.event?.id)
           router.refresh()
         } else {
-          setBrunchEnabled(false)  // rollback
+          setBrunchEnabled(false)
         }
       } else {
-        // מחיקת אירוע בראנץ'
         if (!brunchEventId) { setBrunchEnabled(false); return }
-        const res = await fetch(
-          `/api/weddings?event_id=${brunchEventId}&wedding_id=${wedding.id}`,
-          { method: 'DELETE' }
-        )
+        const res = await fetch(`/api/weddings?event_id=${brunchEventId}&wedding_id=${wedding.id}`, { method: 'DELETE' })
         if (res.ok) {
           setBrunchEventId(undefined)
           router.refresh()
         } else {
-          setBrunchEnabled(true)  // rollback
+          setBrunchEnabled(true)
         }
       }
     } catch {
-      setBrunchEnabled(!nextEnabled)  // rollback on error
+      setBrunchEnabled(!nextEnabled)
     } finally {
       setTogglingBrunch(false)
     }
@@ -541,53 +356,59 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
   const labelCls = 'block text-xs text-stone-500 uppercase tracking-wider mb-1.5 font-medium'
   const isRTL = locale === 'he'
 
+  const invitationUrl = mounted
+    ? `${window.location.origin}/${locale}/${wedding.slug ?? ''}`
+    : `/${locale}/${wedding.slug ?? ''}`
+
+  const shareText = locale === 'he'
+    ? `×× ×× × ×©×××× ×××××× ××ª×× ×××ª×× × ×©× ${wedding.bride_name} ×${wedding.groom_name}! ${invitationUrl}`
+    : locale === 'fr'
+    ? `Nous avons le plaisir de vous inviter au mariage de ${wedding.bride_name} & ${wedding.groom_name} ! ${invitationUrl}`
+    : `We are delighted to invite you to the wedding of ${wedding.bride_name} & ${wedding.groom_name}! ${invitationUrl}`
+
+  const emailSubject = locale === 'he'
+    ? `×××× × ×××ª×× × - ${wedding.bride_name} ×${wedding.groom_name}`
+    : locale === 'fr'
+    ? `Invitation au mariage de ${wedding.bride_name} & ${wedding.groom_name}`
+    : `Wedding invitation - ${wedding.bride_name} & ${wedding.groom_name}`
+
   return (
-    <div dir={locale === 'he' ? 'rtl' : 'ltr'}>
-      {/* ── Tab Bar ── */}
+    <div>
+      {/* ââ Tab Bar ââ */}
       <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
         {([
-          { key:'guests',  label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
-          { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
-          { key:'edit',    label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
-          { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
-          { key:'account', label: locale==='he'?'⚙ חשבון':locale==='fr'?'⚙ Compte':'⚙ Account' },
+          { key:'guests', label: locale==='he'?'×××¨×××':locale==='fr'?'InvitÃ©s':'Guests' },
+          { key:'seating', label: locale==='he'?'××©×××':locale==='fr'?'Tables':'Seating' },
+          { key:'edit', label: locale==='he'?'×¢×¨×××':locale==='fr'?'Modifier':'Edit' },
+          { key:'preview', label: locale==='he'?'×ª×¦×××':locale==='fr'?'AperÃ§u':'Preview' },
+          { key:'settings', label: locale==='he'?'××××¨××ª':locale==='fr'?'ParamÃ¨tres':'Settings' },
         ] as const).map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             className="flex-shrink-0 px-4 md:px-6 py-3 text-sm font-medium tracking-wide transition-all relative whitespace-nowrap"
             style={{ color: activeTab===tab.key ? '#c9a84c' : '#a8a29e' }}
           >
             {tab.label}
-            {activeTab===tab.key && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c9a84c]" />
-            )}
+            {activeTab===tab.key && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#c9a84c]" />}
           </button>
         ))}
       </div>
 
-      {/* ══════════════════════════════════════════════
+      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
           TAB: GUESTS
-      ══════════════════════════════════════════════ */}
+          ââââââââââââââââââââââââââââââââââââââââââââââ */}
       {activeTab === 'guests' && (
         <div>
-          {/* Toolbar */}
           <div className="flex flex-wrap gap-3 md:gap-4 items-center justify-between mb-6">
             <div className="relative w-full md:flex-1 md:min-w-[200px] md:max-w-sm">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-                placeholder={t.search}
-                className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-white text-stone-700
-                           text-sm focus:outline-none focus:border-[#c9a84c] transition-colors" />
+              <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search}
+                className="w-full pl-10 pr-4 py-2 border border-stone-200 bg-white text-stone-700 text-sm focus:outline-none focus:border-[#c9a84c] transition-colors" />
             </div>
             <div className="flex gap-3 flex-wrap">
               <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as RSVPStatus)}
-                className="px-4 py-2 border border-stone-200 bg-white text-stone-600
-                           text-sm focus:outline-none focus:border-[#c9a84c] transition-colors">
+                className="px-4 py-2 border border-stone-200 bg-white text-stone-600 text-sm focus:outline-none focus:border-[#c9a84c] transition-colors">
                 <option value="all">{t.allStatuses}</option>
                 <option value="confirmed">{t.confirmed}</option>
                 <option value="declined">{t.declined}</option>
@@ -595,15 +416,12 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
               </select>
               <button onClick={exportCSV} className="btn-gold flex items-center gap-2 text-xs">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
                 </svg>
                 {t.exportCSV}
               </button>
-              <button
-                onClick={() => { setShowAddModal(true); setGuestModalError(''); setNewGuest({...emptyNewGuest}) }}
-                className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white
-                           text-xs tracking-wide hover:bg-stone-700 transition-colors">
+              <button onClick={() => { setShowAddModal(true); setGuestModalError(''); setNewGuest({...emptyNewGuest}) }}
+                className="flex items-center gap-2 px-4 py-2 bg-stone-800 text-white text-xs tracking-wide hover:bg-stone-700 transition-colors">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
                 </svg>
@@ -612,7 +430,6 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
             </div>
           </div>
 
-          {/* Guest Table */}
           <div className="bg-white border border-stone-100 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -627,7 +444,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                   {filteredGuests.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="text-center py-16 text-stone-300">
-                        <div className="font-cormorant text-3xl mb-2">✦</div>
+                        <div className="font-cormorant text-3xl mb-2">â¦</div>
                         <p>No guests found</p>
                       </td>
                     </tr>
@@ -648,58 +465,39 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                         </td>
                         <td className="px-4 py-4">{statusBadge(guest.rsvp_status)}</td>
                         <td className="px-4 py-4 text-stone-500">
-                          {guest.adults_count > 0 && <span>{guest.adults_count} 👤</span>}
-                          {guest.children_count > 0 && <span className="ml-2">{guest.children_count} 👶</span>}
+                          {guest.adults_count > 0 && <span>{guest.adults_count} ð¤</span>}
+                          {guest.children_count > 0 && <span className="ml-2">{guest.children_count} ð¶</span>}
                         </td>
                         <td className="px-4 py-4">
                           {guest.dietary_preferences
                             ? <span className="text-xs bg-stone-100 text-stone-600 px-2 py-1">{guest.dietary_preferences}</span>
-                            : <span className="text-stone-200">—</span>}
+                            : <span className="text-stone-200">â</span>}
                         </td>
                         <td className="px-4 py-4 max-w-[200px]">
                           {guest.notes
                             ? <p className="text-xs text-stone-500 truncate" title={guest.notes}>{guest.notes}</p>
-                            : <span className="text-stone-200">—</span>}
+                            : <span className="text-stone-200">â</span>}
                         </td>
                         <td className="px-4 py-4 text-xs text-stone-400">
                           {guest.rsvp_submitted_at
-                            ? new Date(guest.rsvp_submitted_at).toLocaleDateString(
-                                locale==='he'?'he-IL':locale==='fr'?'fr-FR':'en-GB')
-                            : '—'}
+                            ? new Date(guest.rsvp_submitted_at).toLocaleDateString(locale==='he'?'he-IL':locale==='fr'?'fr-FR':'en-GB')
+                            : 'â'}
                         </td>
                         <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center gap-1">
-                            <button onClick={() => openEditGuest(guest)}
-                              className="text-[#c9a84c] hover:text-amber-600 transition-colors p-1 opacity-70 hover:opacity-100"
-                              title={locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit'}>
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                              </svg>
-                            </button>
-                            <button onClick={() => handleDeleteGuest(guest.id)}
-                              disabled={deletingId===guest.id}
-                              className="text-stone-300 hover:text-red-400 transition-colors p-1 disabled:opacity-40"
-                              title={t.deleteGuest}>
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                              </svg>
-                            </button>
-                          </div>
+                          <button onClick={() => handleDeleteGuest(guest.id)} disabled={deletingId===guest.id}
+                            className="text-stone-300 hover:text-red-400 transition-colors p-1 disabled:opacity-40" title={t.deleteGuest}>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19!Ý°´¸àØÜÄÈ¸ÄÐÉÈÈÀÀÄÄØ¸ÄÌàÈÅ Ü¸àØÉÈÈÀÀÄ´Ä¸ääÔ´Ä¸àÔá0ÔÝ°ÔÑØÙ´Ð´ÙØÙ´Ä´ÄÁXÑÄÄÀÀÀ´Ä´Å ´ÑÄÄÀÀÀ´ÄÅØÍ4ÐÝ ÄØ¼ø(ð½ÍÙø(ð½ÕÑÑ½¸ø(ð½Ñø(ð½ÑÈø(íáÁ¹I½ÜôôõÕÍÐ¹¥ (ñÑÈ­äõííÕÍÐ¹¥ôµáÁô±ÍÍ9µôµÍÑ½¹´ÔÀø(ñÑ½±MÁ¸õìÝô±ÍÍ9µôÁà´ØÁä´Ôø(ñ¥Ø±ÍÍ9µôÉ¥É¥µ½±Ì´ÄµéÉ¥µd-tle={t.deleteGuest}>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                          </button>
                         </td>
                       </tr>
                       {expandedRow===guest.id && (
                         <tr key={`${guest.id}-exp`} className="bg-stone-50">
                           <td colSpan={7} className="px-6 py-5">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                              {guest.phone && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Phone</p><p className="text-stone-700">{guest.phone}</p></div>}
-                              {guest.allergies && <div><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Allergies</p><p className="text-red-600">{guest.allergies}</p></div>}
-                              {guest.notes && <div className="md:col-span-2"><p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Notes / Other</p><p className="text-stone-700 bg-white p-3 border border-stone-100">{guest.notes}</p></div>}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
+                            <div className="grid grid-cols-1 md:grid-                   )}
                     </Fragment>
                   ))}
                 </tbody>
@@ -712,41 +510,30 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════
+      {/* âââââââââââââââââââââââââââââââââââââââââââââ
           TAB: SEATING
-     .══════════════════════════════════════════════ */}
+          ââââââââââââââââââââââââââââââââââââââââââââââ */}
       {activeTab === 'seating' && (
-        <div dir={isRTL?'rtl':'ltr'}>
-          {/* Header */}
+        <d <div dir={isRTL?'rtl':'ltr'}>
           <div className="mb-6">
             <h3 className="font-cormorant text-2xl text-stone-700">
-              {locale==='he'?'סידורי ישיבה':locale==='fr'?'Plan de table':'Seating Chart'}
+              {locale==='he'?'×¡××××¨× ××©×××':locale==='fr'?'Plan de table':'Seating Chart'}
             </h3>
             <p className="text-sm text-stone-400 mt-1">
-              {locale==='he'?'הקצה מספר שולחן לכל אורח שאישר הגעה'
-                :locale==='fr'?"Attribuez un numéro de table à chaque invité confirmé"
+              {locale==='he'?'××§×¦× ××¡×¤×¨ ×©×××× ××× ×××¨× ×©×××©×¨ ×××¢×'
+                :locale==='fr'?"Attribuez un numÃ©ro de table Ã  chaque invitÃ© confirmÃ©"
                 :'Assign a table number to each confirmed guest'}
             </p>
           </div>
-
-          {/* Assignment table — confirmed guests */}
           <div className="bg-white border border-stone-100 rounded-2xl overflow-hidden shadow-sm mb-8">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-stone-100 bg-stone-50">
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'שם':locale==='fr'?'Nom':'Name'}
-                    </th>
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'סטטוס':locale==='fr'?'Statut':'Status'}
-                    </th>
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'סה״כ':locale==='fr'?'Total':'Total'}
-                    </th>
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left w-36">
-                      {locale==='he'?'מספר שולחן':locale==='fr'?'N° de table':'Table #'}
-                    </th>
+                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">{locale==='he'?'×©×':locale==='fr'?'Nom':'Name'}</th>
+                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">{locale==='he'?'×¡××××¡':locale==='fr'?'Statut':'Status'}</th>
+                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">{locale==='he'?'×¡××´×':locale==='fr'?'Total':'Total'}</th>
+                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left w-36">{locale==='he'?'××¡×¤×¨ ×©××××':locale==='fr'?'NÂ° de table':'Table #'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-50">
@@ -754,28 +541,19 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                     <tr key={g.id} className="hover:bg-stone-50 transition-colors">
                       <td className="px-5 py-3 font-medium text-stone-800">{g.name}</td>
                       <td className="px-5 py-3">{statusBadge(g.rsvp_status)}</td>
-                      <td className="px-5 py-3 text-stone-500">
-                        {g.adults_count + g.children_count}
-                      </td>
+                      <td className="px-5 py-3 text-stone-500">{g.adults_count + g.children_count}</td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            min={1}
-                            placeholder="—"
+                          <input type="number" min={1} placeholder="â"
                             value={tableInputs[g.id] ?? (g.table_number != null ? String(g.table_number) : '')}
                             onChange={e => setTableInputs(prev => ({ ...prev, [g.id]: e.target.value }))}
                             onBlur={e => handleAssignTable(g.id, e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') handleAssignTable(g.id, (e.target as HTMLInputElement).value)
-                            }}
-                            className="w-20 px-3 py-1.5 border border-stone-200 bg-stone-50 text-sm text-center focus:outline-none focus:border-[#c9a84c] rounded-lg transition-colors"
-                            dir="ltr"
-                          />
+                            onKeyDown={e => { if (e.key === 'Enter') handleAssignTable(g.id, (e.target as HTMLInputElement).value) }}
+                            className="w-20 px-3 py-1.5 border border-stone-200 bg-stone-50 text-sm text-center focus:outline-none focus:border-[#c9a84c] rounded-lg transition-colors" dir="ltr" />
                           {savingTable === g.id && (
                             <svg className="w-4 h-4 text-stone-300 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V8z"/>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                             </svg>
                           )}
                         </div>
@@ -787,9 +565,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
             </div>
             {guests.filter(g => g.rsvp_status === 'confirmed').length === 0 && (
               <div className="px-5 py-12 text-center text-stone-400 text-sm">
-                {locale==='he'?'אין אורחים שאישרו הגעה עדיין'
-                  :locale==='fr'?"Aucun invité confirmé pour l'instant"
-                  :'No confirmed guests yet'}
+                {locale==='he'?'××× ×××¨××× ×©×××©×¨× ×××¢× ×¢××××':locale==='fr'?"Aucun invitÃ© confirmÃ© pour l'instant":'No confirmed guests yet'}
               </div>
             )}
             <div className="px-5 py-3 bg-stone-50 border-t border-stone-100 text-xs text-stone-400 text-right">
@@ -797,11 +573,11 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
               {' / '}
               {guests.filter(g => g.rsvp_status === 'confirmed').length}
               {' '}
-              {locale==='he'?'הוקצו לשולחנות':locale==='fr'?'assignés à une table':'assigned to tables'}
+              {locale==='he'?'×××§×¦× ××©×××× ××ª':locale==='fr'?'assignÃ©s Ã  une table':'assigned to tables'}
             </div>
           </div>
 
-          {/* Grouped-by-table overview */}
+          {/* Table overview */}
           {(() => {
             const confirmed = guests.filter(g => g.rsvp_status === 'confirmed' && g.table_number != null)
             if (confirmed.length === 0) return null
@@ -815,7 +591,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
             return (
               <div>
                 <h3 className="font-cormorant text-xl text-stone-700 mb-4">
-                  {locale==='he'?'תצוגה לפי שולחן':locale==='fr'?'Vue par table':'View by Table'}
+                  {locale==='he'?'×ª×¦××× ××¤× ×©××××':locale==='fr'?'Vue par table':'View by Table'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {tableNumbers.map(tableNum => {
@@ -824,12 +600,8 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                     return (
                       <div key={tableNum} className="bg-white border border-stone-100 rounded-xl p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="font-cormorant text-lg text-stone-700">
-                            {locale==='he'?'שולחן':locale==='fr'?'Table':'Table'} {tableNum}
-                          </span>
-                          <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-full">
-                            {total} {locale==='he'?'אורחים':locale==='fr'?'invités':'guests'}
-                          </span>
+                          <span className="font-cormorant text-lg text-stone-700">{locale==='he'?'×©××××':locale==='fr'?'Table':'Table'} {tableNum}</span>
+                          <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-full">{total} {locale==='he'?'×××¨×××':locale==='fr'?'invitÃ©s':'guests'}</span>
                         </div>
                         <ul className="space-y-1.5">
                           {tableGuests.map(g => (
@@ -837,9 +609,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                               <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] flex-shrink-0"/>
                               <span className="truncate">{g.name}</span>
                               {(g.adults_count + g.children_count) > 1 && (
-                                <span className="text-xs text-stone-400 flex-shrink-0">
-                                  ×{g.adults_count + g.children_count}
-                                </span>
+                                <span className="text-xs text-stone-400 flex-shrink-0">Ã{g.adults_count + g.children_count}</span>
                               )}
                             </li>
                           ))}
@@ -854,60 +624,55 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════
+      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
           TAB: EDIT
-      ══════════════════════════════════════════════ */}
+          ââââââââââââââââââââââââââââââââââââââââââââââ */}
       {activeTab === 'edit' && (
         <div dir={isRTL?'rtl':'ltr'} className="max-w-2xl space-y-8">
-
           {editError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl">{editError}</div>}
           {editSuccess && (
             <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7"/>
               </svg>
-              {locale==='he'?'נשמר בהצלחה!':locale==='fr'?'Enregistré avec succès !':'Saved successfully!'}
+              {locale==='he'?'× ×©××¨ ×××¦×××!':locale==='fr'?'EnregistrÃ© avec succÃ¨s !':'Saved successfully!'}
             </div>
           )}
-
-          {/* ── הזוג ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'הזוג':locale==='fr'?'Les mariés':'The Couple'}
+              {locale==='he'?'××××':locale==='fr'?'Les mariÃ©s':'The Couple'}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>{locale==='he'?'שם הכלה':locale==='fr'?"Prénom de la mariée":"Bride's name"}</label>
+                <label className={labelCls}>{locale==='he'?'×©× ××××':locale==='fr'?"PrÃ©nom de la mariÃ©e":"Bride's name"}</label>
                 <input value={editForm.bride_name} onChange={e=>setEditForm(p=>({...p,bride_name:e.target.value}))} className={inputCls}/>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'שם החתן':locale==='fr'?"Prénom du marié":"Groom's name"}</label>
+                <label className={labelCls}>{locale==='he'?'×©× ×××ª×':locale==='fr'?"PrÃ©nom du mariÃ©":"Groom's name"}</label>
                 <input value={editForm.groom_name} onChange={e=>setEditForm(p=>({...p,groom_name:e.target.value}))} className={inputCls}/>
               </div>
             </div>
             <div className="mt-4">
-              <label className={labelCls}>{locale==='he'?'תאריך החתונה':locale==='fr'?'Date du mariage':'Wedding date'}</label>
+              <label className={labelCls}>{locale==='he'?'×ª××¨×× ×××ª×× ×':locale==='fr'?'Date du mariage':'Wedding date'}</label>
               <input type="date" value={editForm.wedding_date} onChange={e=>setEditForm(p=>({...p,wedding_date:e.target.value}))} dir="ltr" className={inputCls}/>
             </div>
           </div>
-
-          {/* ── מקום ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'מקום האירוע':locale==='fr'?'Le lieu':'Venue'}
+              {locale==='he'?'××§×× ××××¨××¢':locale==='fr'?'Le lieu':'Venue'}
             </h3>
             <div className="space-y-3">
               <div>
-                <label className={labelCls}>{locale==='he'?'שם האולם':locale==='fr'?'Nom du lieu':'Venue name'}</label>
-                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Château de...'}/>
+                <label className={labelCls}>{locale==='he'?'×©× ×××××':locale==='fr'?'Nom du lieu':'Venue name'}</label>
+                <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'×××× ×××¨××¢××':'ChÃ¢teau de...'}/>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>{locale==='he'?'עיר':locale==='fr'?'Ville':'City'}</label>
+                  <label className={labelCls}>{locale==='he'?'×¢××¨':locale==='fr'?'Ville':'City'}</label>
                   <input value={editForm.venue_city} onChange={e=>setEditForm(p=>({...p,venue_city:e.target.value}))} className={inputCls}/>
                 </div>
                 <div>
-                  <label className={labelCls}>{locale==='he'?'כתובת':locale==='fr'?'Adresse':'Address'}</label>
+                  <label className={labelCls}>{locale==='he'?'××ª×××ª':locale==='fr'?'Adresse':'Address'}</label>
                   <input value={editForm.venue_address} onChange={e=>setEditForm(p=>({...p,venue_address:e.target.value}))} className={inputCls}/>
                 </div>
               </div>
@@ -921,478 +686,133 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                   <input value={editForm.waze_url} onChange={e=>setEditForm(p=>({...p,waze_url:e.target.value}))} className={inputCls} dir="ltr" placeholder="https://waze.com/..."/>
                 </div>
               </div>
-      2     </div>
+            </div>
           </div>
-
-          {/* ── הודעה ותאריך RSVP ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'תוכן ההזמנה':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
+              {locale==='he'?'×ª××× ××××× ×':locale==='fr'?"Contenu de l'invitation":'Invitation Content'}
             </h3>
             <div className="space-y-3">
               <div>
-                <label className={labelCls}>{locale==='he'?'שפה ראשית':locale==='fr'?'Langue principale':'Main language'}</label>
+                <label className={labelCls}>{locale==='he'?'×©×¤× ×¨××©××ª':locale==='fr'?'Langue principale':'Main language'}</label>
                 <div className="flex gap-2">
                   {(['fr','he','en'] as const).map(lang=>(
-                    <button key={lang} type="button"
-                      onClick={()=>setEditForm(p=>({...p,locale:lang}))}
+                    <button key={lang} type="button" onClick={()=>setEditForm(p=>({...p,locale:lang}))}
                       className="flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all"
                       style={{
                         background:editForm.locale===lang?'#c9a84c':'#faf8f5',
                         color:editForm.locale===lang?'#fff':'#78716c',
                         borderColor:editForm.locale===lang?'#c9a84c':'#e7e5e4',
                       }}>
-                      {lang==='fr'?'Français':lang==='he'?'עברית':'English'}
+                      {lang==='fr'?'FranÃ§ais':lang==='he'?'×¢××¨××ª':'English'}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-stone-400 mt-1.5">
-                  🌐 {locale==='he'?'האורחים יראו את ההזמנה בשפה שלהם אוטומטית':locale==='fr'?"Les invités verront l'invitation dans leur propre langue automatiquement":'Guests will see the invitation in their own language automatically'}
-                </p>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'הודעת פתיחה':locale==='fr'?'Message de bienvenue':'Welcome message'}</label>
-                <textarea value={editForm.welcome_message} onChange={e=>setEditForm(p=>({...p,welcome_message:e.target.value}))}
-                  rows={4} dir="auto" className={inputCls+' resize-none'}/>
+                <label className={labelCls}>{locale==='he'?'××××¢×ª ×¤×ª×××':locale==='fr'?'Message de bienvenue':'Welcome message'}</label>
+                <textarea value={editForm.welcome_message} onChange={e=>setEditForm(p=>({...p,welcome_message:e.target.value}))} rows={4} dir="auto" className={inputCls+' resize-none'}/>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'תאריך אחרון לאישור':locale==='fr'?'Date limite RSVP':'RSVP deadline'}</label>
+                <label className={labelCls}>{locale==='he'?'×ª××¨×× ×××¨×× ××××©××¨':locale==='fr'?'Date limite RSVP':'RSVP deadline'}</label>
                 <input type="date" value={editForm.rsvp_deadline} onChange={e=>setEditForm(p=>({...p,rsvp_deadline:e.target.value}))} dir="ltr" className={inputCls}/>
               </div>
             </div>
           </div>
-
-          {/* ── עיצוב ── */}
           <div>
             <h3 className="font-cormorant text-xl text-stone-700 mb-4 pb-2 border-b border-stone-100">
-              {locale==='he'?'עיצוב ומראה':locale==='fr'?'Design & Apparence':'Design & Appearance'}
+              {locale==='he'?'××"× ××××¨××¢':locale==='fr'?"Programme de l'Ã©vÃ©nement":'Event Schedule'}
             </h3>
-            <div className="space-y-5">
-
-              {/* ── Cover image ── */}
+            <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100">
               <div>
-                <label className={labelCls}>
-                  {locale==='he'?'תמונת כיסוי':locale==='fr'?"Photo de couverture":'Cover photo'}
-                </label>
-                {editForm.cover_image_url && (
-                  <div className="relative h-28 rounded-xl overflow-hidden mb-2 border border-stone-100">
-                    <img src={editForm.cover_image_url} alt="cover" className="w-full h-full object-cover" style={{
-                      objectPosition:
-                        editForm.image_position === 'top' ? '50% 20%' :
-                        editForm.image_position === 'bottom' ? '50% 80%' :
-                        editForm.image_position === 'left' ? '20% 50%' :
-                        editForm.image_position === 'right' ? '80% 50%' :
-                        '50% 50%',
-                    }}/>
-                    <button
-                      type="button"
-                      onClick={() => setEditForm(p => ({ ...p, cover_image_url: '' }))}
-                      className="absolute top-2 right-2 bg-black/50 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center hover:bg-black/70"
-                    >×</button>
-                  </div>
-                )}
-                <label className="flex items-center gap-2 cursor-pointer px-4 py-2.5 border border-dashed border-stone-200 rounded-xl text-sm text-stone-500 hover:bg-stone-50 transition-colors">
-                  {uploadingCover ? (
-                    <span className="animate-pulse">{locale==='he'?'מעלה...':locale==='fr'?'Téléchargement...':'Uploading...'}</span>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      </svg>
-                      <span>{locale==='he'?'העלה תמונה (JPEG/PNG/WebP)':locale==='fr'?'Télécharger une photo (JPEG/PNG/WebP)':'Upload photo (JPEG/PNG/WebP)'}</span>
-                    </>
-                  )}
-                  <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleCoverUpload} disabled={uploadingCover}/>
-                </label>
-                {coverUploadError && <p className="text-red-500 text-xs mt-1">{coverUploadError}</p>}
+                <p className="text-sm font-medium text-stone-700">
+                  {locale==='he'?"××¨×× ×¥' ××××¨×ª":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
+                </p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {locale==='he'?"×××¡×£ ××¨×× ×¥' ×××× ×©×××¨× ×××ª×× × (11:00â14:00)"
+                    :locale==='fr'?"Ajouter un brunch le lendemain du mariage (11hâ14h)"
+                    :'Add a brunch event the day after the wedding (11amâ2pm)'}
+                </p>
               </div>
-
-              {/* ── Font style ── */}
-              <div>
-                <label className={labelCls}>
-                  {locale==='he'?'סגנון גופן':locale==='fr'?'Style de police':'Font style'}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    { key: 'cormorant', label: 'Cormorant', preview: 'Sophie & Daniel' },
-                    { key: 'playfair', label: 'Playfair', preview: 'Sophie & Daniel' },
-                    { key: 'modern', label: 'Modern', preview: 'Sophie & Daniel' },
-                  ] as const).map(f => (
-                    <button
-                      key={f.key}
-                      type="button"
-                      onClick={() => setEditForm(p => ({ ...p, font_style: f.key }))}
-                      className="border rounded-xl py-3 px-2 text-center transition-all"
-                      style={{
-                        borderColor: editForm.font_style === f.key ? '#c9a84c' : '#e7e5e4',
-                        background: editForm.font_style === f.key ? '#fdf6e3' : '#faf8f5',
-                      }}
-                    >
-                      <span className="block text-xs text-stone-400 mb-1" style={{ fontFamily: 'system-ui, sans-serif' }}>{f.label}</span>
-                      <span
-                        className="block text-sm text-stone-700"
-                        style={{
-                          fontFamily: f.key === 'cormorant' ? 'Georgia, serif'
-                            : f.key === 'playfair' ? "'Playfair Display', Georgia, serif"
-                            : "'Helvetica Neue', Arial, sans-serif",
-                          fontWeight: f.key === 'modern' ? 300 : undefined,
-                        }}
-                      >
-                        {f.preview}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Color palette ── */}
-              <div>
-                <label className={labelCls}>
-                  {locale==='he'?'פלטת צבעים':locale==='fr'?'Palette de couleurs':'Color palette'}
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {([
-                    { key: 'ivory',    label: locale==='he'?'שנהב':locale==='fr'?'Ivoire':'Ivory',     bg: '#faf8f5', accent: '#c9a84c', text: '#1c1917' },
-                    { key: 'blush',    label: locale==='he'?'ורוד':locale==='fr'?'Blush':'Blush',       bg: '#fff5f5', accent: '#d4a0a0', text: '#3d1515' },
-                    { key: 'sage',     label: locale==='he'?'ירוק עדין':locale==='fr'?'Sauge':'Sage',   bg: '#f4f7f2', accent: '#7a9e7e', text: '#1a2e1c' },
-                    { key: 'midnight', label: locale==='he'?'לילה':locale==='fr'?'Minuit':'Midnight',   bg: '#0f172a', accent: '#c9a84c', text: '#f8f5ee' },
-                  ] as const).map(p => (
-                    <button
-                      key={p.key}
-                      type="button"
-                      onClick={() => setEditForm(prev => ({ ...prev, layout_style: p.key }))}
-                      className="border rounded-xl p-3 text-left transition-all flex items-center gap-3"
-                      style={{
-                        background: p.bg,
-                        borderColor: editForm.layout_style === p.key ? '#c9a84c' : '#e7e5e4',
-                        borderWidth: editForm.layout_style === p.key ? '2px' : '1px',
-                      }}
-                    >
-                      <div className="flex gap-1 flex-shrink-0">
-                        <span className="w-4 h-4 rounded-full" style={{ background: p.bg, border: '1px solid #e7e5e4' }}/>
-                        <span className="w-4 h-4 rounded-full" style={{ background: p.accent }}/>
-                      </div>
-                      <span className="text-xs font-medium" style={{ color: p.text === '#f8f5ee' ? '#1c1917' : p.text }}>{p.label}</span>
-                      {editForm.layout_style === p.key && (
-                        <span className="ml-auto text-[#c9a84c] text-xs">✓</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── מסגרת תמונה ── */}
-              {editForm.cover_image_url && (
-                <div>
-                  <label className={labelCls}>
-                    {locale==='he'?'מסגרת תמונה':locale==='fr'?"Cadre de la photo":'Photo frame'}
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {([
-                      { key: 'fullscreen', label: locale==='he'?'מסך מלא':locale==='fr'?'Plein écran':'Fullscreen', icon: '⬛' },
-                      { key: 'arch',       label: locale==='he'?'קשת':locale==='fr'?'Arche':'Arch',                icon: '🔼' },
-                      { key: 'oval',       label: locale==='he'?'אובלי':locale==='fr'?'Ovale':'Oval',              icon: '⬭' },
-                      { key: 'contained',  label: locale==='he'?'ממוסגר':locale==='fr'?'Encadré':'Contained',      icon: '▢' },
-                    ] as const).map(f => (
-                      <button
-                        key={f.key}
-                        type="button"
-                        onClick={() => setEditForm(p => ({ ...p, cover_frame: f.key }))}
-                        className="border rounded-xl py-2.5 px-3 text-center transition-all flex items-center gap-2"
-                        style={{
-                          borderColor: editForm.cover_frame === f.key ? '#c9a84c' : '#e7e5e4',
-                          background: editForm.cover_frame === f.key ? '#fdf6e3' : '#faf8f5',
-                        }}
-                      >
-                        <span className="text-base">{f.icon}</span>
-                        <span className="text-xs font-medium text-stone-600">{f.label}</span>
-                        {editForm.cover_frame === f.key && <span className="ml-auto text-[#c9a84c] text-xs">✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ── מיקום תמונה ── */}
-              {editForm.cover_image_url && (
-                <div>
-                  <label className={labelCls}>
-                    {locale==='he'?'מיקום מוקד התמונה':locale==='fr'?"Point de focus de la photo":'Image focal point'}
-                  </label>
-                  {/* 3×3 grid focal point selector */}
-                  <div className="relative w-full rounded-xl overflow-hidden border border-stone-200 mb-2" style={{ maxHeight: '140px', aspectRatio: '16/7' }}>
-                    <img src={editForm.cover_image_url} alt="cover" className="w-full h-full object-cover" style={{
-                      objectPosition:
-                        editForm.image_position === 'top' ? '50% 20%' :
-                        editForm.image_position === 'bottom' ? '50% 80%' :
-                        editForm.image_position === 'left' ? '20% 50%' :
-                        editForm.image_position === 'right' ? '80% 50%' :
-                        '50% 50%',
-                    }}/>
-                    <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
-                      {([
-                        ['left','top','right'],
-                        ['left','center','right'],
-                        ['left','bottom','right'],
-                      ] as const).map((row, ri) => row.map((pos, ci) => {
-                        const isSelected = editForm.image_position === pos || (pos === 'center' && (!editForm.image_position || editForm.image_position === 'center'))
-                        return (
-                          <button
-                            key={`${ri}-${ci}`}
-                            type="button"
-                            onClick={() => setEditForm(p => ({ ...p, image_position: pos }))}
-                            className="transition-all"
-                            style={{
-                              background: isSelected ? 'rgba(201,168,76,0.5)' : 'transparent',
-                              border: isSelected ? '2px solid #c9a84c' : '1px solid rgba(255,255,255,0.2)',
-                            }}
-                            title={pos}
-                          />
-                        )
-                      }))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-stone-400">
-                    {locale==='he'?'לחץ על החלק בתמונה שברצונך לראות בהזמנה':locale==='fr'?'Cliquez sur la zone de la photo à afficher':'Click the area of the photo you want shown'}
-                  </p>
-                </div>
-              )}
-
-              {/* ── פריסת דף ── */}
-              <div>
-                <label className={labelCls}>
-                  {locale==='he'?'פריסת הדף':locale==='fr'?"Mise en page":'Page layout'}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    {
-                      key: 'classic',
-                      label: locale==='he'?'קלאסי':locale==='fr'?'Classique':'Classic',
-                      desc: locale==='he'?'גיבור מסך מלא':locale==='fr'?'Héros plein écran':'Full-screen hero',
-                      preview: (
-                        <div className="w-full h-16 rounded overflow-hidden flex flex-col">
-                          <div className="flex-1 bg-stone-700 flex items-center justify-center">
-                            <div className="text-white text-xs opacity-70">A &amp; B</div>
-                          </div>
-                          <div className="h-3 bg-stone-100 flex items-center px-1 gap-0.5">
-                            <div className="h-1 w-6 bg-stone-300 rounded"/>
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'romantic',
-                      label: locale==='he'?'רומנטי':locale==='fr'?'Romantique':'Romantic',
-                      desc: locale==='he'?'גיבור קמור':locale==='fr'?'Héros en arche':'Arched hero',
-                      preview: (
-                        <div className="w-full h-16 rounded overflow-hidden flex flex-col">
-                          <div className="flex-[2] bg-stone-700 rounded-b-full mx-1 flex items-center justify-center">
-                            <div className="text-white text-xs opacity-70">A &amp; B</div>
-                          </div>
-                          <div className="flex-1 bg-stone-100 flex items-center justify-center">
-                            <div className="h-1 w-8 bg-stone-300 rounded"/>
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'minimal',
-                      label: locale==='he'?'מינימלי':locale==='fr'?'Minimaliste':'Minimal',
-                      desc: locale==='he'?'טיפוגרפיה נקייה':locale==='fr'?'Typographie épurée':'Clean type',
-                      preview: (
-                        <div className="w-full h-16 rounded overflow-hidden bg-stone-50 flex flex-col items-center justify-center gap-1 py-1">
-                          <div className="h-1 w-12 bg-stone-800 rounded"/>
-                          <div className="h-0.5 w-6 bg-[#c9a84c] rounded"/>
-                          <div className="h-1 w-12 bg-stone-800 rounded"/>
-                          <div className="h-2 w-10 bg-stone-300 rounded mt-1"/>
-                        </div>
-                      ),
-                    },
-                  ] as const).map(l => (
-                    <button
-                      key={l.key}
-                      type="button"
-                      onClick={() => setEditForm(p => ({ ...p, page_layout: l.key }))}
-                      className="border rounded-xl p-2 text-center transition-all"
-                      style={{
-                        borderColor: editForm.page_layout === l.key ? '#c9a84c' : '#e7e5e4',
-                        background: editForm.page_layout === l.key ? '#fdf6e3' : '#faf8f5',
-                        borderWidth: editForm.page_layout === l.key ? '2px' : '1px',
-                      }}
-                    >
-                      {l.preview}
-                      <span className="block text-xs font-medium text-stone-600 mt-1.5">{l.label}</span>
-                      <span className="block text-[10px] text-stone-400 mt-0.5">{l.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* ── לו"ז האירוע ── */}
-          <div>
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-stone-100">
-              <h3 className="font-cormorant text-xl text-stone-700">
-                {locale==='he'?"לו\"ז האירוע":locale==='fr'?"Programme de l'événement":'Event Schedule'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => { setEventForm({ ...emptyEventForm }); setEventModalError(''); setShowEventModal(true) }}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[#c9a84c] text-[#c9a84c] hover:bg-[#fdf6e3] transition-colors"
+              <button type="button" onClick={handleToggleBrunch} disabled={togglingBrunch}
+                aria-pressed={brunchEnabled}
+                className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0"
+                style={{ background: brunchEnabled ? '#c9a84c' : '#d4d0cb' }}
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-                </svg>
-                {locale==='he'?'הוסף אירוע':locale==='fr'?'Ajouter':'Add event'}
+                <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200"
+                  style={{ transform: brunchEnabled ? 'translateX(22px)' : 'translateX(2px)' }} />
               </button>
             </div>
-
-            {/* רשימת אירועים — מוצגת לפני ה-toggle של בראנץ' */}
-            {schedule.length > 0 ? (
-              <div className="space-y-2 mb-4">
-                {[...schedule]
-                  .sort((a, b) => a.event_date.localeCompare(b.event_date) || a.start_time.localeCompare(b.start_time))
-                  .map(ev => {
-                    const isBrunch = ev.event_name?.toLowerCase().includes('brunch') || ev.event_name?.toLowerCase().includes('בראנץ')
-                    return (
-                      <div key={ev.id} className="flex items-center gap-3 py-2.5 px-4 bg-white border border-stone-100 rounded-xl text-sm">
-                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: isBrunch ? '#f59e0b' : '#c9a84c' }}/>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-stone-700 font-medium">{ev.event_name}</span>
-                          {ev.location_name && <span className="text-stone-400 text-xs ml-2">· {ev.location_name}</span>}
-                          <span className="text-stone-300 text-xs ml-2">{ev.event_date}</span>
-                        </div>
-                        <span className="text-xs text-stone-400 flex-shrink-0">{ev.start_time?.slice(0,5)}</span>
-                        {/* Edit button */}
-                        <button
-                          type="button"
-                          onClick={() => openEditEvent(ev)}
-                          className="text-stone-300 hover:text-[#c9a84c] transition-colors flex-shrink-0"
-                          title={locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit'}
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                          </svg>
-                        </button>
-                        {/* Delete button */}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteEvent(ev.id)}
-                          disabled={deletingEventId === ev.id}
-                          className="text-stone-300 hover:text-red-400 transition-colors flex-shrink-0 disabled:opacity-40"
-                          title={locale==='he'?'מחק':locale==='fr'?'Supprimer':'Delete'}
-                        >
-                          {deletingEventId === ev.id ? (
-                            <span className="text-xs animate-pulse">…</span>
-                          ) : (
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                          )}
-                        </button>
-                      </div>
-                    )
-                  })}
+            {schedule.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {schedule.map(ev => (
+                  <div key={ev.id} className="flex items-center justify-between py-2 px-3 bg-white border border-stone-100 rounded-lg text-sm">
+                    <span className="text-stone-700">{ev.event_name}</span>
+                    <span className="text-xs text-stone-400">{ev.start_time?.slice(0,5)}</span>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <p className="text-xs text-stone-400 text-center py-4 mb-4">
-                {locale==='he'?'אין אירועים עדיין. הוסיפו את הטקס, הקבלת פנים ועוד.':locale==='fr'?'Pas encore d\'événements. Ajoutez la cérémonie, le cocktail, etc.':'No events yet. Add the ceremony, cocktail hour, etc.'}
-              </p>
             )}
-
-            {/* ── בראנץ' למחרת ── */}
-            <div className="border-t border-stone-100 pt-4">
-              <h3 className="font-cormorant text-xl text-stone-700 mb-3">
-                {locale==='he'?"בראנץ' למחרת":locale==='fr'?'Brunch du lendemain':'Morning-after Brunch'}
-              </h3>
-              <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl border border-stone-100">
-                <div>
-                  <p className="text-sm font-medium text-stone-700">
-                    {locale==='he'?"הוספה מהירה של בראנץ' (11:00–14:00)"
-                      :locale==='fr'?"Ajout rapide d'un brunch (11h–14h)"
-                      :'Quick-add a brunch event (11am–2pm)'}
-                  </p>
-                  {brunchEnabled && brunchEventId && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const ev = schedule.find(e => e.id === brunchEventId)
-                        if (ev) openEditEvent(ev)
-                      }}
-                      className="text-xs mt-1 underline"
-                      style={{ color: '#c9a84c' }}
-                    >
-                      {locale==='he'?'ערוך פרטי בראנץ\'':locale==='fr'?'Modifier les détails du brunch':'Edit brunch details'}
-                    </button>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleToggleBrunch}
-                  disabled={togglingBrunch}
-                  aria-pressed={brunchEnabled}
-                  className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0"
-                  style={{ background: brunchEnabled ? '#c9a84c' : '#d4d0cb' }}
-                >
-                  <span
-                    className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200"
-                    style={{ transform: brunchEnabled ? 'translateX(22px)' : 'translateX(2px)' }}
-                  />
-                </button>
-              </div>
-            </div>
           </div>
-
-          {/* ── כפתור שמירה ── */}
           <div className="pt-2">
             <button onClick={handleSaveEdit} disabled={savingEdit}
               className="px-8 py-3.5 text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all disabled:opacity-60"
               style={{ background: savingEdit?'#a8a29e':'#c9a84c', boxShadow: savingEdit?'none':'0 4px 14px rgba(201,168,76,0.25)' }}>
-              {savingEdit
-                ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...')
-                : (locale==='he'?'שמור שינויים':locale==='fr'?'Enregistrer les modifications':'Save changes')}
+              {savingEdit ? (locale==='he'?'×©×××¨...':locale==='fr'?'Enregistrement...':'Saving...') : (locale==='he'?'×©×××¨ ×©×× ××××':locale==='fr'?'Enregistrer les modifications':'Save changes')}
             </button>
           </div>
-
-          {/* ── ניהול חשבון moved to account tab ── */}
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════
+      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
           TAB: PREVIEW
-      ══════════════════════════════════════════════ */}
+          ââââââââââââââââââââââââââââââââââââââââââââââ */}
       {activeTab === 'preview' && (
-        <div className="text-center py-12">
+        <div className="text-center py-8">
           <p className="text-stone-400 text-sm mb-6">
-            {locale==='he'?'לצפייה בהזמנה כפי שהאורחים רואים אותה':locale==='fr'?"Voir l'invitation telle que les invités la voient":'See the invitation as guests see it'}
+            {locale==='he'?'××¦×¤××× ××××× × ××¤× ×©××××¨××× ×¨×××× ×××ª×':locale==='fr'?"Voir l'invitation telle que les invitÃ©s la voient":'See the invitation as guests see it'}
           </p>
-          <a
-            href={wedding.slug ? `/${locale}/${wedding.slug}` : '#'}
-            target="_blank"
-            rel="noopener noreferrer"
+          <a href={wedding.slug ? `/${locale}/${wedding.slug}` : '#'} target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-8 py-3.5 text-white text-sm font-medium tracking-wider uppercase rounded-xl"
-            style={{ background:'#c9a84c', boxShadow:'0 4px 14px rgba(201,168,76,0.25)' }}
-          >
+            style={{ background:'#c9a84c', boxShadow:'0 4px 14px rgba(201,168,76,0.25)' }}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
             </svg>
-            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↗
+            {locale==='he'?'×¤×ª× ×××× ×':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} â
           </a>
+
+          {/* Share buttons */}
+          <div className="flex gap-3 justify-center mt-6 flex-wrap">
+            <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all hover:opacity-90"
+              style={{ background: '#25D366' }}>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+              </svg>
+              WhatsApp
+            </a>
+            <a href={`mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shareText)}`}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all hover:opacity-90"
+              style={{ background: '#1c1917' }}>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              {locale==='he'?'×©×× ×××××××':locale==='fr'?"Partager par e-mail":'Share by email'}
+            </a>
+          </div>
+
           <div className="mt-6">
             <p className="text-xs text-stone-400 mb-2">
-              {locale==='he'?'קישור ההזמנה':locale==='fr'?"Lien de l'invitation":'Invitation link'}
+              {locale==='he'?'×§××©××¨ ××××× ×':locale==='fr'?"Lien de l'invitation":'Invitation link'}
             </p>
             <div className="flex items-center gap-2 max-w-sm mx-auto">
-              <code className="flex-1 text-xs bg-stone-100 px-3 py-2 rounded-lg text-stone-600 truncate dir-ltr" dir="ltr">
-                {typeof window!=='undefined'?window.location.origin:''}/{locale}/{wedding.slug ?? '…'}
+              <code className="flex-1 text-xs bg-stone-100 px-3 py-2 rounded-lg text-stone-600 truncate" dir="ltr">
+                {invitationUrl}
               </code>
               <button
-                onClick={() => wedding.slug && navigator.clipboard?.writeText(`${window.location.origin}/${locale}/${wedding.slug}`)}
-                className="p-2 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
-                title="Copy"
-              >
+                onClick={() => wedding.slug && navigator.clipboard?.writeText(invitationUrl)}
+                className="p-2 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors" title="Copy">
                 <svg className="w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
@@ -1402,290 +822,208 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════
-          TAB: ACCOUNT SETTINGS
-      ══════════════════════════════════════════════ */}
-      {activeTab === 'account' && (
-        <AccountSettingsClient
-          locale={locale}
-          userEmail={userEmail}
-          initialCoOwnerEmail={coOwnerEmail}
-          weddingId={wedding.id}
-        />
-      )}
+      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
+          TAB: SETTINGS
+          ââââââââââââââââââââââââââââââââââââââââââââââ */}
+      {activeTab === 'settings' && (
+        <div dir={isRTL?'rtl':'ltr'} className="max-w-2xl space-y-8">
 
-      {/* ══════════════════════════════════════════════
-          מודאל הוספת אירוע ללו"ז
-      ══════════════════════════════════════════════ */}
-      {showEventModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.4)' }}
-          onClick={e => { if (e.target === e.currentTarget) setShowEventModal(false) }}>
-          <div dir={isRTL ? 'rtl' : 'ltr'}
-            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-              <h2 className="font-cormorant text-xl text-stone-800">
-                {locale==='he'?'הוספת אירוע ללו"ז':locale==='fr'?"Ajouter un événement":'Add event to schedule'}
-              </h2>
-              <button onClick={() => setShowEventModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
-              {eventModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{eventModalError}</div>}
-
+          {/* ââ Visibility ââ */}
+          <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
+            <h3 className="font-cormorant text-xl text-stone-800 mb-1">
+              {locale==='he'?'× ×¨×××ª ××××× ×':locale==='fr'?"VisibilitÃ© de l'invitation":'Invitation visibility'}
+            </h3>
+            <p className="text-xs text-stone-400 mb-5">
+              {locale==='he'?'×××©×¨ ××××× × ×××¡×ª×¨×ª, ××××¨××× ×× ××××× ×××©×ª ××××'
+                :locale==='fr'?"Quand l'invitation est cachÃ©e, les invitÃ©s ne peuvent pas y accÃ©der"
+                :'When hidden, guests cannot access the invitation page'}
+            </p>
+            <div className="flex items-center justify-between p-4 bg-stone-50 rounded-xl">
               <div>
-                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
-                <input
-                  value={eventForm.event_name}
-     0            onChange={e => setEventForm(p => ({ ...p, event_name: e.target.value }))}
-                  placeholder={locale==='he'?'קבלת פנים':locale==='fr'?'Cérémonie':'Ceremony'}
-                  dir="auto"
-                  className={inputCls}
-                />
+                <p className="text-sm font-medium text-stone-700">
+                  {isHidden
+                    ? (locale==='he'?'××××× × ×××¡×ª×¨×ª':locale==='fr'?'Invitation cachÃ©e':'Invitation hidden')
+                    : (locale==='he'?'××××× × ×¤×××××ª':locale==='fr'?'Invitation publique':'Invitation public')}
+                </p>
+                <p className="text-xs text-stone-400 mt-0.5">
+                  {isHidden
+                    ? (locale==='he'?'×××¥ ×××¤×× ××¦××××¨××ª':locale==='fr'?'Cliquer pour rendre publique':'Click to make public')
+                    : (locale==='he'?'×××¥ ×××¡×ª××¨':locale==='fr'?'Cliquer pour cacher':'Click to hide')}
+                </p>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>{locale==='he'?'תאריך *':locale==='fr'?'Date *':'Date *'}</label>
-                  <input type="date" value={eventForm.event_date} onChange={e => setEventForm(p => ({ ...p, event_date: e.target.value }))} dir="ltr" className={inputCls}/>
-                </div>
-                <div>
-                  <label className={labelCls}>{locale==='he'?'שעת התחלה *':locale==='fr'?'Heure de début *':'Start time *'}</label>
-                  <input type="time" value={eventForm.start_time} onChange={e => setEventForm(p => ({ ...p, start_time: e.target.value }))} dir="ltr" className={inputCls}/>
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'שעת סיום':locale==='fr'?'Heure de fin':'End time'}</label>
-                <input type="time" value={eventForm.end_time} onChange={e => setEventForm(p => ({ ...p, end_time: e.target.value }))} dir="ltr" className={inputCls}/>
-              </div>
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'מיקום':locale==='fr'?'Lieu':'Location'}</label>
-                <input value={eventForm.location_name} onChange={e => setEventForm(p => ({ ...p, location_name: e.target.value }))} dir="auto" className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Domaine des...'}/>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Waze URL</label>
-                  <input value={eventForm.waze_url} onChange={e => setEventForm(p => ({ ...p, waze_url: e.target.value }))} dir="ltr" className={inputCls} placeholder="https://waze.com/..."/>
-                </div>
-                <div>
-                  <label className={labelCls}>Google Maps URL</label>
-                  <input value={eventForm.google_maps_url} onChange={e => setEventForm(p => ({ ...p, google_maps_url: e.target.value }))} dir="ltr" className={inputCls} placeholder="https://maps.google.com/..."/>
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'תיאור':locale==='fr'?'Description':'Description'}</label>
-                <textarea value={eventForm.description} onChange={e => setEventForm(p => ({ ...p, description: e.target.value }))} rows={2} dir="auto" className={inputCls + ' resize-none'}/>
-              </div>
-            </div>
-            <div className="flex gap-3 px-6 py-4 border-t border-stone-100 bg-stone-50 rounded-b-2xl">
-              <button onClick={() => setShowEventModal(false)}
-                className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors rounded-xl">
-                {locale==='he'?'ביטול':locale==='fr'?'Annuler':'Cancel'}
-              </button>
-              <button onClick={handleAddEvent} disabled={savingEvent}
-                className="flex-1 py-3 text-white text-sm font-medium tracking-wide transition-colors disabled:opacity-60 rounded-xl"
-                style={{ background: savingEvent ? '#a8a29e' : '#c9a84c' }}>
-                {savingEvent ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...') : (locale==='he'?'הוסף':locale==='fr'?'Ajouter':'Add')}
+              <button type="button" onClick={handleToggleVisibility} disabled={savingVisibility}
+                className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60"
+                style={{ background: !isHidden ? '#c9a84c' : '#d4d0cb' }}>
+                <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200"
+                  style={{ transform: !isHidden ? 'translateX(22px)' : 'translateX(2px)' }} />
               </button>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* ══════════════════════════════════════════════
-          מודאל עריכת אירוע קיים
-      ══════════════════════════════════════════════ */}
-      {editingEventId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,0.4)' }}
-          onClick={e => { if (e.target === e.currentTarget) setEditingEventId(null) }}>
-          <div dir={isRTL ? 'rtl' : 'ltr'}
-            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-              <h2 className="font-cormorant text-xl text-stone-800">
-                {locale==='he'?'עריכת אירוע':locale==='fr'?"Modifier l'événement":'Edit event'}
-              </h2>
-              <button onClick={() => setEditingEventId(null)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
-              {editEventError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{editEventError}</div>}
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'שם האירוע *':locale==='fr'?'Nom de l\'événement *':'Event name *'}</label>
-                <input
-                  value={editEventForm.event_name}
-                  onChange={e => setEditEventForm(p => ({ ...p, event_name: e.target.value }))}
-                  dir="auto"
-                  className={inputCls}
-                />
+          {/* ââ Guest PIN ââ */}
+          <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
+            <h3 className="font-cormorant text-xl text-stone-800 mb-1">
+              {locale==='he'?'××× ×ª PIN ××××¨×××':locale==='fr'?'PIN de protection':'Guest PIN protection'}
+            </h3>
+            <p className="text-xs text-stone-400 mb-5">
+              {locale==='he'?'×××¨××× ××¦××¨×× ××××× ×§×× 4 ×¡×¤×¨××ª ××× ×××©×ª ××××× ×. ××©××¨ ×¨××§ ×××××× ×-PIN.'
+                :locale==='fr'?"Les invitÃ©s devront saisir un code Ã  4 chiffres. Laisser vide pour dÃ©sactiver."
+                :'Guests must enter a 4-digit code to view the invitation. Leave empty to disable.'}
+            </p>
+            {pinSuccess && (
+              <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs px-3 py-2 rounded-lg mb-3">
+                {locale==='he'?'×-PIN ×¢×××× ×××¦×××':locale==='fr'?'PIN mis Ã  jour':'PIN updated successfully'}
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>{locale==='he'?'תאריך *':locale==='fr'?'Date *':'Date *'}</label>
-                  <input type="date" value={editEventForm.event_date} onChange={e => setEditEventForm(p => ({ ...p, event_date: e.target.value }))} dir="ltr" className={inputCls}/>
-                </div>
-                <div>
-                  <label className={labelCls}>{locale==='he'?'שעת התחלה *':locale==='fr'?'Heure de début *':'Start time *'}</label>
-                  <input type="time" value={editEventForm.start_time} onChange={e => setEditEventForm(p => ({ ...p, start_time: e.target.value }))} dir="ltr" className={inputCls}/>
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'שעת סיום':locale==='fr'?'Heure de fin':'End time'}</label>
-                <input type="time" value={editEventForm.end_time} onChange={e => setEditEventForm(p => ({ ...p, end_time: e.target.value }))} dir="ltr" className={inputCls}/>
-              </div>
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'מיקום':locale==='fr'?'Lieu':'Location'}</label>
-                <input value={editEventForm.location_name} onChange={e => setEditEventForm(p => ({ ...p, location_name: e.target.value }))} dir="auto" className={inputCls}/>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>Waze URL</label>
-                  <input value={editEventForm.waze_url} onChange={e => setEditEventForm(p => ({ ...p, waze_url: e.target.value }))} dir="ltr" className={inputCls} placeholder="https://waze.com/..."/>
-                </div>
-                <div>
-                  <label className={labelCls}>Google Maps URL</label>
-                  <input value={editEventForm.google_maps_url} onChange={e => setEditEventForm(p => ({ ...p, google_maps_url: e.target.value }))} dir="ltr" className={inputCls} placeholder="https://maps.google.com/..."/>
-                </div>
-              </div>
-
-              <div>
-                <label className={labelCls}>{locale==='he'?'תיאור':locale==='fr'?'Description':'Description'}</label>
-                <textarea value={editEventForm.description} onChange={e => setEditEventForm(p => ({ ...p, description: e.target.value }))} rows={2} dir="auto" className={inputCls + ' resize-none'}/>
-              </div>
-            </div>
-            <div className="flex gap-3 px-6 py-4 border-t border-stone-100 bg-stone-50 rounded-b-2xl">
-              <button onClick={() => setEditingEventId(null)}
-                className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors rounded-xl">
-                {locale==='he'?'ביטול':locale==='fr'?'Annuler':'Cancel'}
-              </button>
-              <button onClick={handleUpdateEvent} disabled={savingEditEvent}
-                className="flex-1 py-3 text-white text-sm font-medium tracking-wide transition-colors disabled:opacity-60 rounded-xl"
-                style={{ background: savingEditEvent ? '#a8a29e' : '#c9a84c' }}>
-                {savingEditEvent ? (locale==='he'?'שומר...':'Saving...') : (locale==='he'?'שמור שינויים':locale==='fr'?'Enregistrer':'Save changes')}
+            )}
+            <div className="flex gap-3">
+              <input type="text" inputMode="numeric" pattern="\d{4}" maxLength={4} value={pinInput}
+                onChange={e => setPinInput(e.target.value.replace(/\D/g,'').slice(0,4))}
+                placeholder="1234" dir="ltr"
+                className="w-32 px-4 py-3 border border-stone-200 bg-stone-50 text-center text-lg tracking-[0.5em] font-mono focus:outline-none focus:border-[#c9a84c] rounded-xl transition-colors" />
+              <button onClick={handleSavePin} disabled={savingPin}
+                className="px-6 py-3 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-60"
+                style={{ background: savingPin?'#a8a29e':'#c9a84c' }}>
+                {savingPin
+                  ? (locale==='he'?'×©×××¨...':locale==='fr'?'Enregistrement...':'Saving...')
+                  : (locale==='he'?'×©×××¨ PIN':locale==='fr'?'Enregistrer':'Save PIN')}
               </button>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* ══════════════════════════════════════════════
-          מודאל עריכת אורח
-      ══════════════════════════════════════════════ */}
-      {editingGuest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background:'rgba(0,0,0,0.4)' }}
-          onClick={e => { if (e.target===e.currentTarget) setEditingGuest(null) }}>
-          <div dir={isRTL?'rtl':'ltr'}
-            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-              <h2 className="font-cormorant text-xl text-stone-800">
-                {locale==='he'?'עריכת אורח':locale==='fr'?"Modifier l'invité":'Edit guest'}
-              </h2>
-              <button onClick={()=>setEditingGuest(null)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
-              {editGuestError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{editGuestError}</div>}
+          {/* ââ Design Panel ââ */}
+          <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
+            <h3 className="font-cormorant text-xl text-stone-800 mb-1">
+              {locale==='he'?'×¢××¦×× ××××× ×':locale==='fr'?"Design de l'invitation":'Invitation design'}
+            </h3>
+            <p className="text-xs text-stone-400 mb-5">
+              {locale==='he'?'×××¨ ×××¤× ××¤×¨××¡× ××××× × ×©××'
+                :locale==='fr'?"Choisissez la police et la mise en page"
+                :'Choose font style and layout for your invitation'}
+            </p>
+            {designSuccess && (
+              <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs px-3 py-2 rounded-lg mb-4">
+                {locale==='he'?'××¢××¦×× ×¢××××':locale==='fr'?'Design mis Ã  jour':'Design updated'}
+              </div>
+            )}
+            <div className="space-y-5">
               <div>
-                <label className={labelCls}>{t.name} *</label>
-                <input value={editGuestForm.name} onChange={e=>setEditGuestForm(p=>({...p,name:e.target.value}))}
-                  dir="auto" className={inputCls}/>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>{t.email}</label>
-                  <input type="email" value={editGuestForm.email} onChange={e=>setEditGuestForm(p=>({...p,email:e.target.value}))} className={inputCls} dir="ltr"/>
-                </div>
-                <div>
-                  <label className={labelCls}>{t.phone}</label>
-                  <input type="tel" value={editGuestForm.phone} onChange={e=>setEditGuestForm(p=>({...p,phone:e.target.value}))} className={inputCls} dir="ltr"/>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={labelCls}>{t.adults}</label>
-                  <input type="number" min={0} value={editGuestForm.adults_count} onChange={e=>setEditGuestForm(p=>({...p,adults_count:parseInt(e.target.value)||0}))} className={inputCls} dir="ltr"/>
-                </div>
-                <div>
-                  <label className={labelCls}>{t.children}</label>
-                  <input type="number" min={0} value={editGuestForm.children_count} onChange={e=>setEditGuestForm(p=>({...p,children_count:parseInt(e.target.value)||0}))} className={inputCls} dir="ltr"/>
-                </div>
-              </div>
-              <div>
-                <label className={labelCls}>{t.status}</label>
-                <div className="flex gap-2">
-                  {(['confirmed','pending','declined'] as const).map(s=>(
-                    <button key={s} type="button" onClick={()=>setEditGuestForm(p=>({...p,rsvp_status:s}))}
-                      className="flex-1 py-2 text-xs font-medium border transition-all rounded-lg"
+                <label className={labelCls}>{locale==='he'?'×××¤×':locale==='fr'?'Police':'Font'}</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: 'cormorant', label: 'Cormorant', preview: 'Aa' },
+                    { value: 'playfair', label: 'Playfair', preview: 'Aa' },
+                    { value: 'libre', label: 'Libre Baskerville', preview: 'Aa' },
+                  ].map(f => (
+                    <button key={f.value} onClick={() => setFontStyle(f.value)}
+                      className="p-3 border rounded-xl text-center transition-all"
                       style={{
-                        background: editGuestForm.rsvp_status===s?(s==='confirmed'?'#ecfdf5':s==='declined'?'#fef2f2':'#fffbeb'):'#fafaf9',
-                        color: editGuestForm.rsvp_status===s?(s==='confirmed'?'#059669':s==='declined'?'#ef4444':'#d97706'):'#a8a29e',
-                        borderColor: editGuestForm.rsvp_status===s?(s==='confirmed'?'#6ee7b7':s==='declined'?'#fca5a5':'#fcd34d'):'#e7e5e4',
+                        borderColor: fontStyle===f.value ? '#c9a84c' : '#e7e5e4',
+                        background: fontStyle===f.value ? '#fdf6e3' : '#fafaf9',
                       }}>
-                      {s==='confirmed'?t.confirmed:s==='declined'?t.declined:t.pending}
+                      <p className="text-2xl mb-1" style={{ fontFamily: f.value === 'cormorant' ? "'Cormorant Garamond', serif" : f.value === 'playfair' ? "'Playfair Display', serif" : "'Libre Baskerville', serif" }}>{f.preview}</p>
+                      <p className="text-xs text-stone-500">{f.label}</p>
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className={labelCls}>{t.dietary}</label>
-                <input value={editGuestForm.dietary_preferences} onChange={e=>setEditGuestForm(p=>({...p,dietary_preferences:e.target.value}))}
-                  placeholder={locale==='he'?'צמחוני, כשר...':'Végétarien, Casher...'} className={inputCls}/>
+                <label className={labelCls}>{locale==='he'?'×¤×¨××¡×':locale==='fr'?'Mise en page':'Layout'}</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { value: 'centered', label: locale==='he'?'××¨××':locale==='fr'?'CentrÃ©':'Centered' },
+                    { value: 'elegant', label: locale==='he'?'×××× ××':locale==='fr'?'ÃlÃ©gant':'Elegant' },
+                    { value: 'minimal', label: locale==='he'?'××× ×××××¡××':locale==='fr'?'Minimaliste':'Minimal' },
+                  ].map(l => (
+                    <button key={l.value} onClick={() => setLayoutStyle(l.value)}
+                      className="p-4 border rounded-xl text-center transition-all"
+                      style={{
+                        borderColor: layoutStyle===l.value ? '#c9a84c' : '#e7e5e4',
+                        background: layoutStyle===l.value ? '#fdf6e3' : '#fafaf9',
+                      }}>
+                      <div className="flex flex-col gap-1 mb-2 items-center">
+                        {l.value === 'centered' && <>
+                          <div className="w-16 h-1 bg-stone-300 rounded" />
+                          <div className="w-10 h-1 bg-stone-200 rounded" />
+                          <div className="w-14 h-1 bg-stone-200 rounded" />
+                        </>}
+                        {l.value === 'elegant' && <>
+                          <div className="w-4 h-4 border border-stone-300 rounded-full" />
+                          <div className="w-16 h-1 bg-stone-300 rounded" />
+                          <div className="w-12 h-1 bg-stone-200 rounded" />
+                        </>}
+                        {l.value === 'minimal' && <>
+                          <div className="w-16 h-px bg-stone-300" />
+                          <div className="w-16 h-1 bg-stone-300 rounded mt-1" />
+                          <div className="w-16 h-px bg-stone-300 mt-1" />
+                        </>}
+                      </div>
+                      <p className="text-xs text-stone-500">{l.label}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div>
-                <label className={labelCls}>{t.allergies}</label>
-                <input value={editGuestForm.allergies} onChange={e=>setEditGuestForm(p=>({...p,allergies:e.target.value}))}
-                  placeholder={locale==='he'?'אגוזים, גלוטן...':'Noix, gluten...'} className={inputCls}/>
-              </div>
-              <div>
-                <label className={labelCls}>{t.notes}</label>
-                <textarea value={editGuestForm.notes} onChange={e=>setEditGuestForm(p=>({...p,notes:e.target.value}))} rows={2} dir="auto" className={inputCls+' resize-none'}/>
-              </div>
-            </div>
-            <div className="flex gap-3 px-6 py-4 border-t border-stone-100 bg-stone-50 rounded-b-2xl">
-              <button onClick={()=>setEditingGuest(null)}
-                className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors rounded-xl">
-                {t.cancel}
+              <button onClick={handleSaveDesign} disabled={savingDesign}
+                className="px-8 py-3 text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all disabled:opacity-60"
+                style={{ background: savingDesign?'#a8a29e':'#c9a84c' }}>
+                {savingDesign
+                  ? (locale==='he'?'×©×××¨...':locale==='fr'?'Enregistrement...':'Saving...')
+                  : (locale==='he'?'×©×××¨ ×¢××¦××':locale==='fr'?'Enregistrer le design':'Save design')}
               </button>
-              <button onClick={handleEditGuest} disabled={savingEditGuest}
-                className="flex-1 py-3 text-white text-sm font-medium tracking-wide transition-colors disabled:opacity-60 rounded-xl"
-                style={{ background: savingEditGuest?'#a8a29e':'#c9a84c' }}>
-                {savingEditGuest
-                  ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...')
-                  : (locale==='he'?'שמור שינויים':locale==='fr'?'Enregistrer':'Save changes')}
-              </button>
             </div>
+          </div>
+
+          {/* ââ Danger Zone ââ */}
+          <div className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm">
+            <h3 className="font-cormorant text-xl text-red-700 mb-1">
+              {locale==='he'?'××××§×ª ××©×××':locale==='fr'?'Supprimer le compte':'Delete account'}
+            </h3>
+            <p className="text-xs text-stone-400 mb-5">
+              {locale==='he'?'××××§×ª ×××©××× ×ª×××§ ××ª ××××× × ×××ª ×× ×××××¢ ×¢× ××××¨×××. ×¤×¢××× ×× ×××ª× ××¤×××.'
+                :locale==='fr'?"La suppression effacera dÃ©finitivement l'invitation et toutes les donnÃ©es invitÃ©s."
+                :'Deletes the invitation and all guest data permanently. This cannot be undone.'}
+            </p>
+            {deleteConfirmUrl ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <p className="text-sm text-amber-800 font-medium mb-2">
+                  {locale==='he'?'×§××©××¨ ×××©××¨ ××××§× × ×©×× ××××××× ×©××. ××××××¤××, ×××¥ ×××:'
+                    :locale==='fr'?"Un lien de confirmation a Ã©tÃ© envoyÃ© Ã  votre email. Alternativement :"
+                    :'A confirmation link was sent to your email. Alternatively:'}
+                </p>
+                <a href={deleteConfirmUrl} className="text-xs text-red-600 underline break-all" dir="ltr">{deleteConfirmUrl}</a>
+              </div>
+            ) : (
+              <button onClick={handleRequestDelete} disabled={deleteLoading}
+                className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 text-sm font-medium rounded-xl hover:bg-red-50 transition-all disabled:opacity-60">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                {deleteLoading
+                  ? (locale==='he'?'×©×××...':locale==='fr'?'Envoi...':'Sending...')
+                  : (locale==='he'?'××§×© ××××§×ª ××©×××':locale==='fr'?'Demander la suppression':'Request account deletion')}
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════
-          מודאל הוספת אורח
-      ══════════════════════════════════════════════ */}
+      {/* ââââââââââââââââââââââââââââââââââââââââââââââ
+          ××××× ×××¡×¤×ª ×××¨×
+          ââââââââââââââââââââââââââââââââââââââââââââââ */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background:'rgba(0,0,0,0.4)' }}
           onClick={e => { if (e.target===e.currentTarget) setShowAddModal(false) }}>
-          <div dir={isRTL?'rtl':'ltr'}
-            className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div dir={isRTL?'rtl':'ltr'} className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
               <h2 className="font-cormorant text-xl text-stone-800">{t.addGuestTitle}</h2>
-              <button onClick={()=>setShowAddModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">×</button>
+              <button onClick={()=>setShowAddModal(false)} className="text-stone-300 hover:text-stone-600 transition-colors text-2xl leading-none">Ã</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               {guestModalError && <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-lg">{guestModalError}</div>}
               <div>
                 <label className={labelCls}>{t.name} *</label>
                 <input value={newGuest.name} onChange={e=>setNewGuest(p=>({...p,name:e.target.value}))}
-                  placeholder={locale==='he'?'ישראל ישראלי':'Marie Dupont'}
-                  dir="auto"
-                  className={inputCls}/>
+                  placeholder={locale==='he'?'××©×¨×× ××©×¨×××':'Marie Dupont'} dir="auto" className={inputCls}/>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -1725,13 +1063,11 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
               </div>
               <div>
                 <label className={labelCls}>{t.dietary}</label>
-                <input value={newGuest.dietary_preferences} onChange={e=>setNewGuest(p=>({...p,dietary_preferences:e.target.value}))}
-                  placeholder={locale==='he'?'צמחוני, כשר...':'Végétarien, Casher...'} className={inputCls}/>
+                <input value={newGuest.dietary_preferences} onChange={e=>setNewGuest(p=>({...p,dietary_preferences:e.target.value}))} placeholder={locale==='he'?'×¦×××× ×, ××©×¨...':'VÃ©gÃ©tarien, Casher...'} className={inputCls}/>
               </div>
               <div>
                 <label className={labelCls}>{t.allergies}</label>
-                <input value={newGuest.allergies} onChange={e=>setNewGuest(p=>({...p,allergies:e.target.value}))}
-                  placeholder={locale==='he'?'אגוזים, גלוטן...':'Noix, gluten...'} className={inputCls}/>
+                <input value={newGuest.allergies} onChange={e=>setNewGuest(p=>({...p,allergies:e.target.value}))} placeholder={locale==='he'?'××××××, ×××××...':'Noix, gluten...'} className={inputCls}/>
               </div>
               <div>
                 <label className={labelCls}>{t.notes}</label>
@@ -1739,8 +1075,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
               </div>
             </div>
             <div className="flex gap-3 px-6 py-4 border-t border-stone-100 bg-stone-50">
-              <button onClick={()=>setShowAddModal(false)}
-                className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors">
+              <button onClick={()=>setShowAddModal(false)} className="flex-1 py-3 border border-stone-200 text-stone-600 text-sm font-medium tracking-wide hover:bg-stone-100 transition-colors">
                 {t.cancel}
               </button>
               <button onClick={handleAddGuest} disabled={savingGuest}
