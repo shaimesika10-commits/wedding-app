@@ -252,7 +252,15 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
     } finally {
       setSavingGuest(false)
     }
-  }resh()
+  }
+
+  const handleDeleteGuest = async (guestId: string) => {
+    const msg = locale==='he'?'למחוק אורח זה?':locale==='fr'?'Supprimer cet invité ?':'Delete this guest?'
+    if (!confirm(msg)) return
+    setDeletingId(guestId)
+    try {
+      await fetch(`/api/guests?id=${guestId}&wedding_id=${wedding.id}`, { method:'DELETE' })
+      router.refresh()
     } finally {
       setDeletingId(null)
     }
