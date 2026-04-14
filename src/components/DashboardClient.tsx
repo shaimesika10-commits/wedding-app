@@ -54,7 +54,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
   // ════════════════════════════════════════
   // TAB: SEATING
   // ════════════════════════════════════════
-════════════════════════════════════════
+  // ════════════════════════════════════════
   const [tableInputs, setTableInputs] = useState<Record<string, string>>(() => {
     const m: Record<string, string> = {}
     guests.forEach(g => {
