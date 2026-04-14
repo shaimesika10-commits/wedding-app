@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite â TypeScript Types
+//  GrandInvite – TypeScript Types
 // ============================================================
 
 export type Locale = 'fr' | 'he' | 'en'
@@ -62,7 +62,7 @@ export interface Guest {
   children_count: number
   dietary_preferences: string | null
   allergies: string | null
-  notes: string | null            // ×©×× '×××¨ / ××¢×¨××ª × ××¡×¤××ª'
+  notes: string | null            // שדה 'אחר / הערות נוספות'
   rsvp_status: RSVPStatus
   rsvp_submitted_at: string | null
   invitation_sent_at: string | null
@@ -79,7 +79,7 @@ export interface RSVPFormData {
   children_count: number
   dietary_preferences?: string
   allergies?: string
-  notes?: string                  // ×©×× '×××¨ / ××¢×¨××ª × ××¡×¤××ª'
+  notes?: string                  // שדה 'אחר / הערות נוספות'
   rsvp_status: 'confirmed' | 'declined'
 }
 
