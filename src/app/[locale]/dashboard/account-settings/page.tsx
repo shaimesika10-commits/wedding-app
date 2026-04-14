@@ -1,6 +1,6 @@
 // ============================================================
 //  GrandInvite – Account Settings Page (Server Component)
-//  src/app/[locale]/dashboard/account-settings/page.tsx
+//  src/app/[locale]/dashboard/account-settings/page.txx
 // ============================================================
 
 import { redirect } from 'next/navigation'
