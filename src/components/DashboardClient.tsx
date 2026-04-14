@@ -54,6 +54,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
   // ════════════════════════════════════════
   // TAB: SEATING
   // ════════════════════════════════════════
+════════════════════════════════════════
   const [tableInputs, setTableInputs] = useState<Record<string, string>>(() => {
     const m: Record<string, string> = {}
     guests.forEach(g => {
@@ -161,7 +162,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
   // ── delete request handler ──
   const handleRequestDelete = async () => {
     const msg = locale === 'he'
-      ? 'האם אתה בטוח? נשלח אימייל לאישור מחיקת החשבון.'
+      ? 'האם אתה בטוח? נשלח אימייל לאישור מחישת החשבון.'
       : locale === 'fr'
       ? 'Êtes-vous sûr ? Un email de confirmation sera envoyé.'
       : 'Are you sure? A confirmation email will be sent.'
@@ -251,32 +252,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
     } finally {
       setSavingGuest(false)
     }
-  }
-
-  const handleAssignTable = async (guestId: string, tableNum: string) => {
-    const trimmed = tableNum.trim()
-    const num = trimmed === '' ? null : parseInt(trimmed)
-    if (trimmed !== '' && (isNaN(num!) || num! < 1)) return
-    setSavingTable(guestId)
-    try {
-      await fetch('/api/guests', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: guestId, wedding_id: wedding.id, table_number: num }),
-      })
-      router.refresh()
-    } finally {
-      setSavingTable(null)
-    }
-  }
-
-  const handleDeleteGuest = async (guestId: string) => {
-    const msg = locale==='he'?'למחוק אורח זה?':locale==='fr'?'Supprimer cet invité ?':'Delete this guest?'
-    if (!confirm(msg)) return
-    setDeletingId(guestId)
-    try {
-      await fetch(`/api/guests?id=${guestId}&wedding_id=${wedding.id}`, { method:'DELETE' })
-      router.refresh()
+  }resh()
     } finally {
       setDeletingId(null)
     }
@@ -364,7 +340,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
     : `/${locale}/${wedding.slug ?? ''}`
 
   const shareText = locale === 'he'
-    ? `אנחנו שמחים להזמין אתכם לחתונה של ${wedding.bride_name} ו${wedding.groom_name}! ${invitationUrl}`
+    ? `אנחנו שמחים להזמין אתכם לחתונה שמ ${wedding.bride_name} ו${wedding.groom_name}! ${invitationUrl}`
     : locale === 'fr'
     ? `Nous avons le plaisir de vous inviter au mariage de ${wedding.bride_name} & ${wedding.groom_name} ! ${invitationUrl}`
     : `We are delighted to invite you to the wedding of ${wedding.bride_name} & ${wedding.groom_name}! ${invitationUrl}`
@@ -540,16 +516,24 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                   <tr className="border-b border-stone-100 bg-stone-50">
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">{locale==='he'?'שם':locale==='fr'?'Nom':'Name'}</th>
                     <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">{locale==='he'?'סטטוס':locale==='fr'?'Statut':'Status'}</th>
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">{locale===	�I����u�5�5��Λ��[OOOIٜ�����[	Ή��[	�O����\�Ә[YOH�MHKL�^^��۝[YY][H^\�ۙKM\\��\�H�X��[��]�Y\�^[Y��L͈�����[OOOI�I�����u�5�5�u�u�u�������[OOOIٜ���Ӱ�HX�IΉ�X�H��O��������XY����H�\�Ә[YOH�]�YK^H]�YK\�ۙKML�����Y\�˙�[\��O�˜�ݜ��]\�OOH	��ۙ�\�YY	�K�X\
-�O�
-���^O^�˚YH�\�Ә[YOH�ݙ\����\�ۙKML�[��][ۋX��ܜȏ���\�Ә[YOH�MHKL��۝[YY][H^\�ۙKN���˛�[Y_O����\�Ә[YOH�MHKLȏ���]\ИY�J˜�ݜ��]\�_O����\�Ә[YOH�MHKL�^\�ۙKML���˘Y[����[�
-�˘�[�[����[�O����\�Ә[YOH�MHKLȏ��]�lassName="flex items-center gap-2">
+                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">{locale==='he'?'סה״כ':locale==='fr'?'Total':'Total'}</th>
+                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left w-36">{locale==='he'?'מספר שולחן':locale==='fr'?'N° de table':'Table #'}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-50">
+                  {guests.filter(g => g.rsvp_status === 'confirmed').map(g => (
+                    <tr key={g.id} className="hover:bg-stone-50 transition-colors">
+                      <td className="px-5 py-3 font-medium text-stone-800">{g.name}</td>
+                      <td className="px-5 py-3">{statusBadge(g.rsvp_status)}</td>
+                      <td className="px-5 py-3 text-stone-500">{g.adults_count + g.children_count}</td>
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
                           <input type="number" min={1} placeholder="—"
                             value={tableInputs[g.id] ?? (g.table_number != null ? String(g.table_number) : '')}
                             onChange={e => setTableInputs(prev => ({ ...prev, [g.id]: e.target.value }))}
                             onBlur={e => handleAssignTable(g.id, e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') handleAssignTable(g.id, (e.target as HTMLInputElement).value) }}
-                            className="w-20 px-3 py-1.5 border border-stone-200 bg-stone-50 text-sm text-center focus:outline-none focus:border-[#c9a84c] rounded-lg transition-colors" dir="ltr" />
+                          className="w-20 px-3 py-1.5 border border-stone-200 bg-stone-50 text-sm text-center focus:outline-none focus:border-[#c9a84c] rounded-lg transition-colors" dir="ltr" />
                           {savingTable === g.id && (
                             <svg className="w-4 h-4 text-stone-300 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
@@ -578,7 +562,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
           </div>
 
           {/* Table overview */}
-          {(() => {
+          {(() = {
             const confirmed = guests.filter(g => g.rsvp_status === 'confirmed' && g.table_number != null)
             if (confirmed.length === 0) return null
             const byTable: Record<number, Guest[]> = {}
@@ -613,7 +597,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                               )}
                             </li>
                           ))}
-                        </ul>
+                              </ul>
                       </div>
                     )
                   })}
@@ -663,7 +647,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
             </h3>
             <div className="space-y-3">
               <div>
-                <label className={labelCls}>{locale==='he'?'שם האולם':locale==='fr'?'Nom du lieu':'Venue name'}</label>
+                <label className={labelCls}>{locale==='he'?'שם האילם':locale==='fr'?'Nom du lieu':'Venue name'}</label>
                 <input value={editForm.venue_name} onChange={e=>setEditForm(p=>({...p,venue_name:e.target.value}))} className={inputCls} placeholder={locale==='he'?'אולם אירועים':'Château de...'}/>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -714,7 +698,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                 <textarea value={editForm.welcome_message} onChange={e=>setEditForm(p=>({...p,welcome_message:e.target.value}))} rows={4} dir="auto" className={inputCls+' resize-none'}/>
               </div>
               <div>
-                <label className={labelCls}>{locale==='he'?'תאריך אחרון לאישור':locale==='fr'?'Date limite RSVP':'RSVP deadline'}</label>
+                <label className={labelCls}>{locale==='he'?'תאריך חתונה':locale==='fr'?'Date limite RSVP':'RSVP deadline'}</label>
                 <input type="date" value={editForm.rsvp_deadline} onChange={e=>setEditForm(p=>({...p,rsvp_deadline:e.target.value}))} dir="ltr" className={inputCls}/>
               </div>
             </div>
@@ -742,8 +726,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                 <span className="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200"
                   style={{ transform: brunchEnabled ? 'translateX(22px)' : 'translateX(2px)' }} />
               </button>
-            </div>
-            {schedule.length > 0 && (
+            </div>{schedule.length > 0 && (
               <div className="mt-3 space-y-2">
                 {schedule.map(ev => (
                   <div key={ev.id} className="flex items-center justify-between py-2 px-3 bg-white border border-stone-100 rounded-lg text-sm">
@@ -776,23 +759,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
             className="inline-flex items-center gap-2 px-8 py-3.5 text-white text-sm font-medium tracking-wider uppercase rounded-xl"
             style={{ background:'#c9a84c', boxShadow:'0 4px 14px rgba(201,168,76,0.25)' }}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-            </svg>
-            {locale==='he'?'פתח הזמנה':locale==='fr'?"Ouvrir l'invitation":'Open invitation'} ↗
-          </a>
-
-          {/* Share buttons */}
-          <div className="flex gap-3 justify-center mt-6 flex-wrap">
-            <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`}
-              target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all hover:opacity-90"
-              style={{ background: '#25D366' }}>
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-              </svg>
-              WhatsApp
-            </a>
-            <a href={`mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shareText)}`}
+              <path strokeLinecap="round" strokeLinejoin=onent(emailSubject)}&body=${encodeURIComponent(shareText)}`}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all hover:opacity-90"
               style={{ background: '#1c1917' }}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -826,7 +793,50 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
           TAB: SETTINGS
           ══════════════════════════════════════════════ */}
       {activeTab === 'settings' && (
-        <div dir={isRTL?'rtl':'ltr'} className="max-w-2xl space-y-8">
+        <div dir={isRTL?'rtl':'ltr'} classNam                 <div className="w-16 h-px bg-stone-300" />
+                          <div className="w-16 h-1 bg-stone-300 rounded mt-1" />
+                          <div className="w-16 h-px bg-stone-300 mt-1" />
+                        </>}
+                      </div>
+                      <p className="text-xs text-stone-500">{l.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button onClick={handleSaveDesign} disabled={savingDesign}
+                className="px-8 py-3 text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all disabled:opacity-60"
+                style={{ background: savingDesign?'#a8a29e':'#c9a84c' }}>
+                {savingDesign
+                  ? (locale==='he'?'שומר...':locale==='fr'?'Enregistrement...':'Saving...')
+                  : (locale==='he'?'שמור עיצוב':locale==='fr'?'Enregistrer le design':'Save design')}
+              </button>
+            </div>
+          </div>
+
+          {/* ── Danger Zone ── */}
+          <div className="bg-white rounded-2xl border border-red-100 p-6 shadow-sm">
+            <h3 className="font-cormorant text-xl text-red-700 mb-1">
+              {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
+            </h3>
+            <p className="text-xs text-stone-400 mb-5">
+              {locale==='he'?'מחיקת החשבון תמחק את ההזמנה ואת כל המיקע על האורחים. פעולה זו בלתי הפיכה.'
+                :locale==='fr'?"La suppression effacera définitivement l'invitation et toutes les données invités."
+                :'Deletes the invitation and all guest data permanently. This cannot be undone.'}
+            </p>
+            {deleteConfirmUrl ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <p className="text-sm text-amber-800 font-medium mb-2">
+                  {locale==='he'?'קישור אישור מחיקה נשל׍ לאימייל שמך. מחימופין, מחץ כאן:'
+                        :locale==='fr'?"Un lien de confirmation a été envoyé à votre email. Alternativement :"
+                    :'A confirmation link was sent to your email. Alternatively:'}
+                </p>
+                <a href={deleteConfirmUrl} className="text-xs text-red-600 underline break-all" dir="ltr">{deleteConfirmUrl}</a>
+              </div>
+            ) : (
+              <button onClick={handleRequestDelete} disabled={deleteLoading}
+                className="flex items-center gap-2 px-6 py-3 border-2 border-red-200 text-red-600 text-sm font-medium rounded-xl hover:bg-red-50 transition-all disabled:opacity-60">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.e="max-w-2xl space-y-8">
 
           {/* ── Visibility ── */}
           <div className="bg-white rounded-2xl border border-stone-100 p-6 shadow-sm">
