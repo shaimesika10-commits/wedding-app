@@ -114,7 +114,8 @@ export async function GET(request: NextRequest) {
       return redirectByWeddingStatus()
     }
 
-    loginUrl.searchParams.set('error', 'oauth_failed')
+    // Code exchange failed — show 'invalid_link' (not 'oauth_failed', which implies Google issue)
+    loginUrl.searchParams.set('error', 'invalid_link')
     return NextResponse.redirect(loginUrl)
   }
 
