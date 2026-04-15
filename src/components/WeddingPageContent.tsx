@@ -160,6 +160,7 @@ export default function WeddingPageContent({
               body: JSON.stringify({
                 text: wedding.welcome_message,
                 targetLanguage: targetLocale,
+                sourceLang: contentLocale,
                 context: `Wedding invitation of ${wedding.bride_name} and ${wedding.groom_name} at ${wedding.venue_name ?? ''} on ${wedding.wedding_date}. Keep proper names (people, venues, cities) unchanged. Do NOT translate: ${[wedding.venue_name, wedding.venue_city].filter(Boolean).join(', ')}`,
               }),
             })
@@ -193,6 +194,7 @@ export default function WeddingPageContent({
                 body: JSON.stringify({
                   text: toTranslate.map(x => x.text).join('\n---\n'),
                   targetLanguage: targetLocale,
+                  sourceLang: contentLocale,
                   context: `Wedding schedule events for ${wedding.bride_name} and ${wedding.groom_name}. Keep venue/location names unchanged: ${[wedding.venue_name, wedding.venue_city].filter(Boolean).join(', ')}`,
                 }),
               })
