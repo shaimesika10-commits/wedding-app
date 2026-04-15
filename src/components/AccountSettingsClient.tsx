@@ -6,6 +6,7 @@
 // ============================================================
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
 
 interface Props {
@@ -43,10 +44,12 @@ const L = {
     deleteWarning: 'שים/י לב: מחיקת החשבון היא פעולה סופית ובלתי הפיכה. כל נתוני האירוע, רשימות האורחים וההגדרות יימחקו לצמיתות.',
     deleteButton: 'מחיקת חשבון',
     deleteModalTitle: 'אישור מחיקת חשבון',
-    deleteModalDesc: 'בלחיצה על אישור, נשלח אליך קישור למייל לאישור סופי של המחיקה. החשבון יימחק בפועל רק לאחר לחיצה על הקישור שנשלח.',
-    deleteModalConfirm: 'שלח קישור אישור',
+    deleteModalDesc: 'כדי לאשר את המחיקה, הקלד/י את כתובת האימייל שלך:',
+    deleteEmailPlaceholder: 'הכנס/י כתובת אימייל',
+    deleteModalConfirm: 'מחק חשבון לצמיתות',
     deleteModalCancel: 'ביטול',
-    deleteSent: 'נשלח אימייל עם קישור לאישור המחיקה. בדקו את תיבת הדואר שלכם.',
+    deleteEmailMismatch: 'האימייל שהוקלד אינו תואם לחשבונך',
+    deleteDone: 'החשבון נמחק. מועבר/ת לדף הבית...',
     deleteError: 'שגיאה. אנא נסה שוב.',
     saving: 'שומר...',
     updating: 'מעדכן...',
@@ -77,10 +80,12 @@ const L = {
     deleteWarning: "Attention : La suppression du compte est une action définitive et irréversible. Toutes les données de l'événement, les listes d'invités et les paramètres seront supprimés définitivement.",
     deleteButton: 'Supprimer mon compte',
     deleteModalTitle: 'Confirmer la suppression du compte',
-    deleteModalDesc: "En cliquant sur Confirmer, nous vous enverrons un lien par e-mail pour valider la suppression définitive. Le compte ne sera supprimé qu'après avoir cliqué sur ce lien.",
-    deleteModalConfirm: 'Envoyer le lien de confirmation',
+    deleteModalDesc: "Pour confirmer la suppression, saisissez votre adresse e-mail :",
+    deleteEmailPlaceholder: 'Entrez votre adresse e-mail',
+    deleteModalConfirm: 'Supprimer définitivement',
     deleteModalCancel: 'Annuler',
-    deleteSent: "Un e-mail de confirmation a été envoyé. Vérifiez votre boîte mail.",
+    deleteEmailMismatch: "L'e-mail saisi ne correspond pas à votre compte",
+    deleteDone: "Compte supprimé. Redirection vers la page d'accueil...",
     deleteError: 'Erreur. Veuillez réessayer.',
     saving: 'Enregistrement...',
     updating: 'Mise à jour...',
@@ -111,10 +116,12 @@ const L = {
     deleteWarning: 'Warning: Deleting the account is a final and irreversible action. All event data, guest lists, and settings will be permanently deleted.',
     deleteButton: 'Delete my account',
     deleteModalTitle: 'Confirm Account Deletion',
-    deleteModalDesc: 'By clicking Confirm, we will send you a link by email to validate the final deletion. The account will only be deleted after clicking this link.',
-    deleteModalConfirm: 'Send confirmation link',
+    deleteModalDesc: 'To confirm deletion, enter your email address:',
+    deleteEmailPlaceholder: 'Enter your email address',
+    deleteModalConfirm: 'Permanently delete account',
     deleteModalCancel: 'Cancel',
-    deleteSent: 'A confirmation email has been sent. Check your inbox.',
+    deleteEmailMismatch: 'The email entered does not match your account',
+    deleteDone: 'Account deleted. Redirecting to homepage...',
     deleteError: 'Error. Please try again.',
     saving: 'Saving...',
     updating: 'Updating...',
@@ -126,6 +133,7 @@ const L = {
 export default function AccountSettingsClient({ locale, userEmail, initialCoOwnerEmail, weddingId }: Props) {
   const l = L[locale] ?? L.fr
   const isRTL = locale === 'he'
+  const router = useRouter()
 
   // ── Password section ──
   const [currentPassword, setCurrentPassword] = useState('')
@@ -144,8 +152,9 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
   // ── Delete section ──
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
-  const [deleteSent, setDeleteSent] = useState(false)
+  const [deleteDone, setDeleteDone] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [confirmEmailInput, setConfirmEmailInput] = useState('')
 
   // ── Handlers ──
 
@@ -234,16 +243,30 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
 
   const handleDeleteRequest = async () => {
     setDeleteError('')
+    if (!confirmEmailInput.trim()) return
+
+    if (confirmEmailInput.trim().toLowerCase() !== userEmail.toLowerCase()) {
+      setDeleteError(l.deleteEmailMismatch)
+      return
+    }
+
     setDeleteLoading(true)
     try {
-      const res = await fetch('/api/wedding/delete-request', { method: 'POST' })
+      const res = await fetch('/api/wedding/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmEmail: confirmEmailInput.trim() }),
+      })
       if (!res.ok) {
         const data = await res.json()
-        setDeleteError(data.error || l.deleteError)
+        setDeleteError(
+          data.error === 'Email does not match' ? l.deleteEmailMismatch : l.deleteError
+        )
         return
       }
-      setDeleteSent(true)
+      setDeleteDone(true)
       setShowDeleteModal(false)
+      setTimeout(() => router.push('/'), 2000)
     } catch {
       setDeleteError(l.deleteError)
     } finally {
@@ -366,21 +389,18 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
         <h2 className="font-cormorant text-2xl text-red-700 mb-3">{l.deleteTitle}</h2>
         <p className="text-sm text-stone-500 leading-relaxed mb-6">{l.deleteWarning}</p>
 
-        {deleteSent ? (
+        {deleteDone ? (
           <div className="bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-700">
-            {l.deleteSent}
+            {l.deleteDone}
           </div>
         ) : (
           <>
             <button
-              onClick={() => setShowDeleteModal(true)}
+              onClick={() => { setShowDeleteModal(true); setConfirmEmailInput(''); setDeleteError('') }}
               className="px-6 py-2.5 border border-red-200 text-red-600 text-sm font-medium rounded-xl hover:bg-red-50 transition-colors"
             >
               {l.deleteButton}
             </button>
-            {deleteError && (
-              <p className="mt-3 text-sm text-red-600">{deleteError}</p>
-            )}
           </>
         )}
       </section>
@@ -397,7 +417,21 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
             dir={isRTL ? 'rtl' : 'ltr'}
           >
             <h3 className="font-cormorant text-2xl text-red-700 mb-3">{l.deleteModalTitle}</h3>
-            <p className="text-sm text-stone-500 leading-relaxed mb-6">{l.deleteModalDesc}</p>
+            <p className="text-sm text-stone-500 leading-relaxed mb-4">{l.deleteModalDesc}</p>
+
+            <input
+              type="email"
+              value={confirmEmailInput}
+              onChange={e => { setConfirmEmailInput(e.target.value); setDeleteError('') }}
+              placeholder={l.deleteEmailPlaceholder}
+              className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-800 focus:outline-none focus:border-red-400 transition-colors mb-4"
+              dir="ltr"
+              onKeyDown={e => { if (e.key === 'Enter') handleDeleteRequest() }}
+            />
+
+            {deleteError && (
+              <p className="mb-4 text-sm text-red-600">{deleteError}</p>
+            )}
 
             <div className="flex gap-3">
               <button
