@@ -34,6 +34,7 @@ const L = {
     coOwnerDesc: 'הוסף כתובת אימייל נוספת שתקבל את כל עדכוני ה-RSVP וההתראות בדיוק כמוך.',
     coOwnerEmail: 'אימייל בעל/ת השמחה הנוסף/ת',
     coOwnerPlaceholder: 'example@email.com',
+    currentCoOwners: '\u05e9\u05d5\u05ea\u05e4/\u05ea \u05e7\u05d9\u05d9\u05de/\u05ea',
     saveCoOwner: 'שמור',
     removeCoOwner: 'הסר',
     coOwnerSaved: '✓ האימייל נשמר. הוא/היא יקבל/תקבל את כל העדכונים.',
@@ -71,6 +72,7 @@ const L = {
     coOwnerDesc: "Ajoutez une adresse e-mail supplémentaire qui recevra toutes les notifications RSVP et mises à jour, exactement comme vous.",
     coOwnerEmail: 'E-mail du/de la co-responsable',
     coOwnerPlaceholder: 'exemple@email.com',
+    currentCoOwners: 'Co-responsable actuel(le)',
     saveCoOwner: 'Enregistrer',
     removeCoOwner: 'Supprimer',
     coOwnerSaved: '✓ E-mail enregistré. Il/Elle recevra toutes les notifications.',
@@ -107,6 +109,7 @@ const L = {
     coOwnerDesc: 'Add a secondary email address that will receive all RSVP updates and notifications, exactly like you.',
     coOwnerEmail: 'Co-owner email address',
     coOwnerPlaceholder: 'example@email.com',
+    currentCoOwners: 'Current co-owner',
     saveCoOwner: 'Save',
     removeCoOwner: 'Remove',
     coOwnerSaved: '✓ Email saved. They will receive all updates.',
@@ -148,6 +151,7 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
   const [coOwnerLoading, setCoOwnerLoading] = useState(false)
   const [coOwnerSuccess, setCoOwnerSuccess] = useState('')
   const [coOwnerError, setCoOwnerError] = useState('')
+  const [newCoOwnerInput, setNewCoOwnerInput] = useState('')
 
   // ── Delete section ──
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -201,8 +205,9 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
   const handleSaveCoOwner = async () => {
     setCoOwnerError('')
     setCoOwnerSuccess('')
-    if (!coOwnerEmail.trim()) {
-      setCoOwnerError(locale === 'he' ? 'יש להזין כתובת אימייל' : locale === 'fr' ? 'Veuillez entrer un e-mail' : 'Please enter an email')
+    const emailToSave = newCoOwnerInput.trim()
+    if (!emailToSave) {
+      setCoOwnerError(locale === 'he' ? '\u05d9\u05e9 \u05dc\u05d4\u05d6\u05d9\u05df \u05db\u05ea\u05d5\u05d1\u05ea \u05d0\u05d9\u05de\u05d9\u05d9\u05dc' : locale === 'fr' ? 'Veuillez entrer un e-mail' : 'Please enter an email')
       return
     }
     setCoOwnerLoading(true)
@@ -210,22 +215,22 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
       const res = await fetch('/api/account/co-owner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ co_owner_email: coOwnerEmail }),
+        body: JSON.stringify({ co_owner_email: emailToSave }),
       })
       const data = await res.json()
       if (!res.ok) {
         setCoOwnerError(data.error || l.error)
         return
       }
+      setCoOwnerEmail(emailToSave.toLowerCase())
+      setNewCoOwnerInput('')
       setCoOwnerSuccess(l.coOwnerSaved)
     } catch {
       setCoOwnerError(l.error)
     } finally {
       setCoOwnerLoading(false)
     }
-  }
-
-  const handleRemoveCoOwner = async () => {
+  }  const handleRemoveCoOwner = async () => {
     setCoOwnerError('')
     setCoOwnerSuccess('')
     setCoOwnerLoading(true)
@@ -337,41 +342,67 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
         </div>
       </section>
 
-      {/* ── Section 2: Co-owner Email ── */}
+            {/* ── Section 2: Co-owner Email ── */}
       <section className="bg-white border border-stone-100 rounded-2xl p-6 md:p-8 mb-6">
         <h2 className="font-cormorant text-2xl text-stone-800 mb-2">{l.coOwnerSection}</h2>
         <p className="text-sm text-stone-400 mb-6 leading-relaxed">{l.coOwnerDesc}</p>
 
-        <div className="flex gap-3 items-end">
-          <div className="flex-1">
-            <label className="block text-xs text-stone-500 uppercase tracking-widest mb-1.5">{l.coOwnerEmail}</label>
-            <input
-              type="email"
-              value={coOwnerEmail}
-              onChange={e => { setCoOwnerEmail(e.target.value); setCoOwnerSuccess(''); setCoOwnerError('') }}
-              className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-800 focus:outline-none focus:border-[#c9a84c] transition-colors"
-              placeholder={l.coOwnerPlaceholder}
-              dir="ltr"
-            />
+        {/* ── Existing co-owner list ── */}
+        {coOwnerEmail && (
+          <div className="mb-5">
+            <p className="text-xs text-stone-400 uppercase tracking-widest mb-2">{l.currentCoOwners}</p>
+            <div className="flex items-center justify-between gap-3 px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl group">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <svg className="w-4 h-4 flex-shrink-0" style={{ color: '#c9a84c' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                </svg>
+                <span className="text-sm text-stone-700 truncate" dir="ltr">{coOwnerEmail}</span>
+              </div>
+              <button
+                onClick={handleRemoveCoOwner}
+                disabled={coOwnerLoading}
+                className="text-stone-300 hover:text-red-400 transition-colors flex-shrink-0 disabled:opacity-40"
+                title={l.removeCoOwner}
+              >
+                {coOwnerLoading ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
-          <button
-            onClick={handleSaveCoOwner}
-            disabled={coOwnerLoading}
-            className="px-5 py-3 text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all disabled:opacity-50 flex-shrink-0"
-            style={{ background: '#c9a84c', boxShadow: '0 4px 14px rgba(201,168,76,0.25)' }}
-          >
-            {coOwnerLoading ? l.saving : l.saveCoOwner}
-          </button>
-          {initialCoOwnerEmail && (
+        )}
+
+        {/* ── Add co-owner form (shown only when slot is empty) ── */}
+        {!coOwnerEmail && (
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <label className="block text-xs text-stone-500 uppercase tracking-widest mb-1.5">{l.coOwnerEmail}</label>
+              <input
+                type="email"
+                value={newCoOwnerInput}
+                onChange={e => { setNewCoOwnerInput(e.target.value); setCoOwnerSuccess(''); setCoOwnerError('') }}
+                className="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm text-stone-800 focus:outline-none focus:border-[#c9a84c] transition-colors"
+                placeholder={l.coOwnerPlaceholder}
+                dir="ltr"
+              />
+            </div>
             <button
-              onClick={handleRemoveCoOwner}
+              onClick={handleSaveCoOwner}
               disabled={coOwnerLoading}
-              className="px-4 py-3 border border-stone-200 text-stone-500 text-sm font-medium rounded-xl hover:bg-stone-50 transition-colors flex-shrink-0"
+              className="px-5 py-3 text-white text-sm font-medium tracking-wider uppercase rounded-xl transition-all disabled:opacity-50 flex-shrink-0"
+              style={{ background: '#c9a84c', boxShadow: '0 4px 14px rgba(201,168,76,0.25)' }}
             >
-              {l.removeCoOwner}
+              {coOwnerLoading ? l.saving : l.saveCoOwner}
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {coOwnerSuccess && (
           <p className="mt-3 text-sm text-emerald-600">{coOwnerSuccess}</p>
