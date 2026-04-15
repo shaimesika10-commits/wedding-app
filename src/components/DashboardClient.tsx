@@ -33,6 +33,8 @@ interface Props {
   wedding: Wedding
   locale: Locale
   t: Record<string, string>
+  userEmail?: string
+  coOwnerEmail?: string | null
 }
 
 const emptyNewGuest = {
@@ -47,9 +49,14 @@ const emptyNewGuest = {
   notes: '',
 }
 
-export default function DashboardClient({ guests, wedding, locale, t }: Props) {
+export default function DashboardClient({ guests, wedding, locale, t, userEmail = '', coOwnerEmail = null }: Props) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<Tab>('guests')
+  const searchParams = useSearchParams()
+  const initialTab = (searchParams.get('tab') as Tab | null)
+  const validTabs: Tab[] = ['guests', 'seating', 'edit', 'preview', 'account']
+  const [activeTab, setActiveTab] = useState<Tab>(
+    initialTab && validTabs.includes(initialTab) ? initialTab : 'guests'
+  )
 
   // ════════════════════════════════════════
   // TAB 1 — אורחים
