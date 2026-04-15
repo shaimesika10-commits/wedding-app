@@ -265,7 +265,32 @@ export default function OnboardingPage() {
       return
     }
 
-    const slug = slugify(form.bride_name, form.groom_name, form.wedding_date)
+    // ── Bug fix: if user already has a wedding (e.g. double-submit / page refresh),
+    // skip insertion and go straight to the dashboard ──
+    const { data: existingWedding } = await supabase
+      .from('weddings')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (existingWedding) {
+      router.push(`/${locale}/dashboard`)
+      return
+    }
+
+    // ── Bug fix: generate a unique slug to avoid "duplicate key" constraint error ──
+    // Two couples with the same names + year would collide — append a short random
+    // suffix when the base slug is already taken.
+    let slug = slugify(form.bride_name, form.groom_name, form.wedding_date)
+    const { data: slugTaken } = await supabase
+      .from('weddings')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle()
+    if (slugTaken) {
+      const suffix = Math.random().toString(36).substring(2, 6) // e.g. "x4k9"
+      slug = `${slug}-${suffix}`
+    }
 
     // Upload cover image if provided
     let coverImageUrl: string | null = null
