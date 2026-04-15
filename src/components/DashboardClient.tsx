@@ -8,7 +8,7 @@
 // ============================================================
 
 import { useState, useMemo, Fragment, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import type { Guest, Wedding, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
 
@@ -51,12 +51,15 @@ const emptyNewGuest = {
 
 export default function DashboardClient({ guests, wedding, locale, t, userEmail = '', coOwnerEmail = null }: Props) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const initialTab = (searchParams.get('tab') as Tab | null)
-  const validTabs: Tab[] = ['guests', 'seating', 'edit', 'preview', 'account']
-  const [activeTab, setActiveTab] = useState<Tab>(
-    initialTab && validTabs.includes(initialTab) ? initialTab : 'guests'
-  )
+  const [activeTab, setActiveTab] = useState<Tab>('guests')
+
+  // Read ?tab=account from URL on mount (avoids useSearchParams Suspense requirement)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab') as Tab | null
+    const validTabs: Tab[] = ['guests', 'seating', 'edit', 'preview', 'account']
+    if (tab && validTabs.includes(tab)) setActiveTab(tab)
+  }, [])
 
   // ════════════════════════════════════════
   // TAB 1 — אורחים
