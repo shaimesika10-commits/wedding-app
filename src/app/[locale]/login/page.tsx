@@ -378,7 +378,7 @@ export default function LoginPage() {
     }
   }
 
-  // ── Handle forgot password ──────────────────────────────
+  // ── Handle forgot password ──────────────────────────
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -388,28 +388,12 @@ export default function LoginPage() {
     }
     setLoading(true)
     try {
-      // ── Step 1: check if the email is registered ──────────
-      const checkRes = await fetch('/api/auth/check-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail }),
-      })
-      const { exists } = await checkRes.json()
-      if (!exists) {
-        setError(l.forgotEmailNotFound)
-        setLoading(false)
-        return
-      }
-
-      // ── Step 2: send the reset email ──────────────────────
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      // Send reset email directly — Supabase silently ignores unknown emails
+      // (no email-exists pre-check: prevents user enumeration, avoids service-role-key dependency)
+      await supabase.auth.resetPasswordForEmail(forgotEmail.trim().toLowerCase(), {
         redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/${locale}/reset-password`,
       })
-      if (resetError) {
-        setError(resetError.message)
-        setLoading(false)
-        return
-      }
+      // Always show success (even if email not registered — standard security practice)
       setSentEmail(forgotEmail)
       setView('forgot-sent')
     } catch {
@@ -419,7 +403,7 @@ export default function LoginPage() {
     }
   }
 
-  // ── Handle OAuth ─────────────────────────────────────────
+    // ── Handle OAuth ─────────────────────────────────────────
   const handleOAuth = async (provider: 'google') => {
     // OAuth always remembers (standard behavior for social login)
     sessionStorage.setItem('gi_session_started', '1')
