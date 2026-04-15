@@ -80,17 +80,24 @@ export async function GET(request: NextRequest) {
   //   Without step 2, the email link redirectTo is ignored and reset emails break.
   //
   if (token_hash && type) {
+    // ── BUG FIX: For password recovery, redirect to client-side page with token_hash
+    // so verification happens in the browser (not server-side).
+    // Reason: iOS Mail app prefetches email links via GET — this fires the callback
+    // route before the user taps the link, consuming the one-time token on the server.
+    // By passing token_hash to the client page, the token is only consumed when
+    // the user's JavaScript actually runs (not during prefetch).
+    if (type === 'recovery') {
+      const resetUrl = new URL(`/${locale}/reset-password`, requestUrl.origin)
+      resetUrl.searchParams.set('token_hash', token_hash)
+      return NextResponse.redirect(resetUrl)
+    }
+
     const { error } = await supabase.auth.verifyOtp({
-      type: type as 'magiclink' | 'recovery' | 'invite' | 'email',
+      type: type as 'magiclink' | 'invite' | 'email',
       token_hash,
     })
 
     if (!error) {
-      // Password recovery → dedicated reset page
-      if (type === 'recovery') {
-        const resetUrl = new URL(`/${locale}/reset-password`, requestUrl.origin)
-        return NextResponse.redirect(resetUrl)
-      }
       // Email confirmation: go to onboarding if no wedding, dashboard otherwise
       return redirectByWeddingStatus()
     }
