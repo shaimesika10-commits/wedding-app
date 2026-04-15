@@ -88,7 +88,7 @@ export default async function DashboardPage({
 
             {/* ניהול חשבון */}
             <Link
-              href={`/${locale}/dashboard/account-settings`}
+              href={`/${locale}/dashboard?tab=account`}
               className="text-sm text-stone-500 hover:text-stone-800 transition-colors flex items-center gap-1.5"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
