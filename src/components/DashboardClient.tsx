@@ -11,9 +11,10 @@ import { useState, useMemo, Fragment, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Guest, Wedding, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
+import AccountSettingsClient from '@/components/AccountSettingsClient'
 
 type RSVPStatus = 'all' | 'confirmed' | 'declined' | 'pending'
-type Tab = 'guests' | 'seating' | 'edit' | 'preview'
+type Tab = 'guests' | 'seating' | 'edit' | 'preview' | 'account'
 type DeleteState = 'idle' | 'confirm' | 'sending' | 'sent' | 'error'
 type TableInputsMap = Record<string, string>
 type EditEventFormState = {
@@ -496,6 +497,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
           { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
           { key:'edit',    label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
           { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
+          { key:'account', label: locale==='he'?'⚙ חשבון':locale==='fr'?'⚙ Compte':'⚙ Account' },
         ] as const).map(tab => (
           <button
             key={tab.key}
@@ -1566,7 +1568,19 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════
+      
+      {/* ════════════════════════════════════════════
+          TAB: ACCOUNT SETTINGS
+      ════════════════════════════════════════════ */}
+      {activeTab === 'account' && (
+        <AccountSettingsClient
+          locale={locale}
+          userEmail={userEmail}
+          initialCoOwnerEmail={coOwnerEmail}
+          weddingId={wedding.id}
+        />
+      )}
+{/* ══════════════════════════════════════════════
           מודאל הוספת אורח
       ══════════════════════════════════════════════ */}
       {showAddModal && (
