@@ -501,7 +501,6 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
           { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
           { key:'edit',    label: locale==='he'?'עריכה':locale==='fr'?'Modifier':'Edit' },
           { key:'preview', label: locale==='he'?'תצוגה':locale==='fr'?'Aperçu':'Preview' },
-          { key:'account', label: locale==='he'?'⚙ חשבון':locale==='fr'?'⚙ Compte':'⚙ Account' },
         ] as const).map(tab => (
           <button
             key={tab.key}
