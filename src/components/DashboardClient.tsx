@@ -7,7 +7,7 @@
 //  src/components/DashboardClient.tsx
 // ============================================================
 
-import { useState, useMemo, Fragment, useEffect } from 'react'
+import { useState, useMemo, Fragment, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Guest, Wedding, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
@@ -53,13 +53,17 @@ const emptyNewGuest = {
 export default function DashboardClient({ guests, wedding, locale, t, userEmail = '', coOwnerEmail = null }: Props) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>('guests')
+  const tabBarRef = useRef<HTMLDivElement>(null)
 
   // Read ?tab=account from URL on mount (avoids useSearchParams Suspense requirement)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const tab = params.get('tab') as Tab | null
     const validTabs: Tab[] = ['guests', 'seating', 'edit', 'preview', 'account']
-    if (tab && validTabs.includes(tab)) setActiveTab(tab)
+    if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab)
+      setTimeout(() => tabBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    }
   }, [])
 
   // ════════════════════════════════════════
@@ -491,7 +495,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
   return (
     <div>
       {/* ── Tab Bar ── */}
-      <div className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
+      <div ref={tabBarRef} className="flex border-b border-stone-200 mb-6 md:mb-8 gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden -mx-4 md:mx-0 px-4 md:px-0">
         {([
           { key:'guests',  label: locale==='he'?'אורחים':locale==='fr'?'Invités':'Guests' },
           { key:'seating', label: locale==='he'?'ישיבה':locale==='fr'?'Tables':'Seating' },
@@ -501,7 +505,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
         ] as const).map(tab => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => { setActiveTab(tab.key); setTimeout(() => tabBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
             className="flex-shrink-0 px-4 md:px-6 py-3 text-sm font-medium tracking-wide transition-all relative whitespace-nowrap"
             style={{ color: activeTab===tab.key ? '#c9a84c' : '#a8a29e' }}
           >
