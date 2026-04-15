@@ -1297,75 +1297,7 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
             </button>
           </div>
 
-          {/* ── מחיקת חשבון ── */}
-          <div className="pt-8 mt-4 border-t border-stone-100">
-            <h3 className="font-cormorant text-xl text-red-700 mb-2">
-              {locale==='he'?'מחיקת חשבון':locale==='fr'?'Supprimer le compte':'Delete account'}
-            </h3>
-            <p className="text-xs text-stone-400 mb-4 leading-relaxed">
-              {locale==='he'
-                ? 'מחיקת החשבון תסיר לצמיתות את כל נתוני החתונה, האורחים והגלריה. פעולה בלתי הפיכה.'
-                : locale==='fr'
-                ? 'La suppression du compte supprimera définitivement toutes les données du mariage, des invités et de la galerie. Cette action est irréversible.'
-                : 'Deleting the account will permanently remove all wedding, guest and gallery data. This action is irreversible.'}
-            </p>
-
-            {deleteState === 'idle' && (
-              <button
-                onClick={() => setDeleteState('confirm')}
-                className="px-6 py-2.5 border border-red-200 text-red-600 text-sm font-medium rounded-xl hover:bg-red-50 transition-colors"
-              >
-                {locale==='he'?'מחק חשבון':locale==='fr'?'Supprimer mon compte':'Delete my account'}
-              </button>
-            )}
-
-            {deleteState === 'confirm' && (
-              <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-                <p className="text-sm text-red-700 font-medium mb-3">
-                  {locale==='he'?'האם אתם בטוחים?':locale==='fr'?'Êtes-vous sûr(e) ?':'Are you sure?'}
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setDeleteState('idle')}
-                    className="flex-1 py-2.5 border border-stone-200 text-stone-600 text-sm font-medium rounded-xl hover:bg-stone-50 transition-colors"
-                  >
-                    {locale==='he'?'ביטול':locale==='fr'?'Annuler':'Cancel'}
-                  </button>
-                  <button
-                    onClick={handleDeleteRequest}
-                    className="flex-1 py-2.5 bg-red-600 text-white text-sm font-medium rounded-xl hover:bg-red-700 transition-colors"
-                  >
-                    {locale==='he'?'כן, מחק':locale==='fr'?'Oui, supprimer':'Yes, delete'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {deleteState === 'sending' && (
-              <p className="text-sm text-stone-400 animate-pulse">
-                {locale==='he'?'שולח אימייל אישור...':locale==='fr'?'Envoi de l\'e-mail de confirmation...':'Sending confirmation email...'}
-              </p>
-            )}
-
-            {deleteState === 'sent' && (
-              <div className="bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-700">
-                {locale==='he'
-                  ? 'נשלח אימייל עם קישור לאישור המחיקה. בדקו את תיבת הדואר שלכם.'
-                  : locale==='fr'
-                  ? 'Un e-mail de confirmation a été envoyé. Vérifiez votre boîte mail.'
-                  : 'A confirmation email has been sent. Check your inbox.'}
-              </div>
-            )}
-
-            {deleteState === 'error' && (
-              <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-sm text-red-600">
-                {deleteError}
-                <button onClick={() => setDeleteState('idle')} className="block mt-2 text-xs underline">
-                  {locale==='he'?'נסה שוב':locale==='fr'?'Réessayer':'Try again'}
-                </button>
-              </div>
-            )}
-          </div>
+          {/* ניהול חשבון moved to account tab */}
         </div>
       )}
 
