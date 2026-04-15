@@ -87,6 +87,10 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
     return m
   })
   const [savingTable, setSavingTable] = useState<string | null>(null)
+  // New column-per-table UI state
+  const [localTables, setLocalTables] = useState<number[]>([]) // empty tables added via "+ Add Table"
+  const [assignDropdown, setAssignDropdown] = useState<number | null>(null) // which table's guest picker is open
+  const [assignSearch, setAssignSearch] = useState('')
 
   const filteredGuests = useMemo(() => {
     return guests.filter(g => {
@@ -656,145 +660,223 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
       {/* ══════════════════════════════════════════════
           TAB: SEATING
       ══════════════════════════════════════════════ */}
-      {activeTab === 'seating' && (
-        <div dir={isRTL?'rtl':'ltr'}>
-          {/* Header */}
-          <div className="mb-6">
-            <h3 className="font-cormorant text-2xl text-stone-700">
-              {locale==='he'?'סידורי ישיבה':locale==='fr'?'Plan de table':'Seating Chart'}
-            </h3>
-            <p className="text-sm text-stone-400 mt-1">
-              {locale==='he'?'הקצה מספר שולחן לכל אורח שאישר הגעה'
-                :locale==='fr'?"Attribuez un numéro de table à chaque invité confirmé"
-                :'Assign a table number to each confirmed guest'}
-            </p>
-          </div>
+            {activeTab === 'seating' && (() => {
+        // Derived seating data
+        const confirmed = guests.filter(g => g.rsvp_status === 'confirmed')
+        const unassigned = confirmed.filter(g => g.table_number == null)
+        const assignedNums = new Set(confirmed.filter(g => g.table_number != null).map(g => g.table_number!))
+        const allNums = [...new Set([...assignedNums, ...localTables])].sort((a, b) => a - b)
 
-          {/* Assignment table — confirmed guests */}
-          <div className="bg-white border border-stone-100 rounded-2xl overflow-hidden shadow-sm mb-8">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-stone-100 bg-stone-50">
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'שם':locale==='fr'?'Nom':'Name'}
-                    </th>
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'סטטוס':locale==='fr'?'Statut':'Status'}
-                    </th>
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left">
-                      {locale==='he'?'סה״כ':locale==='fr'?'Total':'Total'}
-                    </th>
-                    <th className="px-5 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-left w-36">
-                      {locale==='he'?'מספר שולחן':locale==='fr'?'N° de table':'Table #'}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-50">
-                  {guests.filter(g => g.rsvp_status === 'confirmed').map(g => (
-                    <tr key={g.id} className="hover:bg-stone-50 transition-colors">
-                      <td className="px-5 py-3 font-medium text-stone-800">{g.name}</td>
-                      <td className="px-5 py-3">{statusBadge(g.rsvp_status)}</td>
-                      <td className="px-5 py-3 text-stone-500">
-                        {g.adults_count + g.children_count}
-                      </td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="number"
-                            min={1}
-                            placeholder="—"
-                            value={tableInputs[g.id] ?? (g.table_number != null ? String(g.table_number) : '')}
-                            onChange={e => setTableInputs(prev => ({ ...prev, [g.id]: e.target.value }))}
-                            onBlur={e => handleAssignTable(g.id, e.target.value)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter') handleAssignTable(g.id, (e.target as HTMLInputElement).value)
-                            }}
-                            className="w-20 px-3 py-1.5 border border-stone-200 bg-stone-50 text-sm text-center focus:outline-none focus:border-[#c9a84c] rounded-lg transition-colors"
-                            dir="ltr"
-                          />
-                          {savingTable === g.id && (
-                            <svg className="w-4 h-4 text-stone-300 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                            </svg>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        const handleAddTable = () => {
+          const next = allNums.length > 0 ? Math.max(...allNums) + 1 : 1
+          setLocalTables(prev => [...prev, next])
+        }
+
+        const tableLabel = locale==='he'?'\u05e9\u05d5\u05dc\u05d7\u05df':locale==='fr'?'Table':'Table'
+        const addGuestLabel = locale==='he'?'\u05d4\u05d5\u05e1\u05e3 \u05d0\u05d5\u05e8\u05d7':locale==='fr'?'Ajouter un invit\u00e9':'Add guest'
+        const addTableLabel = locale==='he'?'\u05d4\u05d5\u05e1\u05e3 \u05e9\u05d5\u05dc\u05d7\u05df':locale==='fr'?'Ajouter une table':'Add table'
+
+        return (
+          <div dir={isRTL?'rtl':'ltr'}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+              <div>
+                <h3 className="font-cormorant text-2xl text-stone-700">
+                  {locale==='he'?'\u05e1\u05d9\u05d3\u05d5\u05e8\u05d9 \u05d9\u05e9\u05d9\u05d1\u05d4':locale==='fr'?'Plan de table':'Seating Chart'}
+                </h3>
+                <p className="text-sm text-stone-400 mt-1">
+                  {locale==='he'?'\u05e9\u05d1\u05e5 \u05d0\u05d5\u05e8\u05d7\u05d9\u05dd \u05dc\u05e9\u05d5\u05dc\u05d7\u05e0\u05d5\u05ea \u2014 \u05d0\u05d5\u05e8\u05d7 \u05e9\u05d5\u05d1\u05e5 \u05dc\u05d0 \u05d9\u05d5\u05e4\u05d9\u05e2 \u05dc\u05e9\u05d9\u05d1\u05d5\u05e5 \u05d7\u05d5\u05d6\u05e8'
+                    :locale==='fr'?"Placez les invit\u00e9s aux tables \u2014 un invit\u00e9 plac\u00e9 n'appara\u00eet plus dans les autres tables"
+                    :'Assign guests to tables \u2014 once assigned, a guest won\'t appear for other tables'}
+                </p>
+              </div>
+              <button
+                onClick={handleAddTable}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border border-[#c9a84c] text-[#c9a84c] hover:bg-[#fdf6e3] transition-colors flex-shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+                </svg>
+                {addTableLabel}
+              </button>
             </div>
-            {guests.filter(g => g.rsvp_status === 'confirmed').length === 0 && (
-              <div className="px-5 py-12 text-center text-stone-400 text-sm">
-                {locale==='he'?'אין אורחים שאישרו הגעה עדיין'
-                  :locale==='fr'?"Aucun invité confirmé pour l'instant"
-                  :'No confirmed guests yet'}
+
+            {/* Empty state */}
+            {allNums.length === 0 && (
+              <div className="text-center py-16 text-stone-400">
+                <svg className="w-12 h-12 mx-auto mb-3 text-stone-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                </svg>
+                <p className="text-sm">
+                  {locale==='he'?'\u05dc\u05d7\u05e5 \u05e2\u05dc "\u05d4\u05d5\u05e1\u05e3 \u05e9\u05d5\u05dc\u05d7\u05df" \u05db\u05d3\u05d9 \u05dc\u05d4\u05ea\u05d7\u05d9\u05dc'
+                    :locale==='fr'?'Cliquez sur "Ajouter une table" pour commencer'
+                    :'Click "Add table" to get started'}
+                </p>
               </div>
             )}
-            <div className="px-5 py-3 bg-stone-50 border-t border-stone-100 text-xs text-stone-400 text-right">
-              {guests.filter(g => g.rsvp_status === 'confirmed' && g.table_number != null).length}
-              {' / '}
-              {guests.filter(g => g.rsvp_status === 'confirmed').length}
-              {' '}
-              {locale==='he'?'הוקצו לשולחנות':locale==='fr'?'assignés à une table':'assigned to tables'}
-            </div>
-          </div>
 
-          {/* Grouped-by-table overview */}
-          {(() => {
-            const confirmed = guests.filter(g => g.rsvp_status === 'confirmed' && g.table_number != null)
-            if (confirmed.length === 0) return null
-            const byTable: Record<number, Guest[]> = {}
-            confirmed.forEach(g => {
-              const tNum = g.table_number!
-              if (!byTable[tNum]) byTable[tNum] = []
-              byTable[tNum].push(g)
-            })
-            const tableNumbers = Object.keys(byTable).map(Number).sort((a, b) => a - b)
-            return (
-              <div>
-                <h3 className="font-cormorant text-xl text-stone-700 mb-4">
-                  {locale==='he'?'תצוגה לפי שולחן':locale==='fr'?'Vue par table':'View by Table'}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {tableNumbers.map(tableNum => {
-                    const tableGuests = byTable[tableNum]
-                    const total = tableGuests.reduce((sum, g) => sum + g.adults_count + g.children_count, 0)
-                    return (
-                      <div key={tableNum} className="bg-white border border-stone-100 rounded-xl p-4 shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="font-cormorant text-lg text-stone-700">
-                            {locale==='he'?'שולחן':locale==='fr'?'Table':'Table'} {tableNum}
-                          </span>
-                          <span className="text-xs text-stone-400 bg-stone-50 px-2 py-1 rounded-full">
-                            {total} {locale==='he'?'אורחים':locale==='fr'?'invités':'guests'}
-                          </span>
-                        </div>
-                        <ul className="space-y-1.5">
-                          {tableGuests.map(g => (
-                            <li key={g.id} className="text-sm text-stone-600 flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#c9a84c] flex-shrink-0"/>
-                              <span className="truncate">{g.name}</span>
-                              {(g.adults_count + g.children_count) > 1 && (
-                                <span className="text-xs text-stone-400 flex-shrink-0">
-                                  ×{g.adults_count + g.children_count}
-                                </span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
+            {/* Columns */}
+            {allNums.length > 0 && (
+              <div className="flex gap-4 overflow-x-auto pb-4" onClick={() => { if (assignDropdown !== null) { setAssignDropdown(null); setAssignSearch('') } }}>
+                {allNums.map(tNum => {
+                  const tGuests = confirmed.filter(g => g.table_number === tNum)
+                  const totalSeats = tGuests.reduce((s, g) => s + g.adults_count + g.children_count, 0)
+                  const filteredUnassigned = unassigned.filter(g =>
+                    assignSearch === '' || g.name.toLowerCase().includes(assignSearch.toLowerCase())
+                  )
+
+                  return (
+                    <div key={tNum} className="min-w-[210px] w-[210px] flex-shrink-0 bg-white border border-stone-100 rounded-2xl shadow-sm flex flex-col" style={{ minHeight: '280px' }}>
+
+                      {/* Column header */}
+                      <div className="px-4 py-3 border-b border-stone-50 flex items-center justify-between flex-shrink-0">
+                        <span className="font-cormorant text-lg text-stone-700">
+                          {tableLabel} {tNum}
+                        </span>
+                        <span className="text-xs text-stone-400 bg-stone-50 rounded-full px-2 py-0.5">
+                          {totalSeats} {locale==='he'?'\u05de\u05e7\u05d5\u05de\u05d5\u05ea':locale==='fr'?'places':'seats'}
+                        </span>
                       </div>
-                    )
-                  })}
+
+                      {/* Guests list */}
+                      <div className="flex-1 px-3 py-3 space-y-1.5 overflow-y-auto" style={{ maxHeight: '320px' }}>
+                        {tGuests.length === 0 && (
+                          <p className="text-xs text-stone-300 text-center py-6">
+                            {locale==='he'?'\u05e8\u05d9\u05e7':locale==='fr'?'Vide':'Empty'}
+                          </p>
+                        )}
+                        {tGuests.map(g => (
+                          <div key={g.id} className="flex items-center justify-between gap-1 group">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#c9a84c' }}/>
+                              <span className="text-sm text-stone-700 truncate">{g.name}</span>
+                              {(g.adults_count + g.children_count) > 1 && (
+                                <span className="text-xs text-stone-400 flex-shrink-0">×{g.adults_count + g.children_count}</span>
+                              )}
+                            </div>
+                            {/* Remove button */}
+                            <button
+                              onClick={e => { e.stopPropagation(); handleAssignTable(g.id, '') }}
+                              disabled={savingTable === g.id}
+                              className="text-stone-200 hover:text-red-400 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100 disabled:opacity-40"
+                              title={locale==='he'?'\u05d4\u05e1\u05e8 \u05de\u05d4\u05e9\u05d5\u05dc\u05d7\u05df':locale==='fr'?'Retirer':'Remove'}
+                            >
+                              {savingTable === g.id ? (
+                                <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                </svg>
+                              ) : (
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Add guest button + dropdown */}
+                      <div className="px-3 pb-3 flex-shrink-0 relative">
+                        <button
+                          onClick={e => {
+                            e.stopPropagation()
+                            setAssignDropdown(assignDropdown === tNum ? null : tNum)
+                            setAssignSearch('')
+                          }}
+                          className="w-full text-xs border rounded-lg py-2 transition-colors flex items-center justify-center gap-1"
+                          style={{
+                            borderColor: assignDropdown === tNum ? '#c9a84c' : '#e7e5e4',
+                            color: assignDropdown === tNum ? '#c9a84c' : '#a8a29e',
+                            background: assignDropdown === tNum ? '#fdf6e3' : 'transparent',
+                          }}
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
+                          </svg>
+                          {addGuestLabel}
+                        </button>
+
+                        {/* Dropdown */}
+                        {assignDropdown === tNum && (
+                          <div
+                            className="absolute left-3 right-3 bg-white border border-stone-200 rounded-xl shadow-2xl z-40 overflow-hidden"
+                            style={{ bottom: 'calc(100% - 8px)' }}
+                            onClick={e => e.stopPropagation()}
+                          >
+                            {/* Search */}
+                            <div className="p-2 border-b border-stone-100">
+                              <input
+                                autoFocus
+                                type="text"
+                                placeholder={locale==='he'?'\u05d7\u05d9\u05e4\u05d5\u05e9...':locale==='fr'?'Rechercher...':'Search...'}
+                                value={assignSearch}
+                                onChange={e => setAssignSearch(e.target.value)}
+                                className="w-full text-xs px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:border-[#c9a84c]"
+                                dir="auto"
+                              />
+                            </div>
+                            {/* List */}
+                            <div className="max-h-44 overflow-y-auto">
+                              {filteredUnassigned.length === 0 ? (
+                                <p className="text-xs text-stone-400 text-center py-4">
+                                  {unassigned.length === 0
+                                    ? (locale==='he'?'\u05db\u05dc \u05d4\u05d0\u05d5\u05e8\u05d7\u05d9\u05dd \u05e9\u05d5\u05d1\u05e6\u05d5':locale==='fr'?'Tous les invit\u00e9s sont plac\u00e9s':'All guests assigned')
+                                    : (locale==='he'?'\u05dc\u05d0 \u05e0\u05de\u05e6\u05d0':locale==='fr'?'Aucun r\u00e9sultat':'No results')}
+                                </p>
+                              ) : filteredUnassigned.map(g => (
+                                <button
+                                  key={g.id}
+                                  onClick={() => {
+                                    handleAssignTable(g.id, String(tNum))
+                                    setAssignDropdown(null)
+                                    setAssignSearch('')
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs hover:bg-stone-50 flex items-center justify-between gap-2"
+                                >
+                                  <span className="truncate text-stone-700">{g.name}</span>
+                                  {(g.adults_count + g.children_count) > 1 && (
+                                    <span className="text-stone-400 flex-shrink-0">×{g.adults_count + g.children_count}</span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Unassigned guests banner */}
+            {unassigned.length > 0 && allNums.length > 0 && (
+              <div className="mt-6 p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                <p className="text-sm font-medium text-amber-700 mb-2">
+                  {unassigned.length}{' '}
+                  {locale==='he'?'\u05d0\u05d5\u05e8\u05d7\u05d9\u05dd \u05de\u05de\u05ea\u05d9\u05e0\u05d9\u05dd \u05dc\u05e9\u05d9\u05d1\u05d5\u05e5':locale==='fr'?'invit\u00e9s non plac\u00e9s':'guests not yet assigned'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {unassigned.map(g => (
+                    <span key={g.id} className="text-xs bg-amber-100 text-amber-700 rounded-full px-3 py-1">
+                      {g.name}{(g.adults_count + g.children_count) > 1 ? ` ×${g.adults_count + g.children_count}` : ''}
+                    </span>
+                  ))}
                 </div>
               </div>
-            )
-          })()}
-        </div>
-      )}
+            )}
 
+            {/* Stats footer */}
+            {confirmed.length > 0 && (
+              <div className="mt-4 text-xs text-stone-400 text-right">
+                {confirmed.filter(g => g.table_number != null).length} / {confirmed.length}{' '}
+                {locale==='he'?'\u05d4\u05d5\u05e7\u05e6\u05d5 \u05dc\u05e9\u05d5\u05dc\u05d7\u05e0\u05d5\u05ea':locale==='fr'?'assign\u00e9s':'assigned'}
+              </div>
+            )}
+          </div>
+        )
+      })()}
       {/* ══════════════════════════════════════════════
           TAB: EDIT
       ══════════════════════════════════════════════ */}
