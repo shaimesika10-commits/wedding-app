@@ -230,7 +230,9 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
     } finally {
       setCoOwnerLoading(false)
     }
-  }  const handleRemoveCoOwner = async () => {
+  }
+
+  const handleRemoveCoOwner = async () => {
     setCoOwnerError('')
     setCoOwnerSuccess('')
     setCoOwnerLoading(true)
