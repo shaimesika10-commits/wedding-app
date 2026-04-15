@@ -8,7 +8,7 @@
 // ============================================================
 
 import { useState, useMemo, Fragment, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { Guest, Wedding, EventSchedule } from '@/types'
 import type { Locale } from '@/lib/i18n'
 
