@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite — Admin Weddings Page (Redesigned)
+//  GrandInvite â Admin Weddings Page (Redesigned)
 //  src/app/admin/weddings/page.tsx
 // ============================================================
 
@@ -76,7 +76,7 @@ export default function AdminWeddingsPage() {
         </div>
         <div className="relative">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or slug…"
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or slugâ¦"
             className="border border-stone-200 rounded-lg pl-9 pr-4 py-2 text-sm text-stone-800 bg-white w-72 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30 focus:border-[#c9a84c]" />
         </div>
       </div>
@@ -101,9 +101,9 @@ export default function AdminWeddingsPage() {
                   <tr key={w.id} className="hover:bg-stone-50 transition-colors">
                     <td className="px-5 py-3.5 font-medium text-stone-800">{w.bride_name} &amp; {w.groom_name}</td>
                     <td className="px-5 py-3.5">
-                      <a href={`/fr/${w.slug}`} target="_blank" rel="noopener noreferrer" className="text-[#c9a84c] hover:underline font-mono text-xs">{w.slug} ↗</a>
+                      <a href={`/fr/${w.slug}`} target="_blank" rel="noopener noreferrer" className="text-[#c9a84c] hover:underline font-mono text-xs">{w.slug} â</a>
                     </td>
-                    <td className="px-5 py-3.5 text-stone-500 text-xs">{w.wedding_date ? new Date(w.wedding_date).toLocaleDateString('fr-FR') : '—'}</td>
+                    <td className="px-5 py-3.5 text-stone-500 text-xs">{w.wedding_date ? new Date(w.wedding_date).toLocaleDateString('fr-FR') : 'â'}</td>
                     <td className="px-5 py-3.5 text-stone-600 tabular-nums">{guestCount}</td>
                     <td className="px-5 py-3.5">
                       <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${w.plan === 'pro' ? 'bg-[#c9a84c]/10 text-[#c9a84c] border-[#c9a84c]/20' : 'bg-stone-50 text-stone-500 border-stone-200'}`}>{w.plan ?? 'free'}</span>
@@ -149,7 +149,7 @@ export default function AdminWeddingsPage() {
                 </div>
               ))}
               <div className="grid grid-cols-2 gap-3">
-                {[['Locale','locale',[['fr','Français'],['he','עברית'],['en','English']]],['Plan','plan',[['free','Free'],['pro','Pro']]]] as [string,string,[string,string][]][]).map(([label,key,opts]) => (
+                {[['Locale','locale',[['fr','FranÃ§ais'],['he','×¢××¨××ª'],['en','English']]],['Plan','plan',[['free','Free'],['pro','Pro']]]] as [string,string,[string,string][]][]).map(([label,key,opts]) => (
                   <div key={key}>
                     <label className="block text-xs font-medium text-stone-500 mb-1">{label}</label>
                     <select value={(form as Record<string,string>)[key]} onChange={e => setForm(f => f ? { ...f, [key]: e.target.value } : f)}
@@ -167,7 +167,7 @@ export default function AdminWeddingsPage() {
             {saveError && <p className="text-xs text-red-500 mt-3">{saveError}</p>}
             <div className="flex gap-3 mt-6">
               <button onClick={() => setEditing(null)} className="flex-1 px-4 py-2 rounded-lg border border-stone-200 text-stone-600 text-sm hover:bg-stone-50 transition-colors">Cancel</button>
-              <button onClick={save} disabled={saving} className="flex-1 px-4 py-2 rounded-lg bg-[#c9a84c] text-white text-sm font-medium hover:bg-[#b8973a] disabled:opacity-50 transition-colors">{saving ? 'Saving…' : 'Save Changes'}</button>
+              <button onClick={save} disabled={saving} className="flex-1 px-4 py-2 rounded-lg bg-[#c9a84c] text-white text-sm font-medium hover:bg-[#b8973a] disabled:opacity-50 transition-colors">{saving ? 'Savingâ¦' : 'Save Changes'}</button>
             </div>
           </div>
         </div>
