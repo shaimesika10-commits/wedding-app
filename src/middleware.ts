@@ -77,6 +77,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // ── 4. הגנה על /admin ──
+  if (pathname.startsWith('/admin')) {
+    if (!user || user.email?.toLowerCase() !== 'shaimesika10@gmail.com') {
+      return NextResponse.redirect(new URL('/fr/login', request.url))
+    }
+  }
+
   return response
 }
 
