@@ -160,7 +160,7 @@ export default function AdminWeddingsPage() {
                 ))}
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => f ? { ...f, is_active: e.target.checked } : f)} className="w4 h-4 accent-[#c9a84c]" />
+                <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => f ? { ...f, is_active: e.target.checked } : f)} className="w-4 h-4 accent-[#c9a84c]" />
                 <span className="text-sm text-stone-700">Active (visible to guests)</span>
               </label>
             </div>
