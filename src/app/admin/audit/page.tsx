@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite — Admin Audit Log (Redesigned)
+//  GrandInvite â Admin Audit Log (Redesigned)
 //  src/app/admin/audit/page.tsx
 // ============================================================
 
@@ -68,7 +68,7 @@ export default function AdminAuditPage() {
           </select>
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Searchâ¦"
               className="border border-stone-200 rounded-lg pl-9 pr-4 py-2 text-sm text-stone-800 bg-white w-56 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30 focus:border-[#c9a84c]" />
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function AdminAuditPage() {
         {loading ? (
           <div className="flex justify-center py-16"><div className="w-6 h-6 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" /></div>
         ) : (
-          <table className="w5full text-sm">
+          <table className="w-full text-sm">
             <thead className="bg-stone-50 border-b border-stone-100">
               <tr>
                 {['Date','Admin','Action','Target','Details'].map(h => (
@@ -101,11 +101,11 @@ export default function AdminAuditPage() {
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-xs text-stone-400">
-                    {entry.target_table ? `${entry.target_table}` : '—'}
+                    {entry.target_table ? `${entry.target_table}` : 'â'}
                     {entry.target_id ? <span className="text-stone-300 font-mono ml-1">#{entry.target_id.slice(0, 8)}</span> : null}
                   </td>
                   <td className="px-5 py-3.5 text-xs text-stone-400 max-w-48 truncate">
-                    {entry.details ? JSON.stringify(entry.details).slice(0, 60) : '—'}
+                    {entry.details ? JSON.stringify(entry.details).slice(0, 60) : 'â'}
                   </td>
                 </tr>
               ))}
@@ -132,8 +132,8 @@ export default function AdminAuditPage() {
                 ['Action', <span key="a" className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${ACTION_STYLE[selected.action] ?? 'bg-stone-50 text-stone-500 border-stone-200'}`}>{selected.action.replace(/_/g,' ')}</span>],
                 ['Admin', selected.admin_email],
                 ['Date', new Date(selected.created_at).toLocaleString('en-GB')],
-                ['Target Table', selected.target_table ?? '—'],
-                ['Target ID', selected.target_id ?? '—'],
+                ['Target Table', selected.target_table ?? 'â'],
+                ['Target ID', selected.target_id ?? 'â'],
               ].map(([label, value]) => (
                 <div key={label as string} className="flex items-start gap-3">
                   <span className="text-xs font-medium text-stone-400 w-28 flex-shrink-0 pt-0.5">{label}</span>
