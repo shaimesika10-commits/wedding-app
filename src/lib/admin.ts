@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite — Super Admin Utilities
+//  GrandInvite — Admin Utilities
 //  src/lib/admin.ts
 // ============================================================
 
@@ -7,9 +7,30 @@ import { createAdminSupabaseClient } from './supabase-server'
 
 export const SUPER_ADMIN_EMAIL = 'shaimesika10@gmail.com'
 
-/** Verify that the given email is the super-admin. */
+/** Quick sync check — only for the primary super-admin. */
 export function isSuperAdmin(email: string | null | undefined): boolean {
   return email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
+}
+
+/**
+ * Async DB check — returns true for the primary admin OR any email
+ * stored in the admin_users table. Use this wherever possible.
+ */
+export async function isAdminDB(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false
+  // Primary admin is always allowed (fast path)
+  if (isSuperAdmin(email)) return true
+  try {
+    const sb = createAdminSupabaseClient()
+    const { data } = await sb
+      .from('admin_users')
+      .select('email')
+      .eq('email', email.toLowerCase())
+      .maybeSingle()
+    return !!data
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -35,7 +56,6 @@ export async function logAdminAction(opts: {
       ip_address:   opts.ipAddress  ?? null,
     })
   } catch (err) {
-    // Never crash the request just because audit logging failed
     console.error('[admin-audit] failed to log action:', err)
   }
 }
