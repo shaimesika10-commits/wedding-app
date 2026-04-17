@@ -82,7 +82,7 @@ export default function AdminAuditPage() {
             <thead className="bg-stone-50 border-b border-stone-100">
               <tr>
                 {['Date','Admin','Action','Target','Details'].map(h => (
-                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{h</th>
+                  <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
