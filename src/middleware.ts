@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
     locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   )
 
-  if (!pathnameHasLocale && !pathname.startsWith('/api') && !pathname.startsWith('/_next') && !pathname.startsWith('/auth')) {
+  if (!pathnameHasLocale && !pathname.startsWith('/api') && !pathname.startsWith('/_next') && !pathname.startsWith('/auth') && !pathname.startsWith('/admin')) {
     const locale = getLocaleFromRequest(request)
     const newUrl = request.nextUrl.clone()
     newUrl.pathname = `/${locale}${pathname}`
