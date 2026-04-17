@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite — Admin Guests Page
+//  GrandInvite — Admin Guests Page (Redesigned)
 //  src/app/admin/guests/page.tsx
 // ============================================================
 
@@ -14,10 +14,10 @@ interface Guest {
   weddings: { bride_name: string; groom_name: string; slug: string } | null
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  confirmed: 'bg-emerald-500/10 text-emerald-400',
-  declined:  'bg-red-500/10 text-red-400',
-  pending:   'bg-gray-700 text-gray-400',
+const STATUS_STYLES: Record<string, string> = {
+  confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+  declined:  'bg-red-50 text-red-600 border-red-100',
+  pending:   'bg-amber-50 text-amber-600 border-amber-100',
 }
 
 export default function AdminGuestsPage() {
@@ -28,168 +28,166 @@ export default function AdminGuestsPage() {
   const [editing, setEditing] = useState<Guest | null>(null)
   const [editForm, setEditForm] = useState<Partial<Guest>>({})
   const [saving, setSaving]   = useState(false)
+  const [toast, setToast]     = useState<string | null>(null)
+
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
   const load = () => {
     setLoading(true)
     fetch('/api/admin/guests').then(r => r.json()).then(d => setGuests(d.guests ?? [])).finally(() => setLoading(false))
   }
-
   useEffect(() => { load() }, [])
 
-  const saveGuest = async () => {
-    if (!editing) return
-    setSaving(true)
-    await fetch('/api/admin/guests', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guestId: editing.id, updates: editForm }),
-    })
-    setSaving(false)
-    setEditing(null)
-    load()
+  const openEdit = (g: Guest) => {
+    setEditing(g)
+    setEditForm({ name: g.name, adults_count: g.adults_count, children_count: g.children_count, rsvp_status: g.rsvp_status, dietary_notes: g.dietary_notes ?? '', notes: g.notes ?? '' })
   }
 
-  const filtered = guests
-    .filter(g => statusFilter === 'all' || g.rsvp_status === statusFilter)
-    .filter(g =>
-      g.name.toLowerCase().includes(search.toLowerCase()) ||
-      `${g.weddings?.bride_name} ${g.weddings?.groom_name}`.toLowerCase().includes(search.toLowerCase())
-    )
+  const save = async () => {
+    if (!editing) return
+    setSaving(true)
+    const r = await fetch('/api/admin/guests', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guestId: editing.id, ...editForm }),
+    })
+    setSaving(false)
+    if (r.ok) { setEditing(null); showToast('Guest updated.'); load() }
+    else showToast('Failed to update guest.')
+  }
 
-  const confirmed = guests.filter(g => g.rsvp_status === 'confirmed').length
-  const declined  = guests.filter(g => g.rsvp_status === 'declined').length
+  const filtered = guests.filter(g => {
+    const matchStatus = statusFilter === 'all' || g.rsvp_status === statusFilter
+    const matchSearch = g.name.toLowerCase().includes(search.toLowerCase()) ||
+      (g.weddings && `${g.weddings.bride_name} ${g.weddings.groom_name}`.toLowerCase().includes(search.toLowerCase()))
+    return matchStatus && matchSearch
+  })
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-4">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto">
+
+      {toast && <div className="fixed top-4 right-4 z-50 bg-stone-900 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg">{toast}</div>}
+
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Guests</h1>
-          <p className="text-sm text-gray-500">
-            {guests.length} total · {confirmed} confirmed · {declined} declined
-          </p>
+          <h1 className="text-xl font-bold text-stone-900">Guests</h1>
+          <p className="text-sm text-stone-400 mt-0.5">{guests.length} guests across all weddings</p>
         </div>
-        <div className="flex gap-3">
-          <a
-            href="/api/admin/guests?export=csv"
-            className="text-sm px-4 py-2 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 rounded-lg border border-amber-500/20 transition-colors"
-          >
-            ↓ Export CSV
+        <div className="flex items-center gap-3">
+          {/* Status filter */}
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            className="border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30">
+            <option value="all">All statuses</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="declined">Declined</option>
+            <option value="pending">Pending</option>
+          </select>
+          {/* Export CSV */}
+          <a href="/api/admin/guests?export=csv"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w4 h-4">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export CSV
           </a>
+          {/* Search */}
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search guest or wedding…"
+              className="border border-stone-200 rounded-lg pl-9 pr-4 py-2 text-sm text-stone-800 bg-white w-56 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30 focus:border-[#c9a84c]" />
+          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-3 mb-6">
-        <input
-          value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search by name or couple…"
-          className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white w-72 focus:outline-none focus:border-amber-500"
-        />
-        {['all', 'confirmed', 'declined', 'pending'].map(s => (
-          <button key={s} onClick={() => setStatusFilter(s)}
-            className={`text-sm px-3 py-1.5 rounded-lg capitalize transition-colors ${
-              statusFilter === s ? 'bg-amber-500 text-black font-semibold' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-            }`}>
-            {s}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : (
-        <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="border-b border-gray-800 text-gray-500 uppercase text-xs tracking-wider">
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="flex justify-center py-16"><div className="w6 h-6 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" /></div>
+        ) : (
+          <table className="w5full text-sm">
+            <thead className="bg-stone-50 border-b border-stone-100">
               <tr>
-                <th className="text-left px-4 py-3">Guest</th>
-                <th className="text-left px-4 py-3">Wedding</th>
-                <th className="text-left px-4 py-3">Adults</th>
-                <th className="text-left px-4 py-3">Children</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-left px-4 py-3">Notes</th>
-                <th className="text-right px-4 py-3">Edit</th>
+                {['Name','Wedding','Adults','Children','Status','Notes','Date',''].map(h => (
+                  <th key={h} className={`px-4 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider ${h === '' ? 'text-right' : 'text-left'}`}>{h</th>
+                ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-stone-50">
               {filtered.map(g => (
-                <tr key={g.id} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                  <td className="px-4 py-3 text-white font-medium">{g.name}</td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">
+                <tr key={g.id} className="hover:bg-stone-50 transition-colors">
+                  <td className="px-4 py-3.5 font-medium text-stone-800">{g.name}</td>
+                  <td className="px-4 py-3.5 text-stone-500 text-xs">
                     {g.weddings ? `${g.weddings.bride_name} & ${g.weddings.groom_name}` : '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-400">{g.adults_count}</td>
-                  <td className="px-4 py-3 text-gray-400">{g.children_count}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[g.rsvp_status] ?? STATUS_COLOR.pending}`}>
+                  <td className="px-4 py-3.5 text-stone-600 tabular-nums">{g.adults_count}</td>
+                  <td className="px-4 py-3.5 text-stone-600 tabular-nums">{g.children_count}</td>
+                  <td className="px-4 py-3.5">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${STATUS_STYLES[g.rsvp_status] ?? 'bg-stone-50 text-stone-500 border-stone-200'}`}>
                       {g.rsvp_status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">
-                    {[g.dietary_notes, g.notes].filter(Boolean).join(' · ') || '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => { setEditing(g); setEditForm({ name: g.name, adults_count: g.adults_count, children_count: g.children_count, rsvp_status: g.rsvp_status, dietary_notes: g.dietary_notes ?? '', notes: g.notes ?? '' }) }}
-                      className="text-xs px-3 py-1 rounded bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    >
-                      Edit
-                    </button>
+                  <td className="px-4 py-3.5 text-stone-400 text-xs max-w-32 truncate">{g.dietary_notes || g.notes || '—'}</td>
+                  <td className="px-4 py-3.5 text-xs text-stone-400">{new Date(g.created_at).toLocaleDateString('en-GB')}</td>
+                  <td className="px-4 py-3.5 text-right">
+                    <button onClick={() => openEdit(g)} className="text-xs px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-colors">Edit</button>
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-600">No guests found.</td></tr>
-              )}
+              {filtered.length === 0 && <tr><td colSpan={8} className="px-4 py-12 text-center text-stone-400 text-sm">No guests found.</td></tr>}
             </tbody>
           </table>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Edit Modal */}
       {editing && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 space-y-4">
-            <h2 className="text-lg font-bold text-white">Edit Guest: {editing.name}</h2>
-            {[
-              { key: 'name', label: 'Name', type: 'text' },
-              { key: 'adults_count', label: 'Adults', type: 'number' },
-              { key: 'children_count', label: 'Children', type: 'number' },
-              { key: 'dietary_notes', label: 'Dietary Notes', type: 'text' },
-              { key: 'notes', label: 'Additional Notes', type: 'text' },
-            ].map(({ key, label, type }) => (
-              <div key={key}>
-                <label className="block text-xs text-gray-500 mb-1">{label}</label>
-                <input type={type}
-                  value={String((editForm as Record<string, unknown>)[key] ?? '')}
-                  onChange={e => setEditForm(f => ({ ...f, [key]: type === 'number' ? Number(e.target.value) : e.target.value }))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
-                />
-              </div>
-            ))}
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">RSVP Status</label>
-              <select
-                value={editForm.rsvp_status ?? 'pending'}
-                onChange={e => setEditForm(f => ({ ...f, rsvp_status: e.target.value }))}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
-              >
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="declined">Declined</option>
-              </select>
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setEditing(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-bold text-stone-900 text-lg">Edit Guest</h2>
+              <button onClick={() => setEditing(null)} className="text-stone-400 hover:text-stone-600">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
-            <div className="flex gap-3 pt-2">
-              <button onClick={saveGuest} disabled={saving}
-                className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-semibold py-2 rounded-lg disabled:opacity-50">
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-              <button onClick={() => setEditing(null)}
-                className="flex-1 bg-gray-800 text-gray-300 hover:bg-gray-700 py-2 rounded-lg">
-                Cancel
-              </button>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-stone-500 mb-1">Name</label>
+                <input value={editForm.name ?? ''} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30 focus:border-[#c9a84c]" />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">Adults</label>
+                  <input type="number" min="0" value={editForm.adults_count ?? 0} onChange={e => setEditForm(f => ({ ...f, adults_count: Number(e.target.value) }))}
+                    className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">Children</label>
+                  <input type="number" min="0" value={editForm.children_count ?? 0} onChange={e => setEditForm(f => ({ ...f, children_count: Number(e.target.value) }))}
+                    className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">Status</label>
+                  <select value={editForm.rsvp_status ?? 'pending'} onChange={e => setEditForm(f => ({ ...f, rsvp_status: e.target.value }))}
+                    className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none">
+                    <option value="confirmed">Confirmed</option>
+                    <option value="declined">Declined</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-500 mb-1">Dietary Notes</label>
+                <input value={editForm.dietary_notes ?? ''} onChange={e => setEditForm(f => ({ ...f, dietary_notes: e.target.value }))}
+                  className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-500 mb-1">Notes</label>
+                <textarea rows={2} value={editForm.notes ?? ''} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))}
+                  className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#c9a84c]/30 resize-none" />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setEditing(null)} className="flex-1 px-4 py-2 rounded-lg border border-stone-200 text-stone-600 text-sm hover:bg-stone-50 transition-colors">Cancel</button>
+              <button onClick={save} disabled={saving} className="flex-1 px-4 py-2 rounded-lg bg-[#c9a84c] text-white text-sm font-medium hover:bg-[#b8973a] disabled:opacity-50 transition-colors">{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </div>
         </div>
