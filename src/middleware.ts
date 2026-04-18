@@ -1,25 +1,112 @@
 // ============================================================
 //  GrandInvite – Next.js Middleware
-//  (i18n routing + Supabase auth session refresh + Admin guard)
+//  Auto language detection (cookie → Accept-Language → IP geo)
+//  + Supabase auth refresh + Admin guard
 //  src/middleware.ts
 // ============================================================
 
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-const SUPPORTED_LOCALES = ['fr', 'he', 'en']
+// ── Constants ────────────────────────────────────────────────
+const SUPPORTED_LOCALES = ['fr', 'he', 'en'] as const
+type SupportedLocale    = typeof SUPPORTED_LOCALES[number]
+
 const DEFAULT_LOCALE    = 'fr'
+const LOCALE_COOKIE     = 'NEXT_LOCALE'          // persisted user preference
 const SUPER_ADMIN_EMAIL = 'shaimesika10@gmail.com'
 
-function getLocaleFromRequest(request: NextRequest): string {
-  const acceptLanguage = request.headers.get('accept-language') ?? ''
-  for (const lang of acceptLanguage.split(',')) {
-    const code = lang.trim().split(';')[0].split('-')[0].toLowerCase()
-    if (SUPPORTED_LOCALES.includes(code)) return code
+// Countries where Hebrew is the primary language
+const HE_COUNTRIES = new Set(['IL', 'PS'])
+
+// Countries / territories where French is the primary language
+const FR_COUNTRIES = new Set([
+  'FR', 'BE', 'LU', 'MC', 'MF',          // Metropolitan Europe
+  'RE', 'GP', 'MQ', 'GF', 'PM', 'BL',    // French overseas territories
+  'WF', 'PF', 'NC', 'TF', 'YT',           // Pacific & Indian Ocean
+  'SN', 'CI', 'ML', 'BF', 'NE', 'TG',    // West Africa
+  'BJ', 'GN', 'GW', 'MR', 'CM', 'CF',
+  'CG', 'CD', 'GA', 'DJ', 'KM', 'MG',
+  'SC', 'MU', 'RW', 'BI', 'HT',
+])
+
+// English-speaking countries (defaults for everything else,
+// but listed explicitly so the mapping is readable)
+const EN_COUNTRIES = new Set([
+  'US', 'GB', 'AU', 'NZ', 'IE', 'CA', 'ZA', 'SG', 'IN',
+  'PH', 'KE', 'NG', 'GH', 'JM', 'TT', 'MT',
+])
+
+// ── Helpers ──────────────────────────────────────────────────
+
+/** Parse Accept-Language header respecting q-values and return the
+ *  best supported locale, or null if nothing matches. */
+function localeFromAcceptLanguage(header: string): SupportedLocale | null {
+  if (!header) return null
+
+  const entries = header
+    .split(',')
+    .map(part => {
+      const [rawLang, rawQ] = part.trim().split(';q=')
+      const code = rawLang.trim().split('-')[0].toLowerCase()
+      const q    = rawQ ? parseFloat(rawQ) : 1.0
+      return { code, q }
+    })
+    .filter(e => !isNaN(e.q))
+    .sort((a, b) => b.q - a.q)
+
+  for (const { code } of entries) {
+    if ((SUPPORTED_LOCALES as readonly string[]).includes(code)) {
+      return code as SupportedLocale
+    }
   }
+  return null
+}
+
+/** Map an ISO 3166-1 alpha-2 country code to the best locale. */
+function localeFromCountry(country: string): SupportedLocale | null {
+  const c = country.toUpperCase()
+  if (HE_COUNTRIES.has(c)) return 'he'
+  if (FR_COUNTRIES.has(c)) return 'fr'
+  if (EN_COUNTRIES.has(c)) return 'en'
+  return null
+}
+
+/**
+ * Detect the visitor's preferred locale with the following priority:
+ *
+ *  1. Cookie  – user explicitly chose a language (most important)
+ *  2. Accept-Language – browser / OS preference
+ *  3. IP Geolocation  – Vercel's x-vercel-ip-country or Cloudflare's cf-ipcountry
+ *  4. Default  – 'fr'
+ */
+function detectLocale(request: NextRequest): SupportedLocale {
+  // 1️⃣  Saved cookie preference
+  const cookie = request.cookies.get(LOCALE_COOKIE)?.value
+  if (cookie && (SUPPORTED_LOCALES as readonly string[]).includes(cookie)) {
+    return cookie as SupportedLocale
+  }
+
+  // 2️⃣  Browser / OS language (Accept-Language header)
+  const fromAccept = localeFromAcceptLanguage(
+    request.headers.get('accept-language') ?? ''
+  )
+  if (fromAccept) return fromAccept
+
+  // 3️⃣  IP Geolocation – Vercel adds x-vercel-ip-country on all plans
+  //     Cloudflare adds cf-ipcountry as a fallback
+  const country =
+    request.headers.get('x-vercel-ip-country') ??
+    request.headers.get('cf-ipcountry') ??
+    ''
+  const fromGeo = localeFromCountry(country)
+  if (fromGeo) return fromGeo
+
+  // 4️⃣  Default
   return DEFAULT_LOCALE
 }
 
+// ── Middleware ───────────────────────────────────────────────
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -33,12 +120,26 @@ export async function middleware(request: NextRequest) {
     !pathname.startsWith('/api') &&
     !pathname.startsWith('/_next') &&
     !pathname.startsWith('/auth') &&
-    !pathname.startsWith('/admin')   // /admin has its own routing
+    !pathname.startsWith('/admin')
   ) {
-    const locale  = getLocaleFromRequest(request)
-    const newUrl  = request.nextUrl.clone()
-    newUrl.pathname = `/${locale}${pathname}`
-    return NextResponse.redirect(newUrl)
+    const locale = detectLocale(request)
+    const newUrl = request.nextUrl.clone()
+    newUrl.pathname = `/${locale}${pathname === '/' ? '' : pathname}`
+
+    const response = NextResponse.redirect(newUrl)
+
+    // Persist the detected locale in a cookie so subsequent requests skip detection.
+    // Only set it if the user hasn't already set one (don't overwrite an explicit choice).
+    if (!request.cookies.get(LOCALE_COOKIE)) {
+      response.cookies.set(LOCALE_COOKIE, locale, {
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      })
+    }
+
+    return response
   }
 
   // ── 2. Supabase Auth Session Refresh ──
@@ -49,11 +150,13 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll()               { return request.cookies.getAll() },
-        setAll(cookiesToSet)   {
+        getAll()             { return request.cookies.getAll() },
+        setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
         },
       },
     }
@@ -71,7 +174,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // ── 4. Admin guard (supports multiple admins via DB) ──
+  // ── 4. Admin guard ──
   if (pathname.startsWith('/admin')) {
     if (!user) {
       return NextResponse.redirect(new URL('/fr/login', request.url))
@@ -79,12 +182,8 @@ export async function middleware(request: NextRequest) {
 
     const email = user.email?.toLowerCase() ?? ''
 
-    // Primary super-admin always has access
-    if (email === SUPER_ADMIN_EMAIL.toLowerCase()) {
-      return response
-    }
+    if (email === SUPER_ADMIN_EMAIL.toLowerCase()) return response
 
-    // Check admin_users table for additional admins (graceful — deny on error)
     try {
       const { data: adminRow } = await supabase
         .from('admin_users')
