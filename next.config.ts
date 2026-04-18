@@ -56,15 +56,11 @@ const nextConfig: NextConfig = {
   },
 
   // ── Redirects ────────────────────────────────────────────────
+  // NOTE: Root "/" redirect is intentionally omitted here.
+  // The middleware (src/middleware.ts) handles it with smart language detection:
+  // cookie → Accept-Language header → IP geolocation → default 'fr'
   async redirects() {
-    return [
-      // Redirect root to French by default
-      {
-        source: '/',
-        destination: '/fr',
-        permanent: false,
-      },
-    ]
+    return []
   },
 
   // ── Performance ──────────────────────────────────────────────
