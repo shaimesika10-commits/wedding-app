@@ -14,7 +14,6 @@ interface LegalDoc {
   title: string
   content: string
   version: string
-  effective_date: string
   updated_at: string
 }
 
@@ -47,7 +46,7 @@ async function fetchDoc(type: DocType, locale: Locale): Promise<LegalDoc | null>
     const sb = createAdminSupabaseClient()
     const { data } = await sb
       .from('legal_documents')
-      .select('title, content, version, effective_date, updated_at')
+      .select('title, content, version, updated_at')
       .eq('doc_type', type)
       .eq('locale', locale)
       .maybeSingle()
@@ -117,7 +116,7 @@ export default async function LegalPage({
             {/* Meta */}
             <div className="mb-8 flex flex-wrap items-center gap-4 text-[12px]" style={{ color: '#a8a29e' }}>
               <span>
-                {UPDATED[locale]}: {formatDate(doc.updated_at || doc.effective_date, locale)}
+                {UPDATED[locale]}: {formatDate(doc.updated_at, locale)}
               </span>
               <span style={{ color: 'rgba(201,168,76,0.6)' }}>•</span>
               <span>{VERSION[locale]} {doc.version}</span>
