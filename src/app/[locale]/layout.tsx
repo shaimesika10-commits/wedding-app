@@ -8,6 +8,8 @@ import { Cormorant_Garamond, Montserrat } from 'next/font/google'
 import { notFound } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
 import SessionGuard from '@/components/SessionGuard'
+import FirstVisitModal from '@/components/FirstVisitModal'
+import CookieBanner from '@/components/CookieBanner'
 import '../globals.css'
 
 // ---- Fonts ----
@@ -111,6 +113,10 @@ export default async function LocaleLayout({
         }}
       >
         <SessionGuard />
+        {/* First-visit language picker + cookie consent modal */}
+        <FirstVisitModal detectedLocale={locale} />
+        {/* Fallback cookie banner for returning users who skipped the modal */}
+        <CookieBanner locale={locale} />
         {children}
       </body>
     </html>
