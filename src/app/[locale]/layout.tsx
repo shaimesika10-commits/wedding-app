@@ -10,6 +10,7 @@ import type { Locale } from '@/lib/i18n'
 import SessionGuard from '@/components/SessionGuard'
 import FirstVisitModal from '@/components/FirstVisitModal'
 import CookieBanner from '@/components/CookieBanner'
+import Footer from '@/components/Footer'
 import '../globals.css'
 
 // ---- Fonts ----
@@ -118,6 +119,8 @@ export default async function LocaleLayout({
         {/* Fallback cookie banner for returning users who skipped the modal */}
         <CookieBanner locale={locale} />
         {children}
+        {/* Site footer with legal links, contact & social */}
+        <Footer locale={locale} />
       </body>
     </html>
   )
