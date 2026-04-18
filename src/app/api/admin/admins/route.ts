@@ -1,8 +1,8 @@
 // ============================================================
-//  GrandInvite — Admin Management API
-//  GET  /api/admin/admins       — list all admins
-//  POST /api/admin/admins       — add new admin by email
-//  DELETE /api/admin/admins     — remove admin by email
+//  GrandInvite — Admin Management API (NEW)
+//  GET  /api/admin/admins       
+//  POST /api/admin/admins       
+//  DELETE /api/admin/admins     
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server'
