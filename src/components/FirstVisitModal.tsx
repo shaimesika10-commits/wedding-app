@@ -1,7 +1,7 @@
 'use client'
 // ============================================================
-//  GrandInvite – First Visit Language Picker Modal
-//  Shown once on first visit — lets the user choose their
+//  GrandInvite â First Visit Language Picker Modal
+//  Shown once on first visit â lets the user choose their
 //  preferred language. Also serves as cookie consent.
 //  Sets: NEXT_LOCALE (language) + gi_lp + gi_cookie (consent)
 //  src/components/FirstVisitModal.tsx
@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
 
-// ── Cookies ──────────────────────────────────────────────────
+// ââ Cookies ââââââââââââââââââââââââââââââââââââââââââââââââââ
 const LP_COOKIE     = 'gi_lp'      // language picker was shown
 const COOKIE_OK     = 'gi_cookie'  // cookie consent given
 const LOCALE_COOKIE = 'NEXT_LOCALE'
@@ -28,31 +28,31 @@ function setCookie(name: string, value: string, days = 365) {
   document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax${secure}`
 }
 
-// ── Copy ─────────────────────────────────────────────────────
+// ââ Copy âââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const COPY = {
-  welcome: { fr: 'Bienvenue', he: 'ברוכים הבאים', en: 'Welcome' },
+  welcome: { fr: 'Bienvenue', he: '××¨×××× ×××××', en: 'Welcome' },
   tagline: {
     fr: 'Choisissez votre langue pour continuer',
-    he: 'בחרו את שפתכם להמשך',
+    he: '×××¨× ××ª ×©×¤×ª×× ××××©×',
     en: 'Choose your language to continue',
   },
-  continue: { fr: 'Continuer', he: 'המשך', en: 'Continue' },
+  continue: { fr: 'Continuer', he: '×××©×', en: 'Continue' },
   cookie: {
-    fr: "En continuant, vous acceptez l'utilisation de cookies fonctionnels pour mémoriser vos préférences.",
-    he: 'בלחיצה על המשך, אתם מסכימים לשימוש בעוגיות פונקציונליות לשמירת ההעדפות שלכם.',
+    fr: "En continuant, vous acceptez l'utilisation de cookies fonctionnels pour mÃ©moriser vos prÃ©fÃ©rences.",
+    he: '×××××¦× ×¢× ×××©×, ××ª× ××¡××××× ××©××××© ××¢×××××ª ×¤×× ×§×¦××× ××××ª ××©×××¨×ª ×××¢××¤××ª ×©×××.',
     en: 'By continuing, you agree to the use of functional cookies to remember your preferences.',
   },
 }
 
 const LANG_OPTIONS: { locale: Locale; label: string; name: string }[] = [
-  { locale: 'fr', label: 'FR', name: 'Français' },
-  { locale: 'he', label: 'HE', name: 'עברית' },
+  { locale: 'fr', label: 'FR', name: 'FranÃ§ais' },
+  { locale: 'he', label: 'HE', name: '×¢××¨××ª' },
   { locale: 'en', label: 'EN', name: 'English' },
 ]
 
-// ── Component ─────────────────────────────────────────────────
+// ââ Component âââââââââââââââââââââââââââââââââââââââââââââââââ
 interface Props {
-  /** Locale auto-detected by middleware — pre-selected in the UI */
+  /** Locale auto-detected by middleware â pre-selected in the UI */
   detectedLocale: Locale
 }
 
@@ -76,6 +76,7 @@ export default function FirstVisitModal({ detectedLocale }: Props) {
     setCookie(LOCALE_COOKIE, selected)
     setCookie(LP_COOKIE, '1')
     setCookie(COOKIE_OK, '1')
+
     // Animate out
     setLeaving(true)
     setTimeout(() => {
@@ -91,6 +92,8 @@ export default function FirstVisitModal({ detectedLocale }: Props) {
       router.push(segs.join('/') || '/')
     }, 350)
   }
+
+  if (!visible) return null
 
   const t   = (key: keyof typeof COPY) => COPY[key][selected]
   const dir = selected === 'he' ? 'rtl' : 'ltr'
@@ -160,6 +163,7 @@ export default function FirstVisitModal({ detectedLocale }: Props) {
                   <span className="text-sm font-bold tracking-wider">{label}</span>
                   <span className="text-[11px] opacity-90">{name}</span>
                 </button>
+              )
             })}
           </div>
 
@@ -179,12 +183,6 @@ export default function FirstVisitModal({ detectedLocale }: Props) {
           >
             {t('cookie')}
           </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
         </div>
       </div>
     </div>
