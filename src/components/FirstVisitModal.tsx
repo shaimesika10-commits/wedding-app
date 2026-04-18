@@ -1,7 +1,7 @@
 'use client'
 // ============================================================
-//  GrandInvite â First Visit Language Picker Modal
-//  Shown once on first visit â lets the user choose their
+//  GrandInvite – First Visit Language Picker Modal
+//  Shown once on first visit — lets the user choose their
 //  preferred language. Also serves as cookie consent.
 //  Sets: NEXT_LOCALE (language) + gi_lp + gi_cookie (consent)
 //  src/components/FirstVisitModal.tsx
@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Locale } from '@/lib/i18n'
 
-// ââ Cookies ââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Cookies ──────────────────────────────────────────────────
 const LP_COOKIE     = 'gi_lp'      // language picker was shown
 const COOKIE_OK     = 'gi_cookie'  // cookie consent given
 const LOCALE_COOKIE = 'NEXT_LOCALE'
@@ -28,31 +28,31 @@ function setCookie(name: string, value: string, days = 365) {
   document.cookie = `${name}=${value};path=/;max-age=${maxAge};SameSite=Lax${secure}`
 }
 
-// ââ Copy âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Copy ─────────────────────────────────────────────────────
 const COPY = {
-  welcome: { fr: 'Bienvenue', he: '××¨×××× ×××××', en: 'Welcome' },
+  welcome: { fr: 'Bienvenue', he: 'ברוכים הבאים', en: 'Welcome' },
   tagline: {
     fr: 'Choisissez votre langue pour continuer',
-    he: '×××¨× ××ª ×©×¤×ª×× ××××©×',
+    he: 'בחרו את שפתכם להמשך',
     en: 'Choose your language to continue',
   },
-  continue: { fr: 'Continuer', he: '×××©×', en: 'Continue' },
+  continue: { fr: 'Continuer', he: 'המשך', en: 'Continue' },
   cookie: {
-    fr: "En continuant, vous acceptez l'utilisation de cookies fonctionnels pour mÃ©moriser vos prÃ©fÃ©rences.",
-    he: '×××××¦× ×¢× ×××©×, ××ª× ××¡××××× ××©××××© ××¢×××××ª ×¤×× ×§×¦××× ××××ª ××©×××¨×ª ×××¢××¤××ª ×©×××.',
+    fr: "En continuant, vous acceptez l'utilisation de cookies fonctionnels pour mémoriser vos préférences.",
+    he: 'בלחיצה על המשך, אתם מסכימים לשימוש בעוגיות פונקציונליות לשמירת ההעדפות שלכם.',
     en: 'By continuing, you agree to the use of functional cookies to remember your preferences.',
   },
 }
 
 const LANG_OPTIONS: { locale: Locale; label: string; name: string }[] = [
-  { locale: 'fr', label: 'FR', name: 'FranÃ§ais' },
-  { locale: 'he', label: 'HE', name: '×¢××¨××ª' },
+  { locale: 'fr', label: 'FR', name: 'Français' },
+  { locale: 'he', label: 'HE', name: 'עברית' },
   { locale: 'en', label: 'EN', name: 'English' },
 ]
 
-// ââ Component âââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Component ─────────────────────────────────────────────────
 interface Props {
-  /** Locale auto-detected by middleware â pre-selected in the UI */
+  /** Locale auto-detected by middleware — pre-selected in the UI */
   detectedLocale: Locale
 }
 
