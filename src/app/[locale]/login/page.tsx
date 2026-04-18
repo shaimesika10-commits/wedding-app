@@ -1,6 +1,6 @@
 'use client'
 // ============================================================
-//  GrandInvite â Login / Register Page
+//  GrandInvite – Login / Register Page
 //  src/app/[locale]/login/page.tsx
 // ============================================================
 
@@ -10,97 +10,109 @@ import { createClient } from '@/lib/supabase'
 import type { Locale } from '@/lib/i18n'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
-// ââ Labels ââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Labels ──────────────────────────────────────────────────
 // Maps URL ?error= codes to localized messages
 const URL_ERRORS: Record<string, Record<string, string>> = {
-  invalid_link:    { fr: 'Ce lien est invalide ou a expirÃ©. Veuillez rÃ©essayer.',       he: '××§××©××¨ ××× × ×ª×§×× ×× ×©×¤× ×ª××§×¤×. ×× × × ×¡×/× ×©××.',       en: 'This link is invalid or has expired. Please try again.' },
-  oauth_failed:    { fr: 'La connexion Google a Ã©chouÃ©. Veuillez rÃ©essayer.',           he: '×××ª×××¨××ª ×¢× ×××× × ××©××. ×× × × ×¡×/× ×©××.',               en: 'Google sign-in failed. Please try again.' },
-  oauth_cancelled: { fr: 'Connexion Google annulÃ©e.',                                   he: '×××ª×××¨××ª ×¢× ×××× ×××××.',                               en: 'Google sign-in was cancelled.' },
-  missing_params:  { fr: 'Lien de connexion manquant. Veuillez vous reconnecter.',      he: '×§××©××¨ ×××ª×××¨××ª ××¡×¨. ×× × ××ª×××¨/× ××××©.',                en: 'Missing login link. Please sign in again.' },
+  invalid_link:    { fr: 'Ce lien est invalide ou a expiré. Veuillez réessayer.',       he: 'הקישור אינו תקין או שפג תוקפו. אנא נסה/י שוב.',       en: 'This link is invalid or has expired. Please try again.' },
+  oauth_failed:    { fr: 'La connexion Google a échoué. Veuillez réessayer.',           he: 'ההתחברות עם גוגל נכשלה. אנא נסה/י שוב.',               en: 'Google sign-in failed. Please try again.' },
+  oauth_cancelled: { fr: 'Connexion Google annulée.',                                   he: 'ההתחברות עם גוגל בוטלה.',                               en: 'Google sign-in was cancelled.' },
+  missing_params:  { fr: 'Lien de connexion manquant. Veuillez vous reconnecter.',      he: 'קישור ההתחברות חסר. אנא התחבר/י מחדש.',                en: 'Missing login link. Please sign in again.' },
 }
 
 const L = {
   fr: {
-    confirmSubject: 'VÃ©rifiez votre e-mail',
-    confirmMsg: (email: string) => `Un lien de confirmation a Ã©tÃ© envoyÃ© Ã  ${email}. Cliquez sur le lien pour activer votre compte.`,
+    confirmSubject: 'Vérifiez votre e-mail',
+    confirmMsg: (email: string) => `Un lien de confirmation a été envoyé à ${email}. Cliquez sur le lien pour activer votre compte.`,
     tabLogin: 'Se connecter',
-    tabRegister: 'CrÃ©er mon compte gratuit',
+    tabRegister: 'Créer mon compte gratuit',
     email: 'Adresse e-mail',
     password: 'Mot de passe',
     confirmPassword: 'Confirmer le mot de passe',
-    brideName: 'PrÃ©nom de la mariÃ©e',
-    groomName: 'PrÃ©nom du mariÃ©',
+    brideName: 'Prénom de la mariée',
+    groomName: 'Prénom du marié',
     weddingDate: 'Date du mariage',
-    venue: 'Lieu de rÃ©ception (facultatif)',
+    venue: 'Lieu de réception (facultatif)',
     language: "Langue de l'invitation",
-    loginBtn: 'AccÃ©der Ã  mon espace',
-    registerBtn: 'CrÃ©ons votre invitation ensemble',
+    loginBtn: 'Accéder à mon espace',
+    registerBtn: 'Créons votre invitation ensemble',
     loggingIn: 'Connexion...',
-    registering: 'CrÃ©ation...',
+    registering: 'Création...',
     orWith: 'ou',
     google: 'Continuer avec Google',
-    forgotPassword: 'Mot de passe oubliÃ© ?',
+    forgotPassword: 'Mot de passe oublié ?',
     passwordMismatch: 'Les mots de passe ne correspondent pas.',
     errorLogin: 'Email ou mot de passe incorrect.',
-    errorRegister: 'Une erreur est survenue. Veuillez rÃ©essayer.',
-    errorDuplicateEmail: 'Cette adresse e-mail est dÃ©jÃ  utilisÃ©e. Veuillez vous connecter.',
-    langFr: 'FranÃ§ais',
-    langHe: 'HÃ©breu',
+    errorRegister: 'Une erreur est survenue. Veuillez réessayer.',
+    errorDuplicateEmail: 'Cette adresse e-mail est déjà utilisée. Veuillez vous connecter.',
+    langFr: 'Français',
+    langHe: 'Hébreu',
     langEn: 'Anglais',
     subtitle: 'Votre invitation de mariage vous attend',
-    passwordHint: 'Minimum 8 caractÃ¨res',
+    passwordHint: 'Minimum 8 caractères',
     // forgot password
-    forgotTitle: 'Mot de passe oubliÃ©',
-    forgotSubtitle: 'Entrez votre e-mail pour recevoir un lien de rÃ©initialisation.',
+    forgotTitle: 'Mot de passe oublié',
+    forgotSubtitle: 'Entrez votre e-mail pour recevoir un lien de réinitialisation.',
     forgotBtn: 'Envoyer le lien',
     forgotSending: 'Envoi...',
-    forgotSentTitle: 'VÃ©rifiez votre e-mail',
-    forgotSentMsg: (email: string) => `Un lien de rÃ©initialisation a Ã©tÃ© envoyÃ© Ã  ${email}.`,
-    backToLogin: 'Retour Ã  la connexion',
+    forgotSentTitle: 'Vérifiez votre e-mail',
+    forgotSentMsg: (email: string) => `Un lien de réinitialisation a été envoyé à ${email}.`,
+    backToLogin: 'Retour à la connexion',
     forgotEmailError: 'Veuillez entrer une adresse e-mail valide.',
-    forgotEmailNotFound: 'Cette adresse e-mail n\'est pas enregistrÃ©e dans notre systÃ¨me.',
+    forgotEmailNotFound: 'Cette adresse e-mail n\'est pas enregistrée dans notre système.',
     rememberMe: 'Se souvenir de moi',
+    tosLabel:    "J'accepte les",
+    tosTerms:    "conditions d'utilisation",
+    tosAnd:      'et la',
+    tosPrivacy:  'politique de confidentialité',
+    tosRequired: "Veuillez accepter les conditions d'utilisation pour continuer.",
+    googleTos:   "En continuant avec Google, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
   },
   he: {
-    confirmSubject: '×××§× ××ª ××××××× ×©×××',
-    confirmMsg: (email: string) => `× ×©×× ×§××©××¨ ×××©××¨ ×××ª×××ª ${email}. ×××¦× ×¢× ××§××©××¨ ××× ×××¤×¢×× ××ª ×××©×××.`,
-    tabLogin: '×× ××¡×',
-    tabRegister: '×¤×ª×××ª ××©××× ××× ××',
-    email: '××ª×××ª ××××××',
-    password: '×¡××¡××',
-    confirmPassword: '×××××ª ×¡××¡××',
-    brideName: '×©× ××××',
-    groomName: '×©× ×××ª×',
-    weddingDate: '×ª××¨×× ×××ª×× ×',
-    venue: '××§×× ××××¨××¢ (×××¤×¦××× ××)',
-    language: '×©×¤×ª ××××× ×',
-    loginBtn: '×× ××¡× ×××©××× ×©××',
-    registerBtn: '×××× × ×ª××× ××× ××ª ××××',
-    loggingIn: '××ª×××¨...',
-    registering: '×××¦×¨ ××©×××...',
-    orWith: '××',
-    google: '×××©× ×¢× Google',
-    forgotPassword: '×©×××ª ×¡××¡××?',
-    passwordMismatch: '××¡××¡××××ª ××× × ×ª×××××ª.',
-    errorLogin: '×××××× ×× ×¡××¡×× ×©×××××.',
-    errorRegister: '×××¨×¢× ×©××××. ×× × × ×¡×/× ×©××.',
-    errorDuplicateEmail: '××ª×××ª ×××××× ×× ×××¨ ×¨×©×××. ×× × ××ª×××¨/×.',
-    langFr: '×¦×¨×¤×ª××ª',
-    langHe: '×¢××¨××ª',
-    langEn: '×× ××××ª',
-    subtitle: '××××× × ×©××× ×××× ××× ×××',
-    passwordHint: '××¤×××ª 8 ×ª××××',
+    confirmSubject: 'בדקו את האימייל שלכם',
+    confirmMsg: (email: string) => `נשלח קישור אישור לכתובת ${email}. לחצו על הקישור כדי להפעיל את החשבון.`,
+    tabLogin: 'כניסה',
+    tabRegister: 'פתיחת חשבון חינמי',
+    email: 'כתובת אימייל',
+    password: 'סיסמה',
+    confirmPassword: 'אימות סיסמה',
+    brideName: 'שם הכלה',
+    groomName: 'שם החתן',
+    weddingDate: 'תאריך החתונה',
+    venue: 'מקום האירוע (אופציונלי)',
+    language: 'שפת ההזמנה',
+    loginBtn: 'כניסה לחשבון שלי',
+    registerBtn: 'בואו נתחיל לבנות ביחד',
+    loggingIn: 'מתחבר...',
+    registering: 'יוצר חשבון...',
+    orWith: 'או',
+    google: 'המשך עם Google',
+    forgotPassword: 'שכחת סיסמה?',
+    passwordMismatch: 'הסיסמאות אינן תואמות.',
+    errorLogin: 'אימייל או סיסמה שגויים.',
+    errorRegister: 'אירעה שגיאה. אנא נסה/י שוב.',
+    errorDuplicateEmail: 'כתובת אימייל זו כבר רשומה. אנא התחבר/י.',
+    langFr: 'צרפתית',
+    langHe: 'עברית',
+    langEn: 'אנגלית',
+    subtitle: 'ההזמנה שלכם מחכה לכם כאן',
+    passwordHint: 'לפחות 8 תווים',
     // forgot password
-    forgotTitle: '×©×××ª ×¡××¡××',
-    forgotSubtitle: '×××× × ××ª ××ª×××ª ××××××× ×©××× ××§×××ª ×§××©××¨ ××××¤××¡ ×¡××¡××.',
-    forgotBtn: '×©×× ×§××©××¨',
-    forgotSending: '×©×××...',
-    forgotSentTitle: '×××§× ××ª ××××××× ×©×××',
-    forgotSentMsg: (email: string) => `×§××©××¨ ××××¤××¡ ×¡××¡×× × ×©×× ×××ª×××ª ${email}.`,
-    backToLogin: '×××¨× ××× ××¡×',
-    forgotEmailError: '×× × ×××× × ××ª×××ª ×××××× ×ª×§×× ×.',
-    forgotEmailNotFound: '××ª×××ª ×××××× ×× ××× × ×¨×©××× ×××¢×¨××ª.',
-    rememberMe: '××××¨ ×××ª×',
+    forgotTitle: 'שכחת סיסמה',
+    forgotSubtitle: 'הזינו את כתובת האימייל שלכם לקבלת קישור לאיפוס סיסמה.',
+    forgotBtn: 'שלח קישור',
+    forgotSending: 'שולח...',
+    forgotSentTitle: 'בדקו את האימייל שלכם',
+    forgotSentMsg: (email: string) => `קישור לאיפוס סיסמה נשלח לכתובת ${email}.`,
+    backToLogin: 'חזרה לכניסה',
+    forgotEmailError: 'אנא הזינו כתובת אימייל תקינה.',
+    forgotEmailNotFound: 'כתובת אימייל זו אינה רשומה במערכת.',
+    rememberMe: 'זכור אותי',
+    tosLabel:    'אני מסכים/ה ל',
+    tosTerms:    'תנאי השימוש',
+    tosAnd:      'ול',
+    tosPrivacy:  'מדיניות הפרטיות',
+    tosRequired: 'עליך לאשר את תנאי השימוש כדי להמשיך.',
+    googleTos:   'בהמשך עם גוגל, אתה/את מסכים/ה לתנאי השימוש ולמדיניות הפרטיות שלנו.',
   },
   en: {
     confirmSubject: 'Check your email',
@@ -142,6 +154,12 @@ const L = {
     forgotEmailError: 'Please enter a valid email address.',
     forgotEmailNotFound: 'This email address is not registered in our system.',
     rememberMe: 'Remember me',
+    tosLabel:    'I agree to the',
+    tosTerms:    'Terms of Use',
+    tosAnd:      'and',
+    tosPrivacy:  'Privacy Policy',
+    tosRequired: 'You must accept the Terms of Use to continue.',
+    googleTos:   'By continuing with Google, you agree to our Terms of Use and Privacy Policy.',
   },
 }
 
@@ -152,11 +170,11 @@ function slugify(bride: string, groom: string, date: string): string {
   return `${clean(bride)}-${clean(groom)}-${year}`
 }
 
-// ââ Shared field style âââââââââââââââââââââââââââââââââââââââ
+// ── Shared field style ───────────────────────────────────────
 const fieldCls = 'w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-500 transition bg-stone-50'
 const labelCls = 'block text-xs text-stone-500 mb-1.5 font-medium uppercase tracking-wider'
 
-// ââ OAuth button âââââââââââââââââââââââââââââââââââââââââââââ
+// ── OAuth button ─────────────────────────────────────────────
 function OAuthButton({
   provider,
   label,
@@ -180,7 +198,7 @@ function OAuthButton({
   )
 }
 
-// ââ Google Icon ââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Google Icon ──────────────────────────────────────────────
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 48 48">
@@ -192,7 +210,7 @@ function GoogleIcon() {
   )
 }
 
-// ââ Divider ââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Divider ──────────────────────────────────────────────────
 function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 my-5">
@@ -203,7 +221,7 @@ function Divider({ label }: { label: string }) {
   )
 }
 
-// ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ════════════════════════════════════════════════════════════
 export default function LoginPage() {
   const params = useParams()
   const router = useRouter()
@@ -218,7 +236,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [sentEmail, setSentEmail] = useState('')   // for both forgot-sent and confirm-email
 
-  // BUG FIX: If already authenticated â redirect to dashboard immediately
+  // BUG FIX: If already authenticated → redirect to dashboard immediately
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) router.replace(`/${locale}/dashboard`)
@@ -226,7 +244,7 @@ export default function LoginPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Read ?tab=register URL param â open register tab directly when coming from CTA buttons
+  // Read ?tab=register URL param — open register tab directly when coming from CTA buttons
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get('tab')
     if (tab === 'register') setView('register')
@@ -258,9 +276,10 @@ export default function LoginPage() {
     wedding_date: '',
     venue: '',
     invitation_locale: locale,
+    tosAccepted: false,
   })
 
-  // ââ Handle login âââââââââââââââââââââââââââââââââââââââââ
+  // ── Handle login ─────────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -284,10 +303,14 @@ export default function LoginPage() {
     router.push(`/${locale}/dashboard`)
   }
 
-  // ââ Handle register ââââââââââââââââââââââââââââââââââââââ
+  // ── Handle register ──────────────────────────────────────
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    if (!reg.tosAccepted) {
+      setError(l.tosRequired)
+      return
+    }
     if (reg.password !== reg.confirmPassword) {
       setError(l.passwordMismatch)
       return
@@ -318,16 +341,16 @@ export default function LoginPage() {
         return
       }
 
-      // Duplicate email â Supabase returns user with empty identities array
+      // Duplicate email — Supabase returns user with empty identities array
       if (!authData.user.identities || authData.user.identities.length === 0) {
         setError(l.errorDuplicateEmail)
         setLoading(false)
         return
       }
 
-      // ×× ××¡×©× ×§××× (×××××ª ×××××× ×××××) â ××¦××¨×ª ××ª×× × ××××××ª
+      // אם הסשן קיים (אימות אימייל מבוטל) — יצירת חתונה מיידית
       if (authData.session) {
-        // BUG FIX: ××××§ ×× ×××¨ ×§××××ª ××ª×× × ×××©×ª××© ×× (×××©×, × ×¨×©× ×§××× ×¢× ××××)
+        // BUG FIX: בדוק אם כבר קיימת חתונה למשתמש זה (למשל, נרשם קודם עם גוגל)
         const { data: existingWedding } = await supabase
           .from('weddings')
           .select('id')
@@ -335,7 +358,7 @@ export default function LoginPage() {
           .maybeSingle()
 
         if (!existingWedding) {
-          // BUG FIX: ×××¤×× ×××ª× ××©××ª ×¡××× â ×××¡×£ ×¡××××ª ××§×¨×××ª ×× ××¡××× ×××¨ ×ª×¤××¡
+          // BUG FIX: טיפול בהתנגשות סלאג — הוסף סיומת אקראית אם הסלאג כבר תפוס
           let slug = slugify(reg.bride_name, reg.groom_name, reg.wedding_date)
           const { data: slugExists } = await supabase
             .from('weddings')
@@ -357,6 +380,8 @@ export default function LoginPage() {
             max_guests: 200,
             plan: 'free',
             is_active: true,
+            tos_accepted_at: new Date().toISOString(),
+            tos_version: '1.0',
           })
         }
 
@@ -368,7 +393,7 @@ export default function LoginPage() {
         return
       }
 
-      // ×××©××¨ ×××××× × ××¨×© â ××¦× ××¡× ×××©××¨
+      // אישור אימייל נדרש — הצג מסך אישור
       setSentEmail(reg.email)
       setView('confirm-email')
       setLoading(false)
@@ -378,7 +403,7 @@ export default function LoginPage() {
     }
   }
 
-  // ââ Handle forgot password ââââââââââââââââââââââââââââââ
+  // ── Handle forgot password ──────────────────────────────
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -388,12 +413,12 @@ export default function LoginPage() {
     }
     setLoading(true)
     try {
-      // Send reset email directly â Supabase silently ignores unknown emails
+      // Send reset email directly — Supabase silently ignores unknown emails
       // (no email-exists pre-check: prevents user enumeration, avoids service-role-key dependency)
       await supabase.auth.resetPasswordForEmail(forgotEmail.trim().toLowerCase(), {
         redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/${locale}/reset-password`,
       })
-      // Always show success (even if email not registered â standard security practice)
+      // Always show success (even if email not registered — standard security practice)
       setSentEmail(forgotEmail)
       setView('forgot-sent')
     } catch {
@@ -403,7 +428,7 @@ export default function LoginPage() {
     }
   }
 
-  // ââ Handle OAuth âââââââââââââââââââââââââââââââââââââââââ
+  // ── Handle OAuth ─────────────────────────────────────────
   const handleOAuth = async (provider: 'google') => {
     // OAuth always remembers (standard behavior for social login)
     sessionStorage.setItem('gi_session_started', '1')
@@ -423,7 +448,7 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-lg">
 
-        {/* ââ Language Switcher + Logo ââ */}
+        {/* ── Language Switcher + Logo ── */}
         <div className="flex justify-end mb-4">
           <LanguageSwitcher currentLocale={locale} variant="inline" />
         </div>
@@ -437,9 +462,9 @@ export default function LoginPage() {
           <p className="text-stone-400 text-sm">{l.subtitle}</p>
         </div>
 
-        {/* ââââââââââââââââââââââââââââââââââââââ
-            ××¡×: ×××©××¨ ×××××× ××××¨ ××¨×©××
-        ââââââââââââââââââââââââââââââââââââââ */}
+        {/* ══════════════════════════════════════
+            מסך: אישור אימייל לאחר הרשמה
+        ══════════════════════════════════════ */}
         {view === 'confirm-email' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#fdf6e3' }}>
@@ -458,9 +483,9 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* ââââââââââââââââââââââââââââââââââââââ
-            ××¡×: ×©×××ª ×¡××¡×× â ××× ×ª ××××××
-        ââââââââââââââââââââââââââââââââââââââ */}
+        {/* ══════════════════════════════════════
+            מסך: שכחת סיסמה — הזנת אימיל
+        ══════════════════════════════════════ */}
         {view === 'forgot' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
             <div className="mb-6">
@@ -501,14 +526,14 @@ export default function LoginPage() {
               onClick={() => { setView('login'); setError('') }}
               className="mt-4 w-full text-center text-xs text-stone-400 hover:text-stone-600 transition"
             >
-              â {l.backToLogin}
+              ← {l.backToLogin}
             </button>
           </div>
         )}
 
-        {/* ââââââââââââââââââââââââââââââââââââââ
-            ××¡×: ×©×××ª ×¡××¡×× â ××× ×§ × ×©××
-        ââââââââââââââââââââââââââââââââââââââ */}
+        {/* ══════════════════════════════════════
+            מסך: שכחת סיסמה — לינק נשלח
+        ══════════════════════════════════════ */}
         {view === 'forgot-sent' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#fdf6e3' }}>
@@ -527,9 +552,9 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* ââââââââââââââââââââââââââââââââââââââ
+        {/* ══════════════════════════════════════
             Tabs + Card (login / register)
-        ââââââââââââââââââââââââââââââââââââââ */}
+        ══════════════════════════════════════ */}
         {(view === 'login' || view === 'register') && (<>
 
         <div className="flex bg-stone-100 rounded-2xl p-1 mb-6">
@@ -549,7 +574,7 @@ export default function LoginPage() {
           ))}
         </div>
 
-        {/* ââ Card ââ */}
+        {/* ── Card ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
 
           {(error || urlErrorMsg) && (
@@ -558,7 +583,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* ââââ LOGIN TAB ââââ */}
+          {/* ════ LOGIN TAB ════ */}
           {view === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
@@ -591,7 +616,7 @@ export default function LoginPage() {
                   required
                   dir="ltr"
                   className={fieldCls}
-                  placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"
+                  placeholder="••••••••"
                 />
               </div>
 
@@ -636,7 +661,7 @@ export default function LoginPage() {
             </form>
           )}
 
-          {/* ââââ REGISTER TAB ââââ */}
+          {/* ════ REGISTER TAB ════ */}
           {view === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4">
 
@@ -663,7 +688,7 @@ export default function LoginPage() {
                     required
                     dir="ltr"
                     className={fieldCls}
-                    placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"
+                    placeholder="••••••••"
                   />
                 </div>
                 <div>
@@ -675,7 +700,7 @@ export default function LoginPage() {
                     required
                     dir="ltr"
                     className={fieldCls}
-                    placeholder="â¢â¢â¢â¢â¢â¢â¢â¢"
+                    placeholder="••••••••"
                   />
                 </div>
               </div>
@@ -694,7 +719,7 @@ export default function LoginPage() {
                     onChange={e => setReg(p => ({ ...p, bride_name: e.target.value }))}
                     required
                     className={fieldCls}
-                    placeholder={locale === 'he' ? '× ××¢×' : locale === 'en' ? 'Sophie' : 'Sophie'}
+                    placeholder={locale === 'he' ? 'נועה' : locale === 'en' ? 'Sophie' : 'Sophie'}
                   />
                 </div>
                 <div>
@@ -705,7 +730,7 @@ export default function LoginPage() {
                     onChange={e => setReg(p => ({ ...p, groom_name: e.target.value }))}
                     required
                     className={fieldCls}
-                    placeholder={locale === 'he' ? '×× ×××' : locale === 'en' ? 'James' : 'Antoine'}
+                    placeholder={locale === 'he' ? 'דניאל' : locale === 'en' ? 'James' : 'Antoine'}
                   />
                 </div>
               </div>
@@ -728,7 +753,7 @@ export default function LoginPage() {
                   value={reg.venue}
                   onChange={e => setReg(p => ({ ...p, venue: e.target.value }))}
                   className={fieldCls}
-                  placeholder={locale === 'he' ? '×××× ×××¨××¢××' : 'ChÃ¢teau de Versailles'}
+                  placeholder={locale === 'he' ? 'אולם אירועים' : 'Château de Versailles'}
                 />
               </div>
 
@@ -754,9 +779,58 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* ── ToS Checkbox ─────────────────────────── */}
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <div className="relative flex-shrink-0 mt-0.5">
+                  <input
+                    type="checkbox"
+                    checked={reg.tosAccepted}
+                    onChange={e => setReg(p => ({ ...p, tosAccepted: e.target.checked }))}
+                    className="sr-only peer"
+                  />
+                  <div
+                    className="w-4 h-4 rounded border-2 transition-all peer-focus:ring-2 peer-focus:ring-yellow-400/30 flex items-center justify-center"
+                    style={{
+                      background:   reg.tosAccepted ? '#c9a84c' : 'white',
+                      borderColor:  reg.tosAccepted ? '#c9a84c' : '#d6d3d1',
+                    }}
+                  >
+                    {reg.tosAccepted && (
+                      <svg className="w-full h-full text-white" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 8l3.5 3.5 6.5-7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs text-stone-500 leading-relaxed">
+                  {l.tosLabel}{' '}
+                  <a
+                    href={`/${locale}/terms`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline transition-colors"
+                    style={{ color: '#c9a84c' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {l.tosTerms}
+                  </a>
+                  {' '}{l.tosAnd}{' '}
+                  <a
+                    href={`/${locale}/privacy`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline transition-colors"
+                    style={{ color: '#c9a84c' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {l.tosPrivacy}
+                  </a>
+                </span>
+              </label>
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !reg.tosAccepted}
                 className="w-full py-3.5 rounded-xl text-white text-sm font-medium tracking-wider uppercase transition-all disabled:opacity-60"
                 style={{ background: loading ? '#a8a29e' : '#c9a84c', boxShadow: loading ? 'none' : '0 4px 14px rgba(201,168,76,0.25)' }}
               >
@@ -765,6 +839,11 @@ export default function LoginPage() {
 
               <Divider label={l.orWith} />
 
+              {/* Google OAuth ToS notice */}
+              <p className="text-[11px] text-stone-400 text-center -mt-3 leading-relaxed">
+                {l.googleTos}
+              </p>
+
               <OAuthButton provider="google" label={l.google} icon={<GoogleIcon />} onClick={() => handleOAuth('google')} />
             </form>
           )}
@@ -772,7 +851,7 @@ export default function LoginPage() {
         </>)}
 
         <p className="text-center text-xs text-stone-300 mt-6">
-          Â© {new Date().getFullYear()} GrandInvite
+          © {new Date().getFullYear()} GrandInvite
         </p>
       </div>
     </main>
