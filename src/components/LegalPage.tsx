@@ -1,4 +1,4 @@
-// ============================================================
+// ============================================================ 
 //  GrandInvite – Shared Legal Page Layout (Server Component)
 //  Used by /terms, /privacy, /refund
 //  src/components/LegalPage.tsx
