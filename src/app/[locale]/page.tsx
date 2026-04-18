@@ -32,8 +32,8 @@ const content = {
     hero: 'Votre mariage mérite\nune invitation d\'exception',
     heroSub:
       'Créez en quelques minutes une invitation numérique élégante. Gérez vos invités, collectez les confirmations et partagez votre grand jour avec ceux qui vous sont chers.',
-    cta: 'Créer mon invitation',
-    ctaSub: 'Gratuit jusqu\'à 200 invités',
+    cta: 'Créons ensemble votre invitation',
+    ctaSub: 'Gratuit jusqu\'à 200 invités — sans carte bancaire',
     login: 'Se connecter',
     stats: [
       { n: '500+', label: 'Mariages célébrés' },
@@ -63,7 +63,7 @@ const content = {
         price: '0 €',
         period: 'pour toujours',
         features: ['Jusqu\'à 200 invités', 'Invitation personnalisée', 'RSVP + tableau de bord', 'Export CSV', 'Support email'],
-        cta: 'Commencer gratuitement',
+        cta: 'Je commence gratuitement aujourd\'hui',
         highlighted: false,
       },
       {
@@ -71,7 +71,7 @@ const content = {
         price: '29 €',
         period: 'accès à vie',
         features: ['Invités illimités', 'Galerie photos illimitée', 'Brunch du lendemain', 'Suppression logo GrandInvite', 'Support prioritaire'],
-        cta: 'Passer Premium',
+        cta: 'Passer à l\'expérience Premium',
         highlighted: true,
       },
     ],
@@ -89,8 +89,8 @@ const content = {
     hero: 'החתונה שלכם ראויה\nלהזמנה יוצאת דופן',
     heroSub:
       'צרו תוך דקות הזמנה דיגיטלית אלגנטית. נהלו את האורחים, אספו אישורי הגעה ושתפו את היום הגדול שלכם עם יקיריכם.',
-    cta: 'יצירת הזמנה',
-    ctaSub: 'חינם עד 200 מוזמנים',
+    cta: 'בואו ניצור ביחד את ההזמנה שלכם',
+    ctaSub: 'חינם עד 200 מוזמנים — ללא כרטיס אשראי',
     login: 'כניסה',
     stats: [
       { n: '500+', label: 'חתונות' },
@@ -105,7 +105,7 @@ const content = {
       { icon: '📊', title: 'לוח ניהול',         desc: 'עקבו אחרי האישורים בזמן אמת, ייצאו לאקסל.' },
       { icon: '🌐', title: 'רב לשוני',          desc: 'עברית, צרפתית ואנגלית — כל אורח קורא בשפתו.' },
       { icon: '🖼️', title: 'גלריית תמונות',   desc: 'שתפו תמונות ושמרו זיכרונות בלתי נשכחים.' },
-      { icon: '🥂', title: 'בראנץ\' למחרת',     desc: 'נהלו בראנץ\' ביום שאחרי עם אישור הגעה נפרד.' },
+      { icon: '🥂', title: 'בראנץ׳ למחרת',     desc: 'נהלו בראנץ׳ ביום שאחרי עם אישור הגעה נפרד.' },
     ],
     howTitle: 'בשלושה שלבים בלבד',
     steps: [
@@ -118,17 +118,17 @@ const content = {
       {
         name: 'חינמי',
         price: '₪0',
-        period: 'לתמיד',
+        period: 'לתמי׫',
         features: ['עד 200 מוזמנים', 'הזמנה מותאמת אישית', 'RSVP + לוח ניהול', 'ייצוא CSV', 'תמיכה באימייל'],
-        cta: 'התחילו בחינם',
+        cta: 'מתחילים עכשיו, בחינם לגמרי',
         highlighted: false,
       },
       {
         name: 'פרמיום',
         price: '₪99',
         period: 'גישה לצמיתות',
-        features: ['מוזמנים ללא הגבלה', 'גלריה ללא הגבלה', 'בראנץ\' למחרת', 'הסרת לוגו GrandInvite', 'תמיכה מועדפת'],
-        cta: 'שדרגו לפרמיום',
+        features: ['מוזמנים ללא הגבלה', 'גלריה ללא הגבלה', 'בראנץ׳ למחרת', 'הסרת לוגו GrandInvite', 'תמיכה מועדפת'],
+        cta: 'שדרגו לחוויה המלאה',
         highlighted: true,
       },
     ],
@@ -136,7 +136,7 @@ const content = {
     testimonials: [
       { name: 'מאיה & ליאור',     location: 'תל אביב',       quote: 'GrandInvite ניהל בצורה מושלמת את האורחים בעברית ובצרפתית. הכל עבד בצורה קסומה!' },
       { name: 'נועה & עמית',      location: 'ירושלים',        quote: 'ב-48 שעות קיבלנו 150 אישורים. לא האמנו כמה זה פשוט ויפה.' },
-      { name: 'ספיר & אביב',      location: 'חיפה',           quote: 'הבראנץ\' למחרת היה ניהול נפרד מושלם. כל המשפחה הייתה מרוצה!' },
+      { name: 'ספיר & אביב',      location: 'חיפה',           quote: 'הבראנץ׳ למחרת היה ניהול נפרד מושלם. כל המשפחה הייתה מרוצה!' },
     ],
     footer: '© 2026 GrandInvite — הזמנות חתונה יוקרתיות · צור קשר',
   },
@@ -146,8 +146,8 @@ const content = {
     hero: 'Your wedding deserves\nan invitation to match',
     heroSub:
       'Create an elegant digital invitation in minutes. Manage your guests, collect RSVPs and share your big day with the people you love.',
-    cta: 'Create my invitation',
-    ctaSub: 'Free for up to 200 guests',
+    cta: 'Let\'s create your invitation together',
+    ctaSub: 'Free for up to 200 guests — no credit card needed',
     login: 'Sign in',
     stats: [
       { n: '500+', label: 'Weddings celebrated' },
@@ -177,7 +177,7 @@ const content = {
         price: '$0',
         period: 'forever',
         features: ['Up to 200 guests', 'Personalised invitation', 'RSVP + dashboard', 'CSV export', 'Email support'],
-        cta: 'Get started for free',
+        cta: 'Start for free today',
         highlighted: false,
       },
       {
@@ -185,7 +185,7 @@ const content = {
         price: '$29',
         period: 'lifetime access',
         features: ['Unlimited guests', 'Unlimited photo gallery', 'Morning-after Brunch', 'Remove GrandInvite branding', 'Priority support'],
-        cta: 'Go Premium',
+        cta: 'Upgrade to the full experience',
         highlighted: true,
       },
     ],
