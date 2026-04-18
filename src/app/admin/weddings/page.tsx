@@ -149,7 +149,7 @@ export default function AdminWeddingsPage() {
                 </div>
               ))}
               <div className="grid grid-cols-2 gap-3">
-                {[['Locale','locale',[['fr','Français'],['he','עברית'],['en','English']]],['Plan','plan',[['free','Free'],['pro','Pro']]]] as [string,string,[string,string][]][]).map(([label,key,opts]) => (
+                {([['Locale','locale',[['fr','Français'],['he','עברית'],['en','English']]],['Plan','plan',[['free','Free'],['pro','Pro']]]] as [string,string,[string,string][]][]).map(([label,key,opts]) => (
                   <div key={key}>
                     <label className="block text-xs font-medium text-stone-500 mb-1">{label}</label>
                     <select value={(form as Record<string,string>)[key]} onChange={e => setForm(f => f ? { ...f, [key]: e.target.value } : f)}
