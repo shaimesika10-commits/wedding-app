@@ -255,26 +255,15 @@ export async function POST(req: NextRequest) {
     const supabase = createAdminSupabaseClient()
 
     // ── בדיקת מגבלת אורחים (Freemium) ──
-    // NOTE: co_owner_email is fetched separately to avoid failures if the column
-    // hasn't been added yet via: ALTER TABLE weddings ADD COLUMN IF NOT EXISTS co_owner_email TEXT;
+    // co_owner_email is included in the main query (column added via admin_setup.sql migration)
     const { data: wedding } = await supabase
       .from('weddings')
-      .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id, rsvp_deadline')
+      .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id, rsvp_deadline, co_owner_email')
       .eq('id', wedding_id)
       .single()
 
-    // Safely fetch co_owner_email — column may not exist yet in older deployments
-    let coOwnerEmailFromDb: string | null = null
-    try {
-      const { data: coOwnerData } = await supabase
-        .from('weddings')
-        .select('co_owner_email')
-        .eq('id', wedding_id)
-        .single()
-      coOwnerEmailFromDb = (coOwnerData as { co_owner_email?: string | null } | null)?.co_owner_email ?? null
-    } catch {
-      // Column doesn't exist yet — ignore, co-owner notification will be skipped
-    }
+    const coOwnerEmailFromDb: string | null =
+      (wedding as (typeof wedding & { co_owner_email?: string | null }) | null)?.co_owner_email ?? null
 
     if (!wedding) {
       return NextResponse.json({ error: 'Wedding not found' }, { status: 404 })
