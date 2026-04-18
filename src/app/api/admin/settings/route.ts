@@ -1,7 +1,7 @@
 // ============================================================
-//  GrandInvite — Site Settings API
-//  GET   /api/admin/settings   — list all settings
-//  PATCH /api/admin/settings   — update a setting
+//  GrandInvite — Site Settings API (NEW)
+//  GET   /api/admin/settings          
+//  PATCH /api/admin/settings          
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server'
