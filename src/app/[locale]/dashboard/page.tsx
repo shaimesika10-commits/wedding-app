@@ -24,9 +24,11 @@ export default async function DashboardPage({
   const tr = t(locale)
   const supabase = await createServerSupabaseClient()
 
+  // ── בדיקת אותנטיקציה ──
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/login`)
 
+  // ── טעינת חתונה של המשתמש (כולל לו"ז) ──
   const { data: wedding } = await supabase
     .from('weddings')
     .select('*, event_schedule(*)')
@@ -35,10 +37,13 @@ export default async function DashboardPage({
 
   if (!wedding) redirect(`/${locale}/onboarding`)
 
+  // ── טעינת אורחים ──
   const guests = await getGuestsByWeddingId(wedding.id) as Guest[]
 
+  // ── Admin check ──
   const isAdmin = await isAdminDB(user.email)
 
+  // ── חישוב סטטיסטיקות ──
   const stats = {
     confirmed:  guests.filter(g => g.rsvp_status === 'confirmed'),
     declined:   guests.filter(g => g.rsvp_status === 'declined'),
@@ -51,7 +56,7 @@ export default async function DashboardPage({
 
   return (
     <main className="min-h-screen bg-stone-50">
-      {/* Header */}
+      {/* ── Header ── */}
       <header className="bg-white border-b border-stone-100 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center min-w-0">
@@ -65,36 +70,43 @@ export default async function DashboardPage({
           </div>
 
           <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
+            {/* בוחר שפה */}
             <LanguageSwitcher currentLocale={locale} variant="inline" />
+
+            {/* כפתור שיתוף */}
             <ShareButton
               url={`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/${locale}/${wedding.slug}`}
               coupleName={`${wedding.bride_name} & ${wedding.groom_name}`}
               locale={locale}
             />
+
+            {/* קישור לעמוד ההזמנה */}
             <a
               href={`/${locale}/${wedding.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-[#c9a84c] hover:underline tracking-wide"
             >
-              {locale === 'he' ? 'הזמנה ↗' : locale === 'fr' ? 'Invitation ↵' : 'Invitation ↵'}
+              {locale === 'he' ? 'הזמנה ↗' : locale === 'fr' ? 'Invitation ↗' : 'Invitation ↗'}
             </a>
 
+            {/* Admin Panel link — only for admins */}
             {isAdmin && (
               <Link
                 href="/admin"
                 className="text-sm font-medium text-[#c9a84c] border border-[#c9a84c]/30 px-3 py-1 rounded-lg hover:bg-[#c9a84c]/5 transition-colors tracking-wide"
               >
-                ⚙Admin
+                ⚙ Admin
               </Link>
             )}
 
+            {/* לוגאוט */}
             <form action={`/api/auth/signout`} method="POST">
               <button
                 type="submit"
                 className="text-sm text-stone-400 hover:text-stone-700 transition-colors"
               >
-                {locale === 'he' ? 'התנתק� : locale === 'fr' ? 'Déconnexion' : 'Sign out'}
+                {locale === 'he' ? 'התנתק' : locale === 'fr' ? 'Déconnexion' : 'Sign out'}
               </button>
             </form>
           </div>
@@ -103,6 +115,7 @@ export default async function DashboardPage({
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
 
+        {/* ── כותרת ── */}
         <div className="mb-6 md:mb-10">
           <h1 className="section-title">{tr.dashboard.title}</h1>
           <p className="text-stone-400 text-sm mt-2">
@@ -114,6 +127,7 @@ export default async function DashboardPage({
           </p>
         </div>
 
+        {/* ── כרטיסי סטטיסטיקות ── */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-10">
           <StatCard
             label={tr.dashboard.confirmed}
@@ -147,6 +161,7 @@ export default async function DashboardPage({
           />
         </div>
 
+        {/* מגבלת Freemium */}
         {wedding.plan === 'free' && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 flex items-center justify-between flex-wrap gap-3">
             <p className="text-amber-700 text-sm flex-shrink-0">
@@ -167,6 +182,7 @@ export default async function DashboardPage({
           </div>
         )}
 
+        {/* ── טבלת אורחים + עריכה (Client Component) ── */}
         <DashboardClient
           guests={guests}
           wedding={wedding}
@@ -177,6 +193,7 @@ export default async function DashboardPage({
         />
       </div>
 
+      {/* ── AI Invitation Builder (floating widget) ── */}
       <AIInvitationChat
         locale={locale}
         weddingContext={{
@@ -191,6 +208,7 @@ export default async function DashboardPage({
   )
 }
 
+// ── StatCard Component ──
 function StatCard({
   label,
   value,
