@@ -236,10 +236,10 @@ export default function WeddingPageContent({
     const url = typeof window !== 'undefined' ? window.location.href : ''
     const title = `${wedding.bride_name} & ${wedding.groom_name}`
     const text = locale === 'he'
-      ? `הוזמנת לחתונת ${title} 🎉`
+      ? `הוזמנת לחתונת ${title} `
       : locale === 'fr'
-      ? `Vous êtes invité(e) au mariage de ${title} 🎉`
-      : `You're invited to ${title}'s wedding 🎉`
+      ? `Vous êtes invité(e) au mariage de ${title} `
+      : `You're invited to ${title}'s wedding `
     if (typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({ title, text, url }).catch(() => {})
     } else {
@@ -275,7 +275,7 @@ export default function WeddingPageContent({
     </div>
   )
 
-    // Share button (fixed top-left on the invitation page)
+  // Share button (fixed top-left on the invitation page)
   const ShareBtn = (
     <button
       onClick={handleShare}
@@ -303,6 +303,7 @@ export default function WeddingPageContent({
       )}
     </button>
   )
+
   const VenueSection = (
     (wedding.venue_name || wedding.google_maps_url || wedding.waze_url) ? (
       <section className="py-20 px-6" style={{ background: palette.bg }}>
@@ -369,11 +370,11 @@ export default function WeddingPageContent({
       <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 mb-8">
         <a href={`/${locale}/login?tab=register`}
           style={{ padding: '0.75rem 1.5rem', border: `1px solid ${palette.accent}`, color: palette.accent, fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 300, borderRadius: '6px', textDecoration: 'none' }}>
-          {locale === 'he' ? 'רוצה הזמנה כמו זו?' : locale === 'fr' ? 'Créer votre invitation' : 'Create your invitation'}
+          {locale === 'he' ? 'רוצים הזמנה כמו זו? בואו ניצור ביחד!' : locale === 'fr' ? 'Créez une invitation comme celle-ci' : 'Want an invitation like this? Let\'s create yours!'}
         </a>
         <a href={`/${locale}/login`}
           style={{ padding: '0.75rem 1.5rem', border: `1px solid ${palette.accent}`, color: palette.accent, fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 300, borderRadius: '6px', textDecoration: 'none' }}>
-          {locale === 'he' ? 'ניהול ההזמנה' : locale === 'fr' ? 'Gérer mon invitation' : 'Manage invitation'}
+          {locale === 'he' ? 'כניסה לניהול ההזמנה שלי' : locale === 'fr' ? 'Gérer mon invitation' : 'Manage my invitation'}
         </a>
       </div>
       <p className="text-xs mt-6" style={{ color: palette.subtext, opacity: 0.6 }}>
@@ -450,9 +451,9 @@ export default function WeddingPageContent({
         {coverFrame === 'oval' && wedding.cover_image_url && (
           <section className="flex justify-center py-12" style={{ background: palette.bg }}>
             <div style={{
-              width: 'min(440px, 90vw)', height: 'min(540px, 70vw)',
+              width: 'min(440px, 90vw)', height: 'min(540px, 70vh)',
               borderRadius: '50%', overflow: 'hidden',
-              boxShadow: `0 24px 64px rgba(0,0,0,0.18), 0 0 0 8px ${palette.accent}22`,
+              boxShadow: `0 24px 64px rgba(0,0,0,0.18), 0 0 0 8px ${palete.accent}22`,
             }}>
               <img src={wedding.cover_image_url} alt="Wedding" className="w-full h-full object-cover" style={{ objectPosition: bgPosition }} />
             </div>
@@ -626,7 +627,7 @@ export default function WeddingPageContent({
 
       {/* ── Minimal: Cover image (contained, not fullscreen) ── */}
       {wedding.cover_image_url && (
-        <section className="py-8 px-6" style={{ background: palette.bg }}>
+        <section className="py-8 px-6d" style={{ background: palette.bg }}>
           <div className="max-w-3xl mx-auto" style={{
             borderRadius: coverFrame === 'oval' ? '50%' : coverFrame === 'arch' ? '50% 50% 0 0 / 60% 60% 0 0' : '1rem',
             overflow: 'hidden',
