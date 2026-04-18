@@ -1,5 +1,5 @@
 // ============================================================
-//  GrandInvite — Admin Stats API
+//  GrandInvite — Admin Stats API (Updated)
 //  GET /api/admin/stats
 // ============================================================
 
@@ -37,14 +37,14 @@ export async function GET(req: NextRequest) {
   ])
 
   return NextResponse.json({
-    total_weddings:   weddings.count        ?? 0,
-    total_guests:     guests.count          ?? 0,
-    total_photos:     photos.count          ?? 0,
-    new_weddings_7d:  newWeddings.count     ?? 0,
+    total_weddings:   weddings.count       ?? 0,
+    total_guests:     guests.count         ?? 0,
+    total_photos:     photos.count         ?? 0,
+    new_weddings_7d:  newWeddings.count    ?? 0,
     confirmed_guests: confirmedGuests.count ?? 0,
-    banned_weddings:  bannedWeddings.count  ?? 0,
-    total_admins:     adminUsers.count      ?? 0,
+    banned_weddings:  bannedWeddings.count ?? 0,
+    total_admins:     adminUsers.count     ?? 0,
     total_users:      allUsers.data?.users?.length ?? 0,
-    recent_actions:   auditRecent.data      ?? [],
+    recent_actions:   auditRecent.data     ?? [],
   })
 }
