@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   const userIds = data.users.map(u => u.id)
   const { data: weddings } = await admin_sb
     .from('weddings')
-    .select('user_id, id, slug, bride_name, groom_name, banned_at')
+    .select('user_id, id, slug, bride_name, groom_name, banned_at, plan')
     .in('user_id', userIds)
 
   const weddingMap: Record<string, typeof weddings> = {}
