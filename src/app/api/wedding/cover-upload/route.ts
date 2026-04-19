@@ -36,14 +36,22 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Ownership check
+    // Ownership + premium check
     const { data: wedding } = await supabase
       .from('weddings')
-      .select('id')
+      .select('id, plan')
       .eq('id', wedding_id)
       .eq('user_id', user.id)
       .single()
     if (!wedding) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    // Image upload is a Premium-only feature
+    if ((wedding as typeof wedding & { plan?: string }).plan !== 'premium') {
+      return NextResponse.json(
+        { error: 'premium_required', message: 'Cover image upload requires a Premium plan.' },
+        { status: 403 }
+      )
+    }
 
     // Build unique file path
     const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
