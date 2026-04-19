@@ -188,13 +188,9 @@ function ownerNotificationEmail(
 async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
-    // ⚠️  Production fix required: add RESEND_API_KEY to Vercel environment variables.
-    // Get your key at https://resend.com/api-keys
     console.warn('[GrandInvite] RESEND_API_KEY not set — email NOT sent.', { to, subject })
     return
   }
-  // Use a custom sender if configured, otherwise fall back to Resend shared domain.
-  // For production, verify your domain at resend.com and set RESEND_FROM_EMAIL.
   const from = process.env.RESEND_FROM_EMAIL
     ? `GrandInvite <${process.env.RESEND_FROM_EMAIL}>`
     : 'GrandInvite <onboarding@resend.dev>'
@@ -216,10 +212,6 @@ async function sendEmail(to: string, subject: string, html: string): Promise<voi
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-//  ROUTE HANDLER
-// ─────────────────────────────────────────────────────────────
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -235,188 +227,76 @@ export async function POST(req: NextRequest) {
       notes,
       rsvp_status,
     } = body
-
-    // ── Validation ──
     if (!wedding_id || !name || !rsvp_status) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
-
     if (!['confirmed', 'declined'].includes(rsvp_status)) {
-      return NextResponse.json(
-        { error: 'Invalid RSVP status' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Invalid RSVP status' }, { status: 400 })
     }
-
-    // Use admin client to bypass RLS for unauthenticated guest submissions
     const supabase = createAdminSupabaseClient()
-
-    // ── בדיקת מגבלת אורחים (Freemium) ──
-    // co_owner_email is included in the main query (column added via admin_setup.sql migration)
     const { data: wedding } = await supabase
       .from('weddings')
       .select('max_guests, plan, bride_name, groom_name, wedding_date, venue_name, venue_city, locale, user_id, rsvp_deadline, co_owner_email')
       .eq('id', wedding_id)
       .single()
-
     const coOwnerEmailFromDb: string | null =
       (wedding as (typeof wedding & { co_owner_email?: string | null }) | null)?.co_owner_email ?? null
-
-    if (!wedding) {
-      return NextResponse.json({ error: 'Wedding not found' }, { status: 404 })
-    }
-
-    // ── RSVP deadline enforcement ──
+    if (!wedding) return NextResponse.json({ error: 'Wedding not found' }, { status: 404 })
     if (wedding.rsvp_deadline && new Date() > new Date(wedding.rsvp_deadline)) {
-      return NextResponse.json(
-        { error: 'RSVP deadline has passed', deadline: wedding.rsvp_deadline },
-        { status: 410 }
-      )
+      return NextResponse.json({ error: 'RSVP deadline has passed', deadline: wedding.rsvp_deadline }, { status: 410 })
     }
-
     if (rsvp_status === 'confirmed') {
-      // Sum total people (adults + children), not just row count
       const { data: confirmedGuests } = await supabase
         .from('guests')
         .select('adults_count, children_count')
         .eq('wedding_id', wedding_id)
         .eq('rsvp_status', 'confirmed')
-
-      const currentTotal = (confirmedGuests ?? []).reduce(
-        (sum, g) => sum + (g.adults_count ?? 1) + (g.children_count ?? 0),
-        0
-      )
+      const currentTotal = (confirmedGuests ?? []).reduce((sum, g) => sum + (g.adults_count ?? 1) + (g.children_count ?? 0), 0)
       const newTotal = currentTotal + (adults_count ?? 1) + (children_count ?? 0)
-
       if (newTotal > wedding.max_guests) {
-        return NextResponse.json(
-          { error: 'Guest limit reached', limit: wedding.max_guests },
-          { status: 409 }
-        )
+        return NextResponse.json({ error: 'Guest limit reached', limit: wedding.max_guests }, { status: 409 })
       }
     }
-
-    // ── הכנסת RSVP לבסיס הנתונים ──
     const { data, error } = await supabase
       .from('guests')
       .insert({
-        wedding_id,
-        name: name.trim(),
-        email: email?.trim() || null,
-        phone: phone?.trim() || null,
-        adults_count: adults_count ?? 1,
-        children_count: children_count ?? 0,
+        wedding_id, name: name.trim(),
+        email: email?.trim() || null, phone: phone?.trim() || null,
+        adults_count: adults_count ?? 1, children_count: children_count ?? 0,
         dietary_preferences: dietary_preferences?.trim() || null,
-        allergies: allergies?.trim() || null,
-        notes: notes?.trim() || null,       // שדה 'אחר / הערות נוספות'
-        rsvp_status,
-        rsvp_submitted_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('RSVP insert error:', error)
-      return NextResponse.json({ error: 'Database error' }, { status: 500 })
-    }
-
-    // ── שליחת מיילים (non-blocking) ──
+        allergies: allergies?.trim() || null, notes: notes?.trim() || null,
+        rsvp_status, rsvp_submitted_at: new Date().toISOString(),
+      }).select().single()
+    if (error) { console.error('RSVP insert error:', error); return NextResponse.json({ error: 'Database error' }, { status: 500 }) }
     if (wedding) {
       const weddingLocale = (wedding.locale as string) ?? 'fr'
       const coupleNames = `${wedding.bride_name} & ${wedding.groom_name}`
-
-      // 1. Guest confirmation email
       if (email?.trim()) {
-        const { subject, html } = guestConfirmationEmail(
-          name.trim(),
-          rsvp_status as 'confirmed' | 'declined',
-          {
-            bride_name: wedding.bride_name,
-            groom_name: wedding.groom_name,
-            wedding_date: wedding.wedding_date,
-            venue_name: wedding.venue_name,
-            venue_city: wedding.venue_city,
-            locale: weddingLocale,
-          }
-        )
-        sendEmail(email.trim(), subject, html).catch(e => console.error('[RSVP] Guest confirmation email error:', e))
-      } else {
-        console.log('[RSVP] Guest has no email — confirmation email skipped.')
+        const { subject, html } = guestConfirmationEmail(name.trim(), rsvp_status as 'confirmed' | 'declined', { bride_name: wedding.bride_name, groom_name: wedding.groom_name, wedding_date: wedding.wedding_date, venue_name: wedding.venue_name, venue_city: wedding.venue_city, locale: weddingLocale })
+        sendEmail(email.trim(), subject, html).catch(e => console.error('[RSVP] Guest email error:', e))
       }
-
-      // 2. Owner notification email (+ co-owner if set)
-      if (wedding.user_id) {
+      if (wedding.plan === 'premium' && wedding.user_id) {
         try {
-          // Try admin API to get owner email
           let ownerEmail: string | undefined
           try {
-            const { data: ownerData, error: authErr } = await supabase.auth.admin.getUserById(wedding.user_id)
-            if (authErr) {
-              console.error('[RSVP] auth.admin.getUserById error:', authErr.message)
-            }
+            const { data: ownerData } = await supabase.auth.admin.getUserById(wedding.user_id)
             ownerEmail = ownerData?.user?.email
-          } catch (authFetchErr) {
-            console.error('[RSVP] Could not fetch owner via admin API:', authFetchErr)
-            // Fallback: try public users table
-            const { data: publicUser } = await supabase
-              .from('users')
-              .select('email')
-              .eq('id', wedding.user_id)
-              .maybeSingle()
+          } catch (e) {
+            const { data: publicUser } = await supabase.from('users').select('email').eq('id', wedding.user_id).maybeSingle()
             ownerEmail = (publicUser as { email?: string } | null)?.email
           }
-
-          if (!ownerEmail) {
-            console.warn('[RSVP] No owner email found for user_id:', wedding.user_id, '— owner notification not sent')
-          }
-
-          if (!process.env.RESEND_API_KEY) {
-            console.warn('[RSVP] RESEND_API_KEY is not set — emails will NOT be sent. Add it to Vercel environment variables.')
-          }
-
-          const coOwnerEmail = coOwnerEmailFromDb
-
-          const notificationDetails = {
-            email: email?.trim() || null,
-            phone: phone?.trim() || null,
-            adults_count: adults_count ?? 1,
-            children_count: children_count ?? 0,
-            dietary_preferences: dietary_preferences?.trim() || null,
-            allergies: allergies?.trim() || null,
-            notes: notes?.trim() || null,
-          }
-
+          const notDetails = { email: email?.trim() || null, phone: phone?.trim() || null, adults_count: adults_count ?? 1, children_count: children_count ?? 0, dietary_preferences: dietary_preferences?.trim() || null, allergies: allergies?.trim() || null, notes: notes?.trim() || null }
           if (ownerEmail) {
-            const { subject, html } = ownerNotificationEmail(
-              coupleNames,
-              name.trim(),
-              rsvp_status as 'confirmed' | 'declined',
-              notificationDetails,
-              weddingLocale
-            )
+            const { subject, html } = ownerNotificationEmail(coupleNames, name.trim(), rsvp_status as 'confirmed' | 'declined', notDetails, weddingLocale)
             sendEmail(ownerEmail, subject, html).catch(e => console.error('[RSVP] Owner email error:', e))
           }
-
-          // Also notify co-owner if set (and different from owner email)
-          if (coOwnerEmail && coOwnerEmail !== ownerEmail) {
-            const { subject, html } = ownerNotificationEmail(
-              coupleNames,
-              name.trim(),
-              rsvp_status as 'confirmed' | 'declined',
-              notificationDetails,
-              weddingLocale
-            )
-            sendEmail(coOwnerEmail, subject, html).catch(e => console.error('[RSVP] Co-owner email error:', e))
+          if (coOwnerEmailFromDb && coOwnerEmailFromDb !== ownerEmail) {
+            const { subject, html } = ownerNotificationEmail(coupleNames, name.trim(), rsvp_status as 'confirmed' | 'declined', notDetails, weddingLocale)
+            sendEmail(coOwnerEmailFromDb, subject, html).catch(e => console.error('[RSVP] Co-owner email error:', e))
           }
-        } catch (err) {
-          console.error('[RSVP] Email notification block failed:', err)
-        }
+        } catch (err) { console.error('[RSVP] Email block failed:', err) }
       }
     }
-
     return NextResponse.json({ success: true, guest: data }, { status: 201 })
   } catch (err) {
     console.error('RSVP route error:', err)
