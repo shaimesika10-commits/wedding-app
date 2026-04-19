@@ -161,24 +161,42 @@ export default async function DashboardPage({
           />
         </div>
 
-        {/* מגבלת Freemium */}
+        {/* מגבלת Freemium + Upgrade banner */}
         {wedding.plan === 'free' && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 flex items-center justify-between flex-wrap gap-3">
-            <p className="text-amber-700 text-sm flex-shrink-0">
-              {stats.confirmed.length} / {wedding.max_guests}{' '}
-              {tr.dashboard.totalGuests}
-            </p>
-            <div className="flex-1 min-w-[80px] mx-0 md:mx-6 bg-amber-200 rounded-full h-1.5">
-              <div
-                className="bg-[#c9a84c] h-1.5 rounded-full transition-all"
-                style={{ width: `${Math.min(100, (stats.confirmed.length / wedding.max_guests) * 100)}%` }}
-              />
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            {/* Guest limit bar */}
+            <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+              <p className="text-amber-700 text-sm flex-shrink-0">
+                {locale === 'he'
+                  ? `${stats.confirmed.length} / ${wedding.max_guests} מוזמנים מאושרים`
+                  : locale === 'fr'
+                  ? `${stats.confirmed.length} / ${wedding.max_guests} invités confirmés`
+                  : `${stats.confirmed.length} / ${wedding.max_guests} confirmed guests`}
+              </p>
+              <div className="flex-1 min-w-[80px] mx-0 md:mx-6 bg-amber-200 rounded-full h-1.5">
+                <div
+                  className="bg-[#c9a84c] h-1.5 rounded-full transition-all"
+                  style={{ width: `${Math.min(100, (stats.confirmed.length / wedding.max_guests) * 100)}%` }}
+                />
+              </div>
             </div>
-            {stats.confirmed.length >= wedding.max_guests * 0.9 && (
-              <span className="text-xs text-amber-700 font-medium">
-                Upgrade to Premium →
-              </span>
-            )}
+            {/* Premium feature teaser */}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-xs text-amber-700">
+                {locale === 'he'
+                  ? '🔒 תמונת זוג · התראות RSVP · מוזמנים ללא הגבלה · שותף/ה נוסף/ת — בפרמיום בלבד'
+                  : locale === 'fr'
+                  ? '🔒 Photo de couple · Notifications RSVP · Invités illimités · Co-organisateur · Premium uniquement'
+                  : '🔒 Couple photo · RSVP notifications · Unlimited guests · Co-owner · Premium only'}
+              </p>
+              <a
+                href={`mailto:contact@grandinvite.app?subject=${encodeURIComponent('Upgrade to Premium')}`}
+                className="text-xs font-medium px-4 py-1.5 rounded-xl flex-shrink-0 transition-all"
+                style={{ background: '#c9a84c', color: '#fff', boxShadow: '0 2px 8px rgba(201,168,76,0.3)' }}
+              >
+                {locale === 'he' ? 'שדרג לפרמיום ♛' : locale === 'fr' ? 'Passer Premium ♛' : 'Upgrade to Premium ♛'}
+              </a>
+            </div>
           </div>
         )}
 
