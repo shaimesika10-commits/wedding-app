@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from 'react'
 
-interface Wedding { id: string; slug: string; bride_name: string; groom_name: string; banned_at: string | null }
+interface Wedding { id: string; slug: string; bride_name: string; groom_name: string; banned_at: string | null; plan?: string }
 interface User {
   id: string
   email: string
@@ -66,6 +66,22 @@ export default function AdminUsersPage() {
       load()
     } else {
       showToast('Action failed.')
+    }
+  }
+
+  const doPremium = async (weddingId: string, action: 'grant' | 'revoke') => {
+    setActing(weddingId)
+    const r = await fetch('/api/admin/premium', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ weddingId, action }),
+    })
+    setActing(null)
+    if (r.ok) {
+      showToast(action === 'grant' ? '✦ Premium granted.' : 'Premium revoked.')
+      load()
+    } else {
+      showToast('Premium action failed.')
     }
   }
 
@@ -134,6 +150,7 @@ export default function AdminUsersPage() {
                 <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Joined</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Last Login</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Plan</th>
                 <th className="text-right px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -146,7 +163,7 @@ export default function AdminUsersPage() {
                   <tr key={u.id} className="hover:bg-stone-50 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
-                        <div className="w7 h-7 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0">
                           <span className="text-xs font-semibold text-stone-500">
                             {u.email.charAt(0).toUpperCase()}
                           </span>
@@ -167,8 +184,43 @@ export default function AdminUsersPage() {
                     <td className="px-5 py-3.5">
                       <Badge active={!banned} />
                     </td>
+                    {/* Plan badge */}
                     <td className="px-5 py-3.5">
-                      <div className="flex items-center justify-end gap-2">
+                      {w ? (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${
+                          w.plan === 'premium'
+                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                            : 'bg-stone-50 text-stone-500 border-stone-100'
+                        }`}>
+                          {w.plan === 'premium' ? '♛ Premium' : 'Free'}
+                        </span>
+                      ) : (
+                        <span className="text-stone-300 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
+                        {/* Grant / Revoke Premium */}
+                        {w && (
+                          w.plan === 'premium' ? (
+                            <button
+                              onClick={() => doPremium(w.id, 'revoke')}
+                              disabled={acting === w.id}
+                              className="text-xs px-3 py-1.5 rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 disabled:opacity-50 transition-colors"
+                            >
+                              Revoke Premium
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => doPremium(w.id, 'grant')}
+                              disabled={acting === w.id}
+                              className="text-xs px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-30"
+                              style={{ background: '#fdf6e3', color: '#92660a', borderColor: '#e8d08a' }}
+                            >
+                              ♛ Grant Premium
+                            </button>
+                          )
+                        )}
                         {/* Impersonate */}
                         <button
                           onClick={() => doImpersonate(u.id)}
@@ -202,11 +254,11 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                   </tr>
-                )
+                
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-12 text-center text-stone-400 text-sm">
+                  <td colSpan={7} className="px-5 py-12 text-center text-stone-400 text-sm">
                     No users found.
                   </td>
                 </tr>
