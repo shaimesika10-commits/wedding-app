@@ -1,6 +1,6 @@
 // ============================================================
 //  GrandInvite – Account Settings Page (Server Component)
-//  src/app/[locale]/dashboard/account-settings/page.txx
+//  src/app/[locale]/dashboard/account-settings/page.tsx
 // ============================================================
 
 import { redirect } from 'next/navigation'
@@ -25,7 +25,7 @@ export default async function AccountSettingsPage({
   // ── Get wedding data ──
   const { data: wedding } = await supabase
     .from('weddings')
-    .select('id, bride_name, groom_name, co_owner_email')
+    .select('id, bride_name, groom_name, co_owner_email, plan')
     .eq('user_id', user.id)
     .single()
 
@@ -85,6 +85,7 @@ export default async function AccountSettingsPage({
           userEmail={user.email ?? ''}
           initialCoOwnerEmail={(wedding as { co_owner_email?: string | null }).co_owner_email ?? null}
           weddingId={wedding.id}
+          plan={(wedding as { plan?: string }).plan === 'premium' ? 'premium' : 'free'}
         />
       </div>
     </main>
