@@ -66,6 +66,13 @@ const L = {
     tosPrivacy:  'politique de confidentialité',
     tosRequired: "Veuillez accepter les conditions d'utilisation pour continuer.",
     googleTos:   "En continuant avec Google, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.",
+    // Plan picker
+    planLabel:       'Choisissez votre formule',
+    planFree:        'Gratuit',
+    planFreeDesc:    "Jusqu'à 200 invités · Tableau de bord · Export CSV",
+    planPremium:     'Premium ♛',
+    planPremiumDesc: 'Invités illimités · Photo de couple · Notifications RSVP · Co-organisateur',
+    planPremiumNote: "25 € · accès à vie · Le paiement en ligne n'est pas encore actif — contactez-nous pour activer.",
   },
   he: {
     confirmSubject: 'בדקו את האימייל שלכם',
@@ -113,6 +120,13 @@ const L = {
     tosPrivacy:  'מדיניות הפרטיות',
     tosRequired: 'עליך לאשר את תנאי השימוש כדי להמשיך.',
     googleTos:   'בהמשך עם גוגל, אתה/את מסכים/ה לתנאי השימוש ולמדיניות הפרטיות שלנו.',
+    // Plan picker
+    planLabel:       'בחרו תוכנית',
+    planFree:        'חינמי',
+    planFreeDesc:    'עד 200 מוזמנים · לוח ניהול · ייצוא CSV',
+    planPremium:     'פרמיום ♛',
+    planPremiumDesc: 'מוזמנים ללא הגבלה · תמונת זוג · התראות RSVP · שותף/ה נוסף/ת',
+    planPremiumNote: '₪99 · גישה לצמיתות · תשלום מקוון טרם הופעל — פנו אלינו לשדרוג.',
   },
   en: {
     confirmSubject: 'Check your email',
@@ -160,6 +174,13 @@ const L = {
     tosPrivacy:  'Privacy Policy',
     tosRequired: 'You must accept the Terms of Use to continue.',
     googleTos:   'By continuing with Google, you agree to our Terms of Use and Privacy Policy.',
+    // Plan picker
+    planLabel:       'Choose your plan',
+    planFree:        'Free',
+    planFreeDesc:    'Up to 200 guests · RSVP dashboard · CSV export',
+    planPremium:     'Premium ♛',
+    planPremiumDesc: 'Unlimited guests · Couple photo · Email notifications · Co-owner',
+    planPremiumNote: '$27 · lifetime · Online payment not yet active — contact us to upgrade.',
   },
 }
 
@@ -484,7 +505,7 @@ export default function LoginPage() {
         )}
 
         {/* ══════════════════════════════════════
-            מסך: שכחת סיסמה — הזנת אימיל
+            מסך: שכחת סיסמה — הזנת אימייל
         ══════════════════════════════════════ */}
         {view === 'forgot' && (
           <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
@@ -736,7 +757,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className={labelCls}>{l.weddingDate}</label>
+                <label className={labelCls}>{l.WeddingDate}</label>
                 <input
                   type="date"
                   value={reg.wedding_date}
@@ -779,7 +800,45 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* ── ToS Checkbox ─────────────────────────── */}
+              {/* ── Plan Picker ──────────────────────────── */}
+              <div>
+                <label className={labelCls}>{l.planLabel}</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Free Plan */}
+                  <div
+                    className="rounded-xl border-2 p-3 cursor-pointer transition-all"
+                    style={{
+                      borderColor: '#c9a84c',
+                      background: '#fdf6e3',
+                    }}
+                  >
+                    <p className="text-sm font-semibold text-stone-800 mb-0.5">{l.planFree}</p>
+                    <p className="text-xs text-stone-500 leading-relaxed">{l.planFreeDesc}</p>
+                  </div>
+                  {/* Premium Plan — greyed out, contact admin */}
+                  <div
+                    className="rounded-xl border-2 p-3 relative overflow-hidden"
+                    style={{
+                      borderColor: 'rgba(201,168,76,0.3)',
+                      background: '#faf8f5',
+                      opacity: 0.75,
+                    }}
+                    title={l.planPremiumNote}
+                  >
+                    <span
+                      className="absolute top-1.5 end-1.5 text-[8px] font-bold tracking-[0.15em] px-1.5 py-0.5 rounded-full"
+                      style={{ background: '#c9a84c', color: '#fff' }}
+                    >
+                      SOON
+                    </span>
+                    <p className="text-sm font-semibold text-stone-800 mb-0.5">{l.planPremium}</p>
+                    <p className="text-xs text-stone-500 leading-relaxed">{l.planPremiumDesc}|/p>
+                    <p className="text-[10px] italic mt-1" style={{ color: '#a8a29e' }}>{l.planPremiumNote}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── ToS Checkbox ──────────────────────────── */}
               <label className="flex items-start gap-3 cursor-pointer select-none">
                 <div className="relative flex-shrink-0 mt-0.5">
                   <input
