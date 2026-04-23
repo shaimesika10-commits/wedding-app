@@ -30,8 +30,8 @@ const COPY = {
     price:   '25 € · 27 $ · ₪99',
     period:  'accès à vie · paiement unique',
     cta:     'Passer à Premium',
-    ctaHint: 'Le paiement en ligne n\'est pas encore activé. Pour activer votre compte Premium, contactez-nous directement.',
-    contact: 'Contacter pour activer',
+    ctaHint: 'Vous avez un code d\'activation ? Entrez-le dans les paramètres du compte.',
+    contact: 'Activer Premium',
     ctaLink: '/fr/dashboard/account-settings',
   },
   he: {
@@ -40,15 +40,15 @@ const COPY = {
     title: 'פיצ׳ר פרמיום',
     features: {
       image:              'הוסיפו תמונת זוג להזמנה שלכם.',
-      notifications:      'קבלו אימייל על כל אישור הגעה חדש (מאושר / נדחה).',
+      notifications:      'קבלו אימייל על כל אישור הגעה חדש (זאושר / נדחה).',
       unlimited_guests:   'נהלו מוזמנים ללא הגבלה (חינמי: עד 200).',
       co_owner:           'הוסיפו שותף/ה שיקבל/תקבל את עדכוני ה-RSVP.',
     },
     price:   '₪99 · 25 € · 27 $',
     period:  'גישה לצמיתות · תשלום חד פעמי',
     cta:     'שדרג לפרמיום',
-    ctaHint: 'תשלום מקוון טרם הופעל. לשדרוג החשבון לפרמיום, פנו אלינו ישירות.',
-    contact: 'צרו קשר לשדרוג',
+    ctaHint: 'יש לך קוד הפעלה? הזן אותו בהגדרות החשבון.',
+    contact: 'הפעל פרמיום',
     ctaLink: '/he/dashboard/account-settings',
   },
   en: {
@@ -64,8 +64,8 @@ const COPY = {
     price:   '$27 · 25 € · ₪99',
     period:  'lifetime access · one-time payment',
     cta:     'Upgrade to Premium',
-    ctaHint: 'Online payment is not yet active. To upgrade your account, please contact us directly.',
-    contact: 'Contact to upgrade',
+    ctaHint: 'Have an activation code? Enter it in your account settings.',
+    contact: 'Activate Premium',
     ctaLink: '/en/dashboard/account-settings',
   },
 }
@@ -103,13 +103,13 @@ export default function PremiumGate({ locale, feature, inline = false }: Props) 
               {' · '}{l.period}
             </p>
             <p className="text-xs text-stone-400 italic mb-3">{l.ctaHint}</p>
-            <a
-              href={`mailto:contact@grandinvite.app?subject=Upgrade%20to%20Premium`}
+            <Link
+              href={l.ctaLink}
               className="inline-flex items-center gap-1.5 text-xs font-medium px-4 py-2 rounded-xl transition-all"
               style={{ background: '#c9a84c', color: '#fff', boxShadow: '0 2px 8px rgba(201,168,76,0.3)' }}
             >
-              {l.contact} →
-            </a>
+              {l.contact} ♛
+            </Link>
           </div>
         </div>
       </div>
@@ -153,13 +153,13 @@ export default function PremiumGate({ locale, feature, inline = false }: Props) 
           {' · '}{l.period}
         </p>
         <p className="text-xs text-stone-400 italic mb-4 max-w-xs">{l.ctaHint}</p>
-        <a
-          href={`mailto:contact@grandinvite.app?subject=Upgrade%20to%20Premium`}
+        <Link
+          href={l.ctaLink}
           className="inline-flex items-center gap-1.5 text-xs font-medium px-5 py-2.5 rounded-xl transition-all"
           style={{ background: '#c9a84c', color: '#fff', boxShadow: '0 4px 14px rgba(201,168,76,0.35)' }}
         >
-          {l.contact} →
-        </a>
+          {l.contact} ♛
+        </Link>
       </div>
     </div>
   )
