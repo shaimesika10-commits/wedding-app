@@ -72,7 +72,7 @@ const L = {
     planFreeDesc:    "Jusqu'à 200 invités · Tableau de bord · Export CSV",
     planPremium:     'Premium ♛',
     planPremiumDesc: 'Invités illimités · Photo de couple · Notifications RSVP · Co-organisateur',
-    planPremiumNote: "25 € · accès à vie · Le paiement en ligne n'est pas encore actif — contactez-nous pour activer.",
+    planPremiumNote: "25 € · accès à vie · Après inscription, activez via un code dans les paramètres du compte.",
   },
   he: {
     confirmSubject: 'בדקו את האימייל שלכם',
@@ -126,7 +126,7 @@ const L = {
     planFreeDesc:    'עד 200 מוזמנים · לוח ניהול · ייצוא CSV',
     planPremium:     'פרמיום ♛',
     planPremiumDesc: 'מוזמנים ללא הגבלה · תמונת זוג · התראות RSVP · שותף/ה נוסף/ת',
-    planPremiumNote: '₪99 · גישה לצמיתות · תשלום מקוון טרם הופעל — פנו אלינו לשדרוג.',
+    planPremiumNote: '₪99 · גישה לצמיתות · לאחר ההרשמה, הפעל קוד שדרוג בהגדרות החשבון.',
   },
   en: {
     confirmSubject: 'Check your email',
@@ -180,7 +180,7 @@ const L = {
     planFreeDesc:    'Up to 200 guests · RSVP dashboard · CSV export',
     planPremium:     'Premium ♛',
     planPremiumDesc: 'Unlimited guests · Couple photo · Email notifications · Co-owner',
-    planPremiumNote: '$27 · lifetime · Online payment not yet active — contact us to upgrade.',
+    planPremiumNote: '$27 · lifetime · After signing up, activate with a code in account settings.',
   },
 }
 
