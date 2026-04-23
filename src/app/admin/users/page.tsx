@@ -187,13 +187,14 @@ export default function AdminUsersPage() {
                     {/* Plan badge */}
                     <td className="px-5 py-3.5">
                       {w ? (
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${
-                          w.plan === 'premium'
-                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                            : 'bg-stone-50 text-stone-500 border-stone-100'
-                        }`}>
-                          {w.plan === 'premium' ? '♛ Premium' : 'Free'}
-                        </span>
+                        (() => {
+                          const planCls = w.plan === 'premium' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-stone-50 text-stone-500 border-stone-100'
+                          return (
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${planCls}`}>
+                              {w.plan === 'premium' ? '♛ Premium' : 'Free'}
+                            </span>
+                          )
+                        })()
                       ) : (
                         <span className="text-stone-300 text-xs">—</span>
                       )}
@@ -254,7 +255,7 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                   </tr>
-                
+                )
               })}
               {filtered.length === 0 && (
                 <tr>
