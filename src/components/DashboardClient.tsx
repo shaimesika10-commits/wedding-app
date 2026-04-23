@@ -1099,11 +1099,11 @@ export default function DashboardClient({ guests, wedding, locale, t, userEmail 
                           : 'Adding a couple photo is a Premium feature.'}
                       </p>
                       <a
-                        href={`mailto:contact@grandinvite.app?subject=Upgrade%20to%20Premium`}
+                        href={`/${locale}/dashboard/account-settings`}
                         className="text-xs font-medium underline"
                         style={{ color: '#c9a84c' }}
                       >
-                        {locale === 'he' ? 'צרו קשר לשדרוג →' : locale === 'fr' ? 'Contacter pour activer →' : 'Contact to upgrade →'}
+                        {locale === 'he' ? 'הפעל פרמיום ♗' : locale === 'fr' ? 'Activer Premium ♗' : 'Activate Premium ♗'}
                       </a>
                     </div>
                   </div>
