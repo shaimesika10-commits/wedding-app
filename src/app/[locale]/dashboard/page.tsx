@@ -28,7 +28,7 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect(`/${locale}/login`)
 
-  // ── טעינת חתונה של המשתמש (כולל לו"ז) ──
+  // ── טעינת חתונה של המשתמש (כולל לו"�) ──
   const { data: wedding } = await supabase
     .from('weddings')
     .select('*, event_schedule(*)')
@@ -168,7 +168,7 @@ export default async function DashboardPage({
             <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
               <p className="text-amber-700 text-sm flex-shrink-0">
                 {locale === 'he'
-                  ? `${stats.confirmed.length} / ${wedding.max_guests} מוזמנים מאושרים`
+                  ? `${stats.confirmed.length} / ${wedding.max_guests} מוזמנים נאושרים`
                   : locale === 'fr'
                   ? `${stats.confirmed.length} / ${wedding.max_guests} invités confirmés`
                   : `${stats.confirmed.length} / ${wedding.max_guests} confirmed guests`}
@@ -184,13 +184,13 @@ export default async function DashboardPage({
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <p className="text-xs text-amber-700">
                 {locale === 'he'
-                  ? '🔒 תמונת זוג · התראות RSVP · מוזמנים ללא הגבלה · שותף/ה נוסף/ת — בפרמיום בלבד'
+                  ? '🔒 תמונת זוג · התראות RSVP · מוזמנים ללא הגבלה · תותף/ה נוסף/ת — בפרמיום בלבד'
                   : locale === 'fr'
                   ? '🔒 Photo de couple · Notifications RSVP · Invités illimités · Co-organisateur · Premium uniquement'
                   : '🔒 Couple photo · RSVP notifications · Unlimited guests · Co-owner · Premium only'}
               </p>
               <a
-                href={`mailto:contact@grandinvite.app?subject=${encodeURIComponent('Upgrade to Premium')}`}
+                href={`/${locale}/dashboard/account-settings`}
                 className="text-xs font-medium px-4 py-1.5 rounded-xl flex-shrink-0 transition-all"
                 style={{ background: '#c9a84c', color: '#fff', boxShadow: '0 2px 8px rgba(201,168,76,0.3)' }}
               >
