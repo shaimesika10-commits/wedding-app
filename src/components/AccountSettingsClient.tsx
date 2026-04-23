@@ -434,17 +434,9 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
               <span className="font-semibold" style={{ color: '#c9a84c' }}>{l.upgradePrice}</span>
             </p>
             <p className="text-xs text-stone-400 mb-3">{l.upgradePeriod}</p>
-            <p className="text-xs text-stone-400 italic mb-2">{l.upgradeNote}</p>
-            <a
-              href={`mailto:${l.upgradeContact}?subject=${encodeURIComponent('Upgrade to Premium')}`}
-              className="text-sm font-medium underline"
-              style={{ color: '#c9a84c' }}
-            >
-              {l.upgradeContact}
-            </a>
 
             {/* ── Activation code input ── */}
-            <div className="mt-5 pt-4 border-t border-stone-200/60">
+            <div id="activation-code" className="mt-2 pt-4 border-t border-stone-200/60">
               <h4 className="text-sm font-medium text-stone-700 mb-1 flex items-center gap-1.5">
                 <span style={{ color: '#c9a84c' }}>🔑</span>
                 {l.activateSection}
@@ -575,11 +567,11 @@ export default function AccountSettingsClient({ locale, userEmail, initialCoOwne
               {l.premiumLocked}
             </p>
             <a
-              href={`mailto:${l.upgradeContact}?subject=${encodeURIComponent('Upgrade to Premium')}`}
+              href="#activation-code"
               className="text-xs font-medium px-4 py-2 rounded-xl inline-flex items-center gap-1.5 transition-all"
               style={{ background: '#c9a84c', color: '#fff', boxShadow: '0 2px 8px rgba(201,168,76,0.3)' }}
             >
-              {l.upgradeSection} →
+              {l.activateSection} ♛
             </a>
           </div>
         )}
