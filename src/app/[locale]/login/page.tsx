@@ -640,7 +640,24 @@ export default function LoginPage() {
                   required
                   dir="ltr"
                   className={fieldCls}
-                  placeholder="••••••••" �����F�c���&V�V�&W"�R��Т��&V�6�74��S�&f�W��FV�2�6V�FW"v�"�R7W'6�"����FW"6V�V7B����R#��F�b6�74��S�'&V�F�fRf�W��6�&���#�Ɩ�W@�G�S�&6�V6�&�� �6�V6�VC׷&V�V�&W$�WТ��6��vS׶R��6WE&V�V�&W$�R�R�F&vWB�6�V6�VB�Т6�74��S�'7"���ǒVW" ����F�`�6�74��S�'r�B��B&�V�FVB&�&FW"�"G&�6�F������VW"�f�7W3�&��r�"VW"�f�7W3�&��rזV���r�C�3 �7G��S׷��&6�w&�V�C�&V�V�&W$�R�r63��F2r�wv��FRr��&�&FW$6���#�&V�V�&W$�R�r63��F2r�r6CfC6Cr�
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {/* Remember me */}
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <div className="relative flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div
+                    className="w-4 h-4 rounded border-2 transition-all peer-focus:ring-2 peer-focus:ring-yellow-400/30"
+                    style={{
+                      background: rememberMe ? '#c9a84c' : 'white',
+                      borderColor: rememberMe ? '#c9a84c' : '#d6d3d1',
                     }}
                   >
                     {rememberMe && (
