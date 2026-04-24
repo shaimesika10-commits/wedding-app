@@ -1,4 +1,6 @@
 'use client'
+type UploadStatus = 'idle' | 'success' | 'error'
+
 
 // ============================================================
 //  GrandInvite – Gallery Section Component
@@ -81,7 +83,7 @@ export default function GallerySection({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle')
   const [visibleCount, setVisibleCount] = useState(9)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
