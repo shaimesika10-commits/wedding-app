@@ -40,6 +40,10 @@ export interface Database {
           image_position: string | null
           cover_frame: string | null
           page_layout: string | null
+          co_owner_email: string | null
+          notify_new_rsvp: boolean
+          tos_accepted_at: string | null
+          tos_version: string | null
           created_at: string
           updated_at: string
         }
@@ -68,6 +72,10 @@ export interface Database {
           image_position?: string | null
           cover_frame?: string | null
           page_layout?: string | null
+          co_owner_email?: string | null
+          notify_new_rsvp?: boolean
+          tos_accepted_at?: string | null
+          tos_version?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -96,6 +104,10 @@ export interface Database {
           locale?: string
           is_active?: boolean
           plan?: string
+          co_owner_email?: string | null
+          notify_new_rsvp?: boolean
+          tos_accepted_at?: string | null
+          tos_version?: string | null
           updated_at?: string
         }
         Relationships: []
