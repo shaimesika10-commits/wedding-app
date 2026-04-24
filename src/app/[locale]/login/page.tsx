@@ -398,7 +398,7 @@ export default function LoginPage() {
             bride_name: reg.bride_name.trim(),
             groom_name: reg.groom_name.trim(),
             wedding_date: reg.wedding_date,
-          2 venue_name: reg.venue.trim() || null,
+                      venue_name: reg.venue.trim() || null,
             locale: reg.invitation_locale,
             max_guests: 200,
             plan: 'free',
