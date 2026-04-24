@@ -184,6 +184,8 @@ const L = {
   },
 }
 
+type LoginView = 'login' | 'register' | 'forgot' | 'forgot-sent' | 'confirm-email'
+
 function slugify(bride: string, groom: string, date: string): string {
   const clean = (s: string) =>
     s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '')
@@ -251,8 +253,8 @@ export default function LoginPage() {
   const supabase = createClient()
   const isRTL = locale === 'he'
 
-  // Main view: 'login' | 'register' | 'forgot' | 'forgot-sent' | 'confirm-email'
-  const [view, setView] = useState<'login' | 'register' | 'forgot' | 'forgot-sent' | 'confirm-email'>('login')
+  // Main view state
+  const [view, setView] = useState<LoginView>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [sentEmail, setSentEmail] = useState('')   // for both forgot-sent and confirm-email
@@ -396,7 +398,7 @@ export default function LoginPage() {
             bride_name: reg.bride_name.trim(),
             groom_name: reg.groom_name.trim(),
             wedding_date: reg.wedding_date,
-            venue_name: reg.venue.trim() || null,
+          2 venue_name: reg.venue.trim() || null,
             locale: reg.invitation_locale,
             max_guests: 200,
             plan: 'free',
@@ -576,7 +578,8 @@ export default function LoginPage() {
         {/* ══════════════════════════════════════
             Tabs + Card (login / register)
         ══════════════════════════════════════ */}
-        {(view === 'login' || view === 'register') && (<>
+        {(view === 'login' || view === 'register') && (
+        <>
 
         <div className="flex bg-stone-100 rounded-2xl p-1 mb-6">
           {(['login', 'register'] as const).map(tabKey => (
@@ -637,24 +640,7 @@ export default function LoginPage() {
                   required
                   dir="ltr"
                   className={fieldCls}
-                  placeholder="••••••••"
-                />
-              </div>
-
-              {/* Remember me */}
-              <label className="flex items-center gap-2.5 cursor-pointer select-none">
-                <div className="relative flex-shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div
-                    className="w-4 h-4 rounded border-2 transition-all peer-focus:ring-2 peer-focus:ring-yellow-400/30"
-                    style={{
-                      background: rememberMe ? '#c9a84c' : 'white',
-                      borderColor: rememberMe ? '#c9a84c' : '#d6d3d1',
+                  placeholder="••••••••" �����F�c���&V�V�&W"�R��Т��&V�6�74��S�&f�W��FV�2�6V�FW"v�"�R7W'6�"����FW"6V�V7B����R#��F�b6�74��S�'&V�F�fRf�W��6�&���#�Ɩ�W@�G�S�&6�V6�&�� �6�V6�VC׷&V�V�&W$�WТ��6��vS׶R��6WE&V�V�&W$�R�R�F&vWB�6�V6�VB�Т6�74��S�'7"���ǒVW" ����F�`�6�74��S�'r�B��B&�V�FVB&�&FW"�"G&�6�F������VW"�f�7W3�&��r�"VW"�f�7W3�&��rזV���r�C�3 �7G��S׷��&6�w&�V�C�&V�V�&W$�R�r63��F2r�wv��FRr��&�&FW$6���#�&V�V�&W$�R�r63��F2r�r6CfC6Cr�
                     }}
                   >
                     {rememberMe && (
@@ -708,7 +694,7 @@ export default function LoginPage() {
                     onChange={e => setReg(p => ({ ...p, password: e.target.value }))}
                     required
                     dir="ltr"
-                    className={fieldCls}
+                    className=;fieldCls}
                     placeholder="••••••••"
                   />
                 </div>
@@ -757,7 +743,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className={labelCls}>{l.WeddingDate}</label>
+                <label className={labelCls}>{l.weddingDate}</label>
                 <input
                   type="date"
                   value={reg.wedding_date}
@@ -789,8 +775,7 @@ export default function LoginPage() {
                       onClick={() => setReg(p => ({ ...p, invitation_locale: lang }))}
                       className="flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all"
                       style={{
-                        background: reg.invitation_locale === lang ? '#c9a84c' : '#faf8f5',
-                        color: reg.invitation_locale === lang ? '#fff' : '#78716c',
+                        background: reg.invitation_locale === lang ? '#c9a84c' : '#faf8f5',                         color: reg.invitation_locale === lang ? '#fff' : '#78716c',
                         borderColor: reg.invitation_locale === lang ? '#c9a84c' : '#e7e5e4',
                       }}
                     >
@@ -809,7 +794,7 @@ export default function LoginPage() {
                     className="rounded-xl border-2 p-3 cursor-pointer transition-all"
                     style={{
                       borderColor: '#c9a84c',
-                      background: '#fdf6e3',
+     0                background: '#fdf6e3',
                     }}
                   >
                     <p className="text-sm font-semibold text-stone-800 mb-0.5">{l.planFree}</p>
@@ -832,7 +817,7 @@ export default function LoginPage() {
                       SOON
                     </span>
                     <p className="text-sm font-semibold text-stone-800 mb-0.5">{l.planPremium}</p>
-                    <p className="text-xs text-stone-500 leading-relaxed">{l.planPremiumDesc}|/p>
+                    <p className="text-xs text-stone-500 leading-relaxed">{l.planPremiumDesc}</p>
                     <p className="text-[10px] italic mt-1" style={{ color: '#a8a29e' }}>{l.planPremiumNote}</p>
                   </div>
                 </div>
