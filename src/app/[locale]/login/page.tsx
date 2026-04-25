@@ -711,7 +711,7 @@ export default function LoginPage() {
                     onChange={e => setReg(p => ({ ...p, password: e.target.value }))}
                     required
                     dir="ltr"
-                    className=;fieldCls}
+                    className={fieldCls}
                     placeholder="••••••••"
                   />
                 </div>
@@ -811,7 +811,7 @@ export default function LoginPage() {
                     className="rounded-xl border-2 p-3 cursor-pointer transition-all"
                     style={{
                       borderColor: '#c9a84c',
-     0                background: '#fdf6e3',
+                       background: '#fdf6e3',
                     }}
                   >
                     <p className="text-sm font-semibold text-stone-800 mb-0.5">{l.planFree}</p>
